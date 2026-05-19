@@ -149,6 +149,32 @@
   /* Hide signup-only fields on login mode */
   body[data-auth="login"] [data-mode="signup"] { display: none; }
   body[data-auth="signup"] [data-mode="login"] { display: none; }
+
+  /* Inline status banner (errors + success). Sits between the tabs
+     and the form so the user notices it without it jumping the
+     layout. Yellow border for info, red tint for errors. */
+  .auth-banner {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: var(--s5);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    color: var(--fg);
+  }
+  .auth-banner.is-error {
+    border-color: #EF4444;
+    color: #FCA5A5;
+  }
+  .auth-banner.is-success {
+    border-color: var(--canary);
+    color: var(--canary);
+  }
+  .submit[aria-busy="true"] {
+    opacity: 0.6;
+    cursor: progress;
+  }
 </style>
 </head>
 <body data-page="login" data-auth="login">
@@ -179,8 +205,18 @@
       <p class="sub" data-mode="login">Log in to manage your rides, earnings, or account.</p>
       <p class="sub" data-mode="signup">Create an account in under a minute. We'll let you know when we launch in your city.</p>
 
-      <form onsubmit="event.preventDefault(); this.innerHTML = '<h2 style=&quot;color:var(--canary);&quot;>You\'re in. Redirecting…</h2>';">
+      <!-- Status banner — used for both error messages ("This email is
+           already registered") and success messages ("Account created —
+           we sent a code to your phone"). Inline below the tabs so it
+           stays anchored regardless of which mode is active. -->
+      <div id="auth-banner" class="auth-banner" role="status" hidden></div>
 
+      <form id="auth-form" novalidate>
+
+        <!-- Role pick on signup: drives a post-signup nudge to download
+             the driver app (the actual driver application flow lives in
+             the Expo app, not here). Both options create a `riders` row
+             via the same /api/rider/signup endpoint. -->
         <div class="role-pick" data-mode="signup">
           <label>
             <input type="radio" name="role" value="driver" checked>
@@ -197,34 +233,42 @@
         <div class="row" data-mode="signup">
           <div class="field">
             <label for="first">First name</label>
-            <input type="text" id="first" required>
+            <input type="text" id="first" name="firstName" autocomplete="given-name" required>
           </div>
           <div class="field">
             <label for="last">Last name</label>
-            <input type="text" id="last" required>
+            <input type="text" id="last" name="lastName" autocomplete="family-name" required>
           </div>
         </div>
 
         <div class="field">
           <label for="email">Email</label>
-          <input type="email" id="email" required placeholder="you@example.com">
+          <input type="email" id="email" name="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
+
+        <!-- Mobile + username are required by the rider app signup
+             endpoint. SMS verification fires server-side after signup
+             (Twilio) and the user can verify from /account later. -->
+        <div class="field" data-mode="signup">
+          <label for="mobile">Mobile</label>
+          <input type="tel" id="mobile" name="mobile" autocomplete="tel" inputmode="tel" placeholder="(555) 123-4567">
+        </div>
+
+        <div class="field" data-mode="signup">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" autocomplete="username" minlength="3" placeholder="At least 3 characters">
         </div>
 
         <div class="field">
           <label for="password">Password</label>
-          <input type="password" id="password" required placeholder="••••••••" minlength="8">
-        </div>
-
-        <div class="field" data-mode="signup">
-          <label for="city">City</label>
-          <input type="text" id="city" placeholder="Austin, TX">
+          <input type="password" id="password" name="password" autocomplete="current-password" required placeholder="••••••••" minlength="6">
         </div>
 
         <button type="submit" class="submit" data-mode="login">Log in</button>
         <button type="submit" class="submit" data-mode="signup">Create account</button>
 
         <div class="meta" data-mode="login">
-          <a href="#">Forgot password?</a>
+          <a href="#" id="forgot-link">Forgot password?</a>
           <span>New here? <a href="#" onclick="event.preventDefault(); document.querySelector('[data-tab=signup]').click();">Sign up</a></span>
         </div>
         <div class="meta" data-mode="signup">
@@ -249,16 +293,159 @@
 </main>
 
 <script src="site.js"></script>
+<script src="assets/js/api.js"></script>
 <script>
 (function() {
-  const body = document.body;
-  document.querySelectorAll('.auth-tabs button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.auth-tabs button').forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
+  "use strict";
+  var body = document.body;
+  var form = document.getElementById("auth-form");
+  var banner = document.getElementById("auth-banner");
+  var tabs = document.querySelectorAll(".auth-tabs button");
+
+  // Already logged in? Bounce straight to the right landing page.
+  // Avoid an extra render of the login form when a returning user
+  // hits /login (e.g. clicked the nav by reflex).
+  (async function bounceIfAuthed() {
+    var cached = JoyrideAPI.readCachedUser();
+    if (cached) {
+      window.location.replace(JoyrideAPI.routeAfterAuth(cached));
+      return;
+    }
+    var fresh = await JoyrideAPI.loadCurrentUser();
+    if (fresh) window.location.replace(JoyrideAPI.routeAfterAuth(fresh));
+  })();
+
+  // ?signup=1 query param defaults the tab state to signup. Handy
+  // for "Sign up" links elsewhere on the site that route here.
+  if (/(?:^|[?&])signup=1(?:&|$)/.test(window.location.search)) {
+    body.dataset.auth = "signup";
+    tabs.forEach(function (b) {
+      b.classList.toggle("is-active", b.dataset.tab === "signup");
+    });
+  }
+
+  tabs.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      tabs.forEach(function (b) { b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
       body.dataset.auth = btn.dataset.tab;
+      clearBanner();
     });
   });
+
+  function clearBanner() {
+    banner.hidden = true;
+    banner.classList.remove("is-error", "is-success");
+    banner.textContent = "";
+  }
+  function showError(msg) {
+    banner.hidden = false;
+    banner.classList.remove("is-success");
+    banner.classList.add("is-error");
+    banner.textContent = msg;
+  }
+  function showSuccess(msg) {
+    banner.hidden = false;
+    banner.classList.remove("is-error");
+    banner.classList.add("is-success");
+    banner.textContent = msg;
+  }
+
+  function getMode() { return body.dataset.auth || "login"; }
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
+  function selectedRole() {
+    var checked = document.querySelector("input[name=role]:checked");
+    return checked ? checked.value : "rider";
+  }
+  function submitBtn() {
+    return document.querySelector('.submit[data-mode="' + getMode() + '"]');
+  }
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    clearBanner();
+    var mode = getMode();
+    var btn = submitBtn();
+    if (btn) btn.setAttribute("aria-busy", "true");
+    try {
+      if (mode === "login") {
+        await doLogin();
+      } else {
+        await doSignup();
+      }
+    } catch (err) {
+      // Server errors land here via api.js (ApiError carries the
+      // human-readable message on err.message). Network errors get
+      // a generic fallback so the user sees something actionable.
+      var msg = (err && err.message) || "Something went wrong. Please try again.";
+      showError(msg);
+    } finally {
+      if (btn) btn.removeAttribute("aria-busy");
+    }
+  });
+
+  async function doLogin() {
+    var email = val("email");
+    var password = val("password");
+    if (!email || !password) {
+      showError("Email and password are required.");
+      return;
+    }
+    var result = await JoyrideAPI.apiPost("/api/rider/login", { email: email, password: password });
+    if (!result || !result.sessionToken || !result.rider) {
+      showError("Login failed. Please try again.");
+      return;
+    }
+    JoyrideAPI.setToken(result.sessionToken);
+    JoyrideAPI.cacheUser(result.rider);
+    window.location.assign(JoyrideAPI.routeAfterAuth(result.rider));
+  }
+
+  async function doSignup() {
+    var firstName = val("first");
+    var lastName  = val("last");
+    var email     = val("email");
+    var mobile    = val("mobile");
+    var username  = val("username");
+    var password  = val("password");
+    var role      = selectedRole();
+
+    if (!firstName || !lastName) return showError("Please enter your first and last name.");
+    if (!email || !email.includes("@")) return showError("Please enter a valid email address.");
+    if (!mobile || mobile.length < 7) return showError("Please enter a mobile number we can text.");
+    if (!username || username.length < 3) return showError("Username must be at least 3 characters.");
+    if (!password || password.length < 6) return showError("Password must be at least 6 characters.");
+
+    var result = await JoyrideAPI.apiPost("/api/rider/signup", {
+      firstName: firstName,
+      lastName:  lastName,
+      email:     email,
+      mobile:    mobile,
+      username:  username,
+      password:  password,
+    });
+    if (!result || !result.sessionToken || !result.rider) {
+      showError("Signup failed. Please try again.");
+      return;
+    }
+    JoyrideAPI.setToken(result.sessionToken);
+    JoyrideAPI.cacheUser(result.rider);
+
+    // Driver applicants land on /account with a banner that nudges
+    // them to download the driver app — the actual driver-onboarding
+    // multi-step flow lives in the Expo app, not the website.
+    // (See joiryde-driver/app/onboarding for that flow.)
+    var dest = JoyrideAPI.routeAfterAuth(result.rider);
+    if (role === "driver") {
+      dest = "/account?welcome=driver";
+    } else {
+      dest = "/account?welcome=rider";
+    }
+    window.location.assign(dest);
+  }
 })();
 </script>
 

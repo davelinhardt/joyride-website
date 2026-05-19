@@ -108,9 +108,68 @@ window.addEventListener('error', (e) => {
     document.body.appendChild(footer);
   }
 
+  /**
+   * Swap the header's "Log in / Get the app" CTAs for an
+   * "Account / Log out" pair whenever we have a session token.
+   *
+   * Runs in two passes:
+   *   1. Synchronous, using JoyrideAPI.readCachedUser() — fires
+   *      immediately so returning users don't see a flash of the
+   *      logged-out CTAs.
+   *   2. Async, calling /api/rider/me to refresh + clear stale
+   *      tokens if the server doesn't recognize us anymore (e.g.
+   *      session expired, account deactivated).
+   *
+   * Each pass calls the same renderer so we avoid divergent code
+   * paths. No-op if JoyrideAPI isn't loaded (e.g. on a page that
+   * skipped api.js for some reason).
+   */
+  function renderAuthCta(user) {
+    var ctaWrap = document.querySelector('.site-header .nav-cta');
+    var mobileStack = document.querySelector('.site-header .mobile-cta-stack');
+    if (!ctaWrap) return;
+    var loggedIn = !!user;
+    var label = loggedIn ? (user.firstName || 'Account') : 'Log in';
+    var primaryHref = loggedIn ? '/account' : '/login';
+    var primaryLabel = loggedIn ? 'My account' : 'Get the app';
+    var primaryArrow = '<span class="arrow">→</span>';
+
+    // Replace just the two .btn anchors in the desktop nav-cta. Keep
+    // the .menu-toggle button as-is.
+    var desktopBtns = ctaWrap.querySelectorAll('a.btn');
+    if (desktopBtns.length >= 2) {
+      desktopBtns[0].textContent = label;
+      desktopBtns[0].setAttribute('href', loggedIn ? '/account' : '/login');
+      desktopBtns[1].innerHTML = primaryLabel + ' ' + primaryArrow;
+      desktopBtns[1].setAttribute('href', primaryHref);
+    }
+    if (mobileStack) {
+      var mobBtns = mobileStack.querySelectorAll('a.btn');
+      if (mobBtns.length >= 2) {
+        mobBtns[0].textContent = label;
+        mobBtns[0].setAttribute('href', loggedIn ? '/account' : '/login');
+        mobBtns[1].innerHTML = primaryLabel + ' ' + primaryArrow;
+        mobBtns[1].setAttribute('href', primaryHref);
+      }
+    }
+  }
+
+  async function refreshAuthCta() {
+    if (typeof window === 'undefined' || !window.JoyrideAPI) return;
+    // Cached pass — instant, avoids flicker.
+    renderAuthCta(window.JoyrideAPI.readCachedUser());
+    // Authoritative pass — only fires if we actually have a token
+    // so we don't spam /api/rider/me on every marketing page view.
+    if (window.JoyrideAPI.getToken()) {
+      var fresh = await window.JoyrideAPI.loadCurrentUser();
+      renderAuthCta(fresh);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.dataset.page || 'home';
     buildHeader(page);
     buildFooter();
+    refreshAuthCta();
   });
 })();
