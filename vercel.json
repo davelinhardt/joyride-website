@@ -3,8 +3,17 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/index",         "destination": "/index.html" },
+    { "source": "/login",         "destination": "/login.html" },
+    { "source": "/account",       "destination": "/account.html" },
+    { "source": "/drivers",       "destination": "/drivers.html" },
+    { "source": "/riders",        "destination": "/riders.html" },
+    { "source": "/blog",          "destination": "/blog.html" },
+    { "source": "/contact",       "destination": "/contact.html" },
+    { "source": "/design-system", "destination": "/design-system.html" },
+    { "source": "/driver",        "destination": "/driver.html" },
     {
-      "source": "/:slug((?!index|login|account|drivers|riders|blog|contact|design-system|driver|assets|favicon).+)",
+      "source": "/:slug([A-Za-z0-9_-]+)",
       "destination": "/driver.html?u=:slug"
     }
   ],
