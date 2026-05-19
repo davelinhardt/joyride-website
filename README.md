@@ -23,6 +23,20 @@ Pushed to GitHub → Vercel auto-deploys main. CLI:
 vercel --prod
 ```
 
+## Caching gotcha
+
+**Never put JS or HTML behind the `immutable, max-age=31536000` rule
+in `vercel.json`.** The rule's `source` pattern is intentionally
+narrowed to specific image/font subdirectories
+(`illo|lockup|mark|wordmark|favicon|fonts|img|images`) precisely
+because `api.js` got cached for a year with a syntax error on
+2026-05-19 and there was no way to bust it short of changing the URL.
+Anything that might ever change — JS, CSS bundles, configuration —
+should live outside that pattern so Vercel's default
+`max-age=0, must-revalidate` applies and the browser revalidates on
+every request. `api.js` lives at the root (`/api.js`) for this
+reason; don't move it back into `/assets/`.
+
 ## Routing
 
 - Known pages are served from their own `.html` files via `cleanUrls`

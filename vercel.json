@@ -24,7 +24,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)",
+      "source": "/assets/(?:illo|lockup|mark|wordmark|favicon|fonts|img|images)(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
