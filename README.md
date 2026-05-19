@@ -34,8 +34,12 @@ because `api.js` got cached for a year with a syntax error on
 Anything that might ever change — JS, CSS bundles, configuration —
 should live outside that pattern so Vercel's default
 `max-age=0, must-revalidate` applies and the browser revalidates on
-every request. `api.js` lives at the root (`/api.js`) for this
-reason; don't move it back into `/assets/`.
+every request. `api.js` lives at `/js/api.js` for this reason — out
+of `/assets/` (so the immutable rule doesn't apply) and under a
+two-segment path (so the `/{username}` catch-all rewrite doesn't
+try to interpret it as a driver slug). **Don't move it back into
+`/assets/`, and don't put it at the root (`/api.js`) — the catch-all
+will eat it.**
 
 ## Routing
 
