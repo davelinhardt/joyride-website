@@ -156,6 +156,11 @@
       <h2>Driver not found</h2>
       <p>No Joyride driver with this username — they may have removed their public profile, changed their handle, or the link may be mistyped.</p>
       <a href="/" class="btn btn--primary">Back to Joyride</a>
+      <!-- Diagnostic block — only renders in the not-found path, only
+           when ?debug=1 is on the URL. Lets us figure out *why* a
+           driver isn't rendering (cache, pathname mismatch, fetch
+           error, etc.) without shipping an extra page. -->
+      <pre id="dp-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
     </div>
 
     <div id="dp-content" hidden>
@@ -215,8 +220,32 @@
   if (pathSlug === "driver" || pathSlug === "driver.html") pathSlug = "";
   var username = ((qp || pathSlug) || "").trim();
 
-  if (!username) {
+  // Diagnostic state. We populate this whenever we show the not-found
+  // panel — and reveal it via ?debug=1 — so we can tell from a real
+  // browser whether the URL parse went wrong, the fetch never fired,
+  // or the API returned 404.
+  var debug = {
+    rawPath: window.location.pathname,
+    rawSearch: window.location.search,
+    pathSlug: pathSlug,
+    queryParamU: qp,
+    resolvedUsername: username,
+    apiBase: JoyrideAPI.API_BASE,
+    fetchUrl: null,
+    fetchStatus: null,
+    fetchError: null,
+  };
+  function showNotFound() {
+    var el = document.getElementById("dp-debug");
+    if (el && /(?:^|[?&])debug=1(?:&|$)/.test(window.location.search)) {
+      el.hidden = false;
+      el.textContent = JSON.stringify(debug, null, 2);
+    }
     show("notfound");
+  }
+
+  if (!username) {
+    showNotFound();
     return;
   }
 
@@ -225,11 +254,12 @@
   // success.
   document.title = "@" + username + " — Joyride driver";
 
-  fetch(JoyrideAPI.API_BASE + "/api/public/driver/" + encodeURIComponent(username), {
-    credentials: "omit",
-  })
+  var fetchUrl = JoyrideAPI.API_BASE + "/api/public/driver/" + encodeURIComponent(username);
+  debug.fetchUrl = fetchUrl;
+  fetch(fetchUrl, { credentials: "omit" })
     .then(function (res) {
-      if (res.status === 404) { show("notfound"); return null; }
+      debug.fetchStatus = res.status;
+      if (res.status === 404) { showNotFound(); return null; }
       if (!res.ok) throw new Error("Lookup failed (" + res.status + ")");
       return res.json();
     })
@@ -239,7 +269,8 @@
     })
     .catch(function (err) {
       console.error("[driver-page] fetch failed", err);
-      show("notfound");
+      debug.fetchError = String((err && err.message) || err);
+      showNotFound();
     });
 
   function show(which) {
