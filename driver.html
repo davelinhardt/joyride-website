@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- No-cache hardening — the driver page evolved quickly during launch
+     and a few iterations cached aggressively in mid-flight browser
+     sessions. Belt-and-suspenders on top of Vercel's default
+     "public, max-age=0, must-revalidate" so cached versions don't
+     stick around between deploys. -->
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Joyride driver</title>
 <link rel="icon" href="/assets/mark-canary.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -147,9 +155,13 @@
 <main>
   <section class="dp-wrap">
     <!-- Loading state. Replaced by either #dp-content or #dp-notfound
-         once the fetch resolves. -->
+         once the fetch resolves. The optional #dp-loading-debug block
+         renders below the spinner-style text when ?debug=1 is on the
+         URL so we can tell what's happening even before the fetch
+         settles (or if it hangs forever). -->
     <div id="dp-loading" class="dp-state">
       <p>Loading driver…</p>
+      <pre id="dp-loading-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
     </div>
 
     <div id="dp-notfound" class="dp-state" hidden>
@@ -220,27 +232,45 @@
   if (pathSlug === "driver" || pathSlug === "driver.html") pathSlug = "";
   var username = ((qp || pathSlug) || "").trim();
 
-  // Diagnostic state. We populate this whenever we show the not-found
-  // panel — and reveal it via ?debug=1 — so we can tell from a real
-  // browser whether the URL parse went wrong, the fetch never fired,
-  // or the API returned 404.
+  // Diagnostic state — populated as the page progresses through
+  // pathname parse → fetch URL build → fetch → response. Visible to
+  // the user when ?debug=1 is on the URL, in both the loading state
+  // (so a hung fetch surfaces what its trying to do) and the
+  // not-found state (so a 404 / network error surfaces the cause).
+  // The page version stamp lets us tell from a remote browser whether
+  // a stale cached copy is being served — bump on any meaningful
+  // edit to driver.htmls auth/fetch logic.
   var debug = {
+    pageVersion: "2026-05-19#3",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
     queryParamU: qp,
     resolvedUsername: username,
-    apiBase: JoyrideAPI.API_BASE,
+    apiBase: (typeof JoyrideAPI !== "undefined" && JoyrideAPI && JoyrideAPI.API_BASE) || "(JoyrideAPI not loaded)",
     fetchUrl: null,
     fetchStatus: null,
     fetchError: null,
   };
+  function debugVisible() {
+    return /(?:^|[?&])debug=1(?:&|$)/.test(window.location.search);
+  }
+  function renderDebug(el) {
+    if (!el) return;
+    if (!debugVisible()) return;
+    el.hidden = false;
+    el.textContent = JSON.stringify(debug, null, 2);
+  }
+  // Surface diagnostic in the loading state too — if were stuck here
+  // it means the fetch hasnt settled yet (or wont), and the user
+  // staring at "Loading driver…" deserves to see what the page knows
+  // about its own state. Updates whenever `debug` mutates.
+  function refreshLoadingDebug() {
+    renderDebug(document.getElementById("dp-loading-debug"));
+  }
+  refreshLoadingDebug();
   function showNotFound() {
-    var el = document.getElementById("dp-debug");
-    if (el && /(?:^|[?&])debug=1(?:&|$)/.test(window.location.search)) {
-      el.hidden = false;
-      el.textContent = JSON.stringify(debug, null, 2);
-    }
+    renderDebug(document.getElementById("dp-debug"));
     show("notfound");
   }
 
@@ -256,9 +286,11 @@
 
   var fetchUrl = JoyrideAPI.API_BASE + "/api/public/driver/" + encodeURIComponent(username);
   debug.fetchUrl = fetchUrl;
+  refreshLoadingDebug();
   fetch(fetchUrl, { credentials: "omit" })
     .then(function (res) {
       debug.fetchStatus = res.status;
+      refreshLoadingDebug();
       if (res.status === 404) { showNotFound(); return null; }
       if (!res.ok) throw new Error("Lookup failed (" + res.status + ")");
       return res.json();
