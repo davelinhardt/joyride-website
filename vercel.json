@@ -2,6 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/:slug((?!index|login|account|drivers|riders|blog|contact|design-system|driver|assets|favicon).+)",
+      "destination": "/driver.html?u=:slug"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

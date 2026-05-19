@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride driver</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .dp-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px) 120px;
+  }
+
+  /* Loading / empty / not-found states share one layout so transitions
+     between them don't reflow the page jarringly. */
+  .dp-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--fg-3);
+  }
+  .dp-state h2 { font-size: 28px; font-weight: 700; color: var(--fg); margin-bottom: 12px; }
+  .dp-state p { max-width: 48ch; margin: 0 auto; font-size: 16px; line-height: 1.5; }
+  .dp-state a.btn { margin-top: 24px; }
+
+  /* Profile hero — photo + name + rating row, mirrors the in-app
+     driver-profile card the rider sees when matching. */
+  .dp-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-xl);
+    padding: clamp(28px, 4vw, 48px);
+    margin-bottom: var(--s6);
+  }
+  .dp-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(20px, 3vw, 40px);
+    align-items: center;
+    margin-bottom: var(--s5);
+  }
+  @media (max-width: 540px) {
+    .dp-head { grid-template-columns: 1fr; text-align: center; }
+  }
+  .dp-photo {
+    width: clamp(96px, 14vw, 144px);
+    height: clamp(96px, 14vw, 144px);
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    border: 2px solid var(--rule);
+    justify-self: center;
+  }
+  .dp-photo--initials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700;
+    color: var(--canary);
+    background: var(--ink);
+  }
+  .dp-name {
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .dp-handle {
+    color: var(--fg-3);
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .dp-rating-row {
+    display: flex; gap: 14px; align-items: center;
+    color: var(--fg);
+    font-size: 15px;
+    flex-wrap: wrap;
+  }
+  .dp-stars { color: var(--canary); font-weight: 700; }
+  .dp-rating-row .sep { color: var(--fg-3); }
+
+  /* Stats row — totalRydes, hourly rate, vehicle summary */
+  .dp-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--s3);
+    margin-bottom: var(--s5);
+  }
+  .dp-stat {
+    background: var(--surface-2);
+    padding: 16px 18px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--rule);
+  }
+  .dp-stat .label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--fg-3);
+  }
+  .dp-stat .value {
+    font-size: 22px; font-weight: 700; color: var(--fg);
+    margin-top: 4px;
+  }
+  .dp-stat .sub { font-size: 13px; color: var(--fg-3); margin-top: 2px; }
+
+  .dp-bio {
+    padding: 18px 0 8px;
+    color: var(--fg);
+    line-height: 1.6;
+    font-size: 16px;
+    border-top: 1px solid var(--rule);
+    margin-top: var(--s4);
+  }
+  .dp-bio h3 {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--fg-3);
+    margin-bottom: 8px;
+  }
+
+  /* Book CTA — primary action. Until the apps publish this is a
+     placeholder that opens an "app store coming soon" modal. After
+     publish, we'll route to a Universal Link with ?driver=username
+     so the rider app can pre-select this driver. */
+  .dp-book {
+    display: flex; flex-direction: column; gap: 12px;
+    align-items: stretch;
+  }
+  .dp-book .btn--primary {
+    font-size: 17px; padding: 18px 28px;
+    border-radius: var(--r-md);
+    width: 100%;
+    justify-content: center;
+  }
+  .dp-book .helper {
+    font-size: 13px; color: var(--fg-3); text-align: center;
+  }
+  .dp-book .helper a { color: var(--canary); }
+</style>
+</head>
+<body data-page="driver">
+
+<main>
+  <section class="dp-wrap">
+    <!-- Loading state. Replaced by either #dp-content or #dp-notfound
+         once the fetch resolves. -->
+    <div id="dp-loading" class="dp-state">
+      <p>Loading driver…</p>
+    </div>
+
+    <div id="dp-notfound" class="dp-state" hidden>
+      <h2>Driver not found</h2>
+      <p>No Joyride driver with this username — they may have removed their public profile, changed their handle, or the link may be mistyped.</p>
+      <a href="/" class="btn btn--primary">Back to Joyride</a>
+    </div>
+
+    <div id="dp-content" hidden>
+      <article class="dp-card">
+        <header class="dp-head">
+          <img id="dp-photo" class="dp-photo" alt="">
+          <div>
+            <h1 id="dp-name" class="dp-name"></h1>
+            <p id="dp-handle" class="dp-handle"></p>
+            <div id="dp-rating-row" class="dp-rating-row"></div>
+          </div>
+        </header>
+
+        <div id="dp-stats" class="dp-stats"></div>
+
+        <div id="dp-bio" class="dp-bio" hidden>
+          <h3>About</h3>
+          <p id="dp-bio-body"></p>
+        </div>
+      </article>
+
+      <div class="dp-book">
+        <a href="#download" id="dp-book-cta" class="btn btn--primary">
+          Book a ride with <span id="dp-book-firstname">this driver</span> <span class="arrow">→</span>
+        </a>
+        <p class="helper">
+          Booking happens in the Joyride app. <a href="/login?signup=1">Create an account</a> or <a href="/login">log in</a> to get started.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="assets/js/api.js"></script>
+<script src="site.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // The /:username Vercel rewrite hands us the slug as ?u=<username>.
+  // We deliberately don't read it from window.location.pathname because
+  // the rewrite leaves the URL bar as the pretty form (/dave) while the
+  // page itself is /driver.html under the hood — pathname won't reflect
+  // the slug consistently across browsers / cached requests.
+  var params = new URLSearchParams(window.location.search);
+  var username = (params.get("u") || "").trim();
+
+  if (!username) {
+    show("notfound");
+    return;
+  }
+
+  // Set the doc title to <username> upfront so the tab name is helpful
+  // even before the fetch resolves. Replaced with the real name on
+  // success.
+  document.title = "@" + username + " — Joyride driver";
+
+  fetch(JoyrideAPI.API_BASE + "/api/public/driver/" + encodeURIComponent(username), {
+    credentials: "omit",
+  })
+    .then(function (res) {
+      if (res.status === 404) { show("notfound"); return null; }
+      if (!res.ok) throw new Error("Lookup failed (" + res.status + ")");
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data || !data.driver) return;
+      renderDriver(data.driver);
+    })
+    .catch(function (err) {
+      console.error("[driver-page] fetch failed", err);
+      show("notfound");
+    });
+
+  function show(which) {
+    document.getElementById("dp-loading").hidden = which !== "loading";
+    document.getElementById("dp-notfound").hidden = which !== "notfound";
+    document.getElementById("dp-content").hidden = which !== "content";
+  }
+
+  function renderDriver(d) {
+    document.title = d.name + " — Joyride driver";
+    document.getElementById("dp-name").textContent = d.name;
+    document.getElementById("dp-handle").textContent = "@" + d.username;
+
+    var photo = document.getElementById("dp-photo");
+    if (d.photoUrl) {
+      photo.src = d.photoUrl;
+      photo.alt = d.name;
+    } else {
+      // Fall back to a canary-on-ink initials avatar so the layout
+      // doesn't collapse when the driver hasn't uploaded a photo.
+      photo.classList.add("dp-photo--initials");
+      var parts = d.name.split(/\s+/).filter(Boolean);
+      var initials = (parts[0] || "?")[0] + ((parts[1] || "")[0] || "");
+      photo.removeAttribute("src");
+      photo.replaceWith(initialsBubble(initials));
+    }
+
+    // Rating row — round to one decimal, omit review count when 0
+    // (showing "(0 reviews)" reads worse than nothing).
+    var ratingRow = document.getElementById("dp-rating-row");
+    var rating = parseFloat(String(d.rating)) || 5;
+    var ratingHtml = '<span class="dp-stars">★ ' + rating.toFixed(2) + "</span>";
+    if (d.totalRatings > 0) {
+      ratingHtml += '<span class="sep">·</span><span>' + d.totalRatings + " review" + (d.totalRatings === 1 ? "" : "s") + "</span>";
+    }
+    ratingRow.innerHTML = ratingHtml;
+
+    // Stats: totalRydes, hourlyRate (when present), vehicle summary.
+    var stats = [];
+    stats.push({
+      label: "Rides completed",
+      value: String(d.totalRydes || 0),
+    });
+    if (d.hourlyRate) {
+      var hr = parseFloat(d.hourlyRate);
+      if (!isNaN(hr) && hr > 0) {
+        stats.push({
+          label: "From",
+          value: "$" + hr.toFixed(0) + "/hr",
+          sub: "Sets their own price",
+        });
+      }
+    }
+    if (d.vehicle && (d.vehicle.make || d.vehicle.model)) {
+      var v = d.vehicle;
+      var name = [v.year, v.color, v.make, v.model].filter(Boolean).join(" ");
+      stats.push({
+        label: "Vehicle",
+        value: name || "—",
+      });
+    }
+    document.getElementById("dp-stats").innerHTML = stats
+      .map(function (s) {
+        return (
+          '<div class="dp-stat">' +
+            '<div class="label">' + s.label + "</div>" +
+            '<div class="value">' + s.value + "</div>" +
+            (s.sub ? '<div class="sub">' + s.sub + "</div>" : "") +
+          "</div>"
+        );
+      })
+      .join("");
+
+    if (d.bio) {
+      document.getElementById("dp-bio").hidden = false;
+      document.getElementById("dp-bio-body").textContent = d.bio;
+    }
+
+    // First name in the book CTA. Fall back to "this driver" if the
+    // name field is somehow empty — but the server-side default
+    // already guarantees "Driver" so this is belt-and-suspenders.
+    var firstName = (d.name.split(/\s+/)[0] || "this driver");
+    document.getElementById("dp-book-firstname").textContent = firstName;
+
+    show("content");
+  }
+
+  function initialsBubble(text) {
+    var img = document.getElementById("dp-photo");
+    var div = document.createElement("div");
+    div.id = img.id;
+    div.className = img.className;
+    div.classList.add("dp-photo--initials");
+    div.textContent = (text || "?").toUpperCase();
+    return div;
+  }
+})();
+</script>
+
+</body>
+</html>

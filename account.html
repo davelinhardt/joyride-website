@@ -207,63 +207,77 @@
     }
   }
 
-  // Action cards depend on userType + role:
-  //   admin       → "Open admin tool" goes first (linked back to the
-  //                 Railway-hosted /admin since we left admin where it lives).
-  //   driver/both → public-profile card is primary (yellow). Same URL
-  //                 the driver will hand out on a card.
-  //   rider only  → my-rides card is primary.
-  // Every user gets the "Download the apps" card as a tertiary.
+  // Three-way chooser per Dave (2026-05-19): Rider, Driver, Admin.
+  //
+  // Each card is gated by capability — a non-admin doesn't see the
+  // Admin card, a non-driver doesn't see the Driver card. Pure
+  // admins see all three regardless (admins need to be able to
+  // inspect rider/driver UX too).
+  //
+  // Primary (yellow) goes to the most likely destination given the
+  // user's role: admin → Admin, driver-only → Driver, rider-only →
+  // Rider. When the user has multiple capabilities (Dave: admin +
+  // driver) we leave Admin primary because thats the tool they reach
+  // for most often. Everyone gets the secondary "Download apps"
+  // card as a fourth tile.
   function renderActionCards(user) {
     var grid = document.getElementById("action-grid");
+    var isAdmin    = user.role === "admin";
+    var isDriver   = user.userType === "driver" || user.userType === "both";
+    var canRide    = user.userType === "rider"  || user.userType === "both" || isAdmin;
+    var primaryKey = isAdmin ? "admin" : (isDriver ? "driver" : "rider");
     var cards = [];
 
-    if (user.role === "admin") {
+    if (canRide) {
       cards.push({
-        primary: true,
+        key: "rider",
+        eyebrow: "Rider",
+        h2: "My rides & receipts",
+        p: "View every ride you've taken on Joyride and download receipts.",
+        href: "/rides",
+        go: "Open Rider tools →",
+      });
+    }
+
+    if (isDriver || isAdmin) {
+      // Even admin-only users get the Driver card so they can preview
+      // the public profile UX. Falls back to /driver (debug entry)
+      // when the admin has no username set.
+      var profileSlug = user.username ? "/" + encodeURIComponent(user.username) : "/driver";
+      cards.push({
+        key: "driver",
+        eyebrow: "Driver",
+        h2: user.username ? "joyride.cool/" + user.username : "Your driver page",
+        p: "Your public profile. Drivers share this URL with potential riders so they can book directly.",
+        href: profileSlug,
+        go: "View Driver page →",
+      });
+    }
+
+    if (isAdmin) {
+      cards.push({
+        key: "admin",
         eyebrow: "Admin",
         h2: "Open the admin tool",
-        p: "Manage drivers, riders, pricing, taxes, and plans on the Railway-hosted operations console.",
+        p: "Manage drivers, riders, pricing, taxes, plans, and ride history.",
         href: JoyrideAPI.API_BASE + "/admin",
-        go: "Open admin →",
-      });
-    }
-
-    if (user.userType === "driver" || user.userType === "both") {
-      var profileUrl = "/" + encodeURIComponent(user.username || "");
-      cards.push({
-        primary: user.role !== "admin",
-        eyebrow: "Your driver page",
-        h2: "joyride.cool/" + (user.username || "your-username"),
-        p: "The public URL you can share with potential riders. Open it to see what they'll see.",
-        href: profileUrl,
-        go: "View my profile →",
-      });
-    }
-
-    if (user.userType !== "driver" || user.userType === "both") {
-      cards.push({
-        primary: user.role !== "admin" && !(user.userType === "driver" || user.userType === "both"),
-        eyebrow: "Your rides",
-        h2: "My rides & receipts",
-        p: "View every ride you've taken on Joyride and download receipts for any of them.",
-        href: "/rides",
-        go: "View rides →",
+        go: "Open Admin tool →",
       });
     }
 
     cards.push({
-      primary: false,
+      key: "apps",
       eyebrow: "Apps",
       h2: "Download Joyride",
-      p: "The rider and driver apps are where the actual rides happen. Links go live as soon as the apps ship.",
+      p: "The rider and driver apps are where rides actually happen. Links go live as soon as the apps ship.",
       href: "/#download",
       go: "Get the apps →",
     });
 
     grid.innerHTML = cards.map(function (c) {
+      var isPrimary = c.key === primaryKey;
       return (
-        '<a class="action-card' + (c.primary ? " is-primary" : "") + '" href="' + c.href + '">' +
+        '<a class="action-card' + (isPrimary ? " is-primary" : "") + '" href="' + c.href + '">' +
           '<span class="eyebrow">' + c.eyebrow + '</span>' +
           '<h2>' + c.h2 + '</h2>' +
           '<p>' + c.p + '</p>' +
