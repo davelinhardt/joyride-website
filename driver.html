@@ -164,14 +164,21 @@
       <pre id="dp-loading-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
     </div>
 
+    <!-- "Private" state — shown for any username that isnt an active
+         driver: doesnt exist, exists but isnt a driver, or driver
+         account is suspended/deactivated. Per Daves spec, all three
+         collapse to the same message: "This account is private." The
+         server returns 404 for all three so we cant tell them apart
+         (and shouldnt — keeping the surface uniform prevents
+         enumeration of who has a rider account vs. nothing). -->
     <div id="dp-notfound" class="dp-state" hidden>
-      <h2>Driver not found</h2>
-      <p>No Joyride driver with this username — they may have removed their public profile, changed their handle, or the link may be mistyped.</p>
+      <h2>This account is private.</h2>
+      <p>Only Joyride drivers have public profiles. If you were expecting a driver page here, double-check the username — or contact the driver directly for an updated link.</p>
       <a href="/" class="btn btn--primary">Back to Joyride</a>
-      <!-- Diagnostic block — only renders in the not-found path, only
-           when ?debug=1 is on the URL. Lets us figure out *why* a
-           driver isn't rendering (cache, pathname mismatch, fetch
-           error, etc.) without shipping an extra page. -->
+      <!-- Diagnostic block — only renders when ?debug=1 is on the
+           URL. Mirrors the same block in the loading state so we can
+           see what the page knows regardless of which state we
+           ended up in. -->
       <pre id="dp-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
     </div>
 
@@ -241,7 +248,7 @@
   // a stale cached copy is being served — bump on any meaningful
   // edit to driver.htmls auth/fetch logic.
   var debug = {
-    pageVersion: "2026-05-19#3",
+    pageVersion: "2026-05-19#4 (private-state + 10s timeout)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
@@ -269,13 +276,16 @@
     renderDebug(document.getElementById("dp-loading-debug"));
   }
   refreshLoadingDebug();
-  function showNotFound() {
+  // Renamed from showNotFound to showPrivate now that the only
+  // non-driver state surfaces as "This account is private." regardless
+  // of underlying cause (no such user, not a driver, suspended).
+  function showPrivate() {
     renderDebug(document.getElementById("dp-debug"));
     show("notfound");
   }
 
   if (!username) {
-    showNotFound();
+    showPrivate();
     return;
   }
 
@@ -287,22 +297,47 @@
   var fetchUrl = JoyrideAPI.API_BASE + "/api/public/driver/" + encodeURIComponent(username);
   debug.fetchUrl = fetchUrl;
   refreshLoadingDebug();
-  fetch(fetchUrl, { credentials: "omit" })
+
+  // 10s timeout so the page never gets stuck on "Loading driver…"
+  // indefinitely. If the network is dead / Railway is down / Vercel
+  // CDN cached a broken HTML, the user falls back to the private
+  // state rather than staring at a spinner. AbortController is
+  // supported in every browser we target; if the controller fires
+  // after the fetch already resolved, the abort is a no-op.
+  var controller = ("AbortController" in window) ? new AbortController() : null;
+  var timeoutMs = 10000;
+  var timeoutId = setTimeout(function () {
+    if (controller) controller.abort();
+    debug.fetchError = "Timed out after " + timeoutMs + "ms";
+    refreshLoadingDebug();
+    showPrivate();
+  }, timeoutMs);
+
+  fetch(fetchUrl, {
+    credentials: "omit",
+    signal: controller ? controller.signal : undefined,
+  })
     .then(function (res) {
       debug.fetchStatus = res.status;
       refreshLoadingDebug();
-      if (res.status === 404) { showNotFound(); return null; }
+      if (res.status === 404) { clearTimeout(timeoutId); showPrivate(); return null; }
       if (!res.ok) throw new Error("Lookup failed (" + res.status + ")");
       return res.json();
     })
     .then(function (data) {
-      if (!data || !data.driver) return;
+      clearTimeout(timeoutId);
+      if (!data || !data.driver) { showPrivate(); return; }
       renderDriver(data.driver);
     })
     .catch(function (err) {
+      clearTimeout(timeoutId);
+      // AbortError fires when our own timeout cancelled the fetch —
+      // already handled in the setTimeout callback above. Anything
+      // else is a real network/parse error.
+      if (err && err.name === "AbortError") return;
       console.error("[driver-page] fetch failed", err);
       debug.fetchError = String((err && err.message) || err);
-      showNotFound();
+      showPrivate();
     });
 
   function show(which) {
