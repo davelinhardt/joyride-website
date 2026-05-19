@@ -16,31 +16,35 @@ window.addEventListener('error', (e) => {
   }
 
   function buildHeader(active) {
+    // All nav hrefs use absolute, no-.html paths so they resolve the
+    // same way under the catch-all rewrite (joyride.cool/{username})
+    // as they do under the known-page rewrites — and so the URL bar
+    // matches Vercel's source patterns in vercel.json.
     const navItems = [
-      { href: 'index.html', label: 'Home', key: 'home' },
-      { href: 'drivers.html', label: 'Drivers', key: 'drivers' },
-      { href: 'riders.html', label: 'Riders', key: 'riders' },
-      { href: 'blog.html', label: 'Updates', key: 'blog' },
-      { href: 'contact.html', label: 'Contact', key: 'contact' },
+      { href: '/', label: 'Home', key: 'home' },
+      { href: '/drivers', label: 'Drivers', key: 'drivers' },
+      { href: '/riders', label: 'Riders', key: 'riders' },
+      { href: '/blog', label: 'Updates', key: 'blog' },
+      { href: '/contact', label: 'Contact', key: 'contact' },
     ];
     const navHtml = navItems.map(it =>
       `<a href="${it.href}" class="${it.key === active ? 'is-active' : ''}">${it.label}</a>`
     ).join('') + `
       <div class="mobile-cta-stack">
-        <a href="login.html" class="btn btn--ghost btn--sm">Log in</a>
-        <a href="riders.html" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
+        <a href="/login" class="btn btn--ghost btn--sm">Log in</a>
+        <a href="/riders" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
       </div>
     `;
 
     const header = el('header', { class: 'site-header' }, `
       <div class="wrap">
-        <a href="index.html" class="brand" aria-label="Joyride home">
-          <img src="assets/lockup-on-dark.svg" alt="Joyride">
+        <a href="/" class="brand" aria-label="Joyride home">
+          <img src="/assets/lockup-on-dark.svg" alt="Joyride">
         </a>
         <nav>${navHtml}</nav>
         <div class="nav-cta">
-          <a href="login.html" class="btn btn--ghost btn--sm">Log in</a>
-          <a href="riders.html" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
+          <a href="/login" class="btn btn--ghost btn--sm">Log in</a>
+          <a href="/riders" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
           <button class="menu-toggle" aria-label="Open menu" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
           </button>
@@ -58,8 +62,8 @@ window.addEventListener('error', (e) => {
       <div class="wrap">
         <div class="top">
           <div>
-            <a href="index.html" class="brand">
-              <img src="assets/lockup-on-dark.svg" alt="Joyride">
+            <a href="/" class="brand">
+              <img src="/assets/lockup-on-dark.svg" alt="Joyride">
             </a>
             <p class="blurb"><strong style="color:var(--canary);">Enjoy the ride.</strong> A new kind of rideshare. Drivers keep 100% of the fare. Riders get a fairer ride.</p>
             <form class="newsletter" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Thanks ✓'; this.querySelector('input').value='';">
@@ -70,10 +74,10 @@ window.addEventListener('error', (e) => {
           <div>
             <h4>Joyride</h4>
             <ul>
-              <li><a href="drivers.html">For drivers</a></li>
-              <li><a href="riders.html">For riders</a></li>
-              <li><a href="blog.html">Latest updates</a></li>
-              <li><a href="contact.html">Contact</a></li>
+              <li><a href="/drivers">For drivers</a></li>
+              <li><a href="/riders">For riders</a></li>
+              <li><a href="/blog">Latest updates</a></li>
+              <li><a href="/contact">Contact</a></li>
             </ul>
           </div>
           <div>
