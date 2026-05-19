@@ -105,6 +105,7 @@
     padding: 16px 18px;
     border-radius: var(--r-md);
     border: 1px solid var(--rule);
+    text-align: center;
   }
   .dp-stat .label {
     font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
@@ -115,6 +116,28 @@
     margin-top: 4px;
   }
   .dp-stat .sub { font-size: 13px; color: var(--fg-3); margin-top: 2px; }
+
+  /* Action row — two equal-width CTAs (Download App + Book A Ride),
+     sit between the photo/name header and the stats grid. Stack on
+     small screens. Mirrors the in-app driver-profile layout where
+     Make Favorite + Book A Ride share a row at the same spot. */
+  .dp-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s3);
+    margin-bottom: var(--s5);
+  }
+  @media (max-width: 540px) {
+    .dp-actions { grid-template-columns: 1fr; }
+  }
+  .dp-actions .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 20px;
+    border-radius: var(--r-md);
+  }
 
   .dp-bio {
     padding: 18px 0 8px;
@@ -193,6 +216,25 @@
           </div>
         </header>
 
+        <!-- Action CTAs — sit between the header and the stats. Two
+             equal-width buttons: Download App (outlined, points at the
+             iOS app store placeholder) and Book A Ride (yellow,
+             attempts a joyride://driver/{username} deep link and
+             falls back to the app store if the app isn't installed).
+             See the inline JS below for the deep-link + fallback
+             handler. -->
+        <div class="dp-actions">
+          <a id="dp-download-cta" class="btn btn--ghost"
+             href="https://apps.apple.com/app/joyride/id000000000"
+             target="_blank" rel="noopener">
+            Download App
+          </a>
+          <a id="dp-book-cta" class="btn btn--primary" href="#book"
+             role="button">
+            Book A Ride
+          </a>
+        </div>
+
         <div id="dp-stats" class="dp-stats"></div>
 
         <div id="dp-bio" class="dp-bio" hidden>
@@ -200,15 +242,6 @@
           <p id="dp-bio-body"></p>
         </div>
       </article>
-
-      <div class="dp-book">
-        <a href="#download" id="dp-book-cta" class="btn btn--primary">
-          Book a ride with <span id="dp-book-firstname">this driver</span> <span class="arrow">→</span>
-        </a>
-        <p class="helper">
-          Booking happens in the Joyride app. <a href="/login?signup=1">Create an account</a> or <a href="/login">log in</a> to get started.
-        </p>
-      </div>
     </div>
   </section>
 </main>
@@ -248,7 +281,7 @@
   // a stale cached copy is being served — bump on any meaningful
   // edit to driver.htmls auth/fetch logic.
   var debug = {
-    pageVersion: "2026-05-19#9 (tenure tile = '1 MONTH' format; car year on its own line)",
+    pageVersion: "2026-05-19#10 (Download App + Book A Ride CTAs above stats; centered tiles)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
@@ -422,11 +455,38 @@
       document.getElementById("dp-bio-body").textContent = d.bio;
     }
 
-    // First name in the book CTA. Fall back to "this driver" if the
-    // name field is somehow empty — but the server-side default
-    // already guarantees "Driver" so this is belt-and-suspenders.
-    var firstName = (d.name.split(/\s+/)[0] || "this driver");
-    document.getElementById("dp-book-firstname").textContent = firstName;
+    // Wire the Book A Ride CTA — try the rider-app deep link first;
+    // fall back to the app store after a short delay if nothing
+    // intercepted the navigation (i.e. the app isn't installed).
+    // The deep-link target is /driver/{username} so the in-app driver-
+    // profile screen pre-selects this driver and the rider can hit
+    // "Book A Ride" inside the app without re-finding them. NOTE:
+    // this URL scheme + path is a placeholder — wire to the real
+    // Universal Link once apps publish (see SESSION_HANDOFF; until
+    // then this falls through to the store on every tap).
+    var bookCta = document.getElementById("dp-book-cta");
+    if (bookCta) {
+      bookCta.addEventListener("click", function (e) {
+        e.preventDefault();
+        var deepLink  = "joyride://driver/" + encodeURIComponent(d.username);
+        var isAndroid = /android/i.test(navigator.userAgent || "");
+        var storeUrl  = isAndroid
+          ? "https://play.google.com/store/apps/details?id=co.joyride.rider"
+          : "https://apps.apple.com/app/joyride/id000000000";
+        var startedAt = Date.now();
+        // Try to open the app.
+        window.location.href = deepLink;
+        // If we're still on the page ~1.2s later, the OS didn't have
+        // a handler for the scheme — fall back to the app store.
+        // Bail out if the tab went hidden (which usually means the
+        // app DID open and the OS backgrounded the browser).
+        setTimeout(function () {
+          if (document.visibilityState !== "visible") return;
+          if (Date.now() - startedAt < 1200) return;
+          window.location.href = storeUrl;
+        }, 1200);
+      });
+    }
 
     show("content");
   }
