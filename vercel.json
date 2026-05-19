@@ -1,21 +1,18 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/index",         "destination": "/index.html" },
-    { "source": "/login",         "destination": "/login.html" },
-    { "source": "/account",       "destination": "/account.html" },
-    { "source": "/drivers",       "destination": "/drivers.html" },
-    { "source": "/riders",        "destination": "/riders.html" },
-    { "source": "/blog",          "destination": "/blog.html" },
-    { "source": "/contact",       "destination": "/contact.html" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/index", "destination": "/index.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/account", "destination": "/account.html" },
+    { "source": "/drivers", "destination": "/drivers.html" },
+    { "source": "/riders", "destination": "/riders.html" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/contact", "destination": "/contact.html" },
     { "source": "/design-system", "destination": "/design-system.html" },
-    { "source": "/driver",        "destination": "/driver.html" },
-    {
-      "source": "/:slug",
-      "destination": "/driver.html?u=:slug"
-    }
+    { "source": "/driver", "destination": "/driver.html" },
+    { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [
     {
