@@ -248,7 +248,7 @@
   // a stale cached copy is being served — bump on any meaningful
   // edit to driver.htmls auth/fetch logic.
   var debug = {
-    pageVersion: "2026-05-19#6 (api.js at /js/api.js, off the catch-all)",
+    pageVersion: "2026-05-19#7 (Driver since replaces hourly rate)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
@@ -375,20 +375,39 @@
     }
     ratingRow.innerHTML = ratingHtml;
 
-    // Stats: totalRydes, hourlyRate (when present), vehicle summary.
+    // Stats: rides completed, driver tenure, vehicle. The hourly-rate
+    // box was removed 2026-05-19 (per Dave) in favor of "Driver since"
+    // so the visible signals on the page lean toward trust (how long
+    // they've been at this) rather than price (which the rider sees
+    // for real in the app at booking time anyway).
     var stats = [];
     stats.push({
       label: "Rides completed",
       value: String(d.totalRydes || 0),
     });
-    if (d.hourlyRate) {
-      var hr = parseFloat(d.hourlyRate);
-      if (!isNaN(hr) && hr > 0) {
-        stats.push({
-          label: "From",
-          value: "$" + hr.toFixed(0) + "/hr",
-          sub: "Sets their own price",
-        });
+    if (d.driverSince) {
+      var since = new Date(d.driverSince);
+      if (!isNaN(since.getTime())) {
+        // "May 2026" — short month + year reads well in a small tile
+        // and avoids any "1 month ago"-style ambiguity.
+        var label = since.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+        // Compute a sub-label like "3 months" or "2 years" relative
+        // to now for the tile's second line — gives the visitor an
+        // at-a-glance feel without doing month arithmetic in their
+        // head.
+        var msPerDay = 86400000;
+        var days = Math.max(0, Math.floor((Date.now() - since.getTime()) / msPerDay));
+        var sub;
+        if (days < 31) sub = days <= 1 ? "Just joined" : days + " days on Joyride";
+        else if (days < 365) {
+          var months = Math.max(1, Math.round(days / 30));
+          sub = months + " month" + (months === 1 ? "" : "s") + " on Joyride";
+        } else {
+          var years = Math.floor(days / 365);
+          var remMonths = Math.round((days - years * 365) / 30);
+          sub = years + " year" + (years === 1 ? "" : "s") + (remMonths > 0 ? ", " + remMonths + " mo" : "") + " on Joyride";
+        }
+        stats.push({ label: "Driver since", value: label, sub: sub });
       }
     }
     if (d.vehicle && (d.vehicle.make || d.vehicle.model)) {
