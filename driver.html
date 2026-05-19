@@ -195,13 +195,25 @@
 (function () {
   "use strict";
 
-  // The /:username Vercel rewrite hands us the slug as ?u=<username>.
-  // We deliberately don't read it from window.location.pathname because
-  // the rewrite leaves the URL bar as the pretty form (/dave) while the
-  // page itself is /driver.html under the hood — pathname won't reflect
-  // the slug consistently across browsers / cached requests.
-  var params = new URLSearchParams(window.location.search);
-  var username = (params.get("u") || "").trim();
+  // The /:username Vercel rewrite serves this file at the
+  // joyride.cool/{username} URL. The destinations ?u=:slug query is
+  // *internal* — it gets applied to the served file but isn't
+  // reflected back into the browsers URL bar, so client JS cant see
+  // it via window.location.search. Read the slug from pathname
+  // instead (its the visible URL the user requested).
+  //
+  // Two fall-back paths kept for resilience:
+  //   1. ?u=<username> query param — for direct hits to /driver.html
+  //      (debug use, and the friendlier "open in new tab"-style
+  //      flow from the account page that links to /:username).
+  //   2. pathname segment — the actual production path.
+  var qp = new URLSearchParams(window.location.search).get("u");
+  var pathSlug = window.location.pathname.replace(/^\/+/, "").split("/")[0] || "";
+  // Ignore "driver" / "driver.html" as a slug — that means we landed
+  // here directly without a username, not as a redirect from
+  // /{username}, and we should show the not-found state.
+  if (pathSlug === "driver" || pathSlug === "driver.html") pathSlug = "";
+  var username = ((qp || pathSlug) || "").trim();
 
   if (!username) {
     show("notfound");
