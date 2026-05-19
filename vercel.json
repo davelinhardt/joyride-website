@@ -13,7 +13,7 @@
     { "source": "/design-system", "destination": "/design-system.html" },
     { "source": "/driver",        "destination": "/driver.html" },
     {
-      "source": "/:slug([A-Za-z0-9_-]+)",
+      "source": "/:slug",
       "destination": "/driver.html?u=:slug"
     }
   ],
