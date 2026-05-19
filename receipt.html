@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — Receipt</title>
+<link rel="icon" href="/assets/mark-canary.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .rc-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: clamp(32px, 5vw, 56px) clamp(16px, 4vw, 32px) 120px;
+  }
+  .rc-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: var(--s5);
+  }
+  .rc-back {
+    color: var(--fg-3); font-size: 14px; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .rc-back:hover { color: var(--fg); }
+  .rc-print {
+    background: var(--canary); color: var(--ink);
+    border: 0; border-radius: 999px;
+    padding: 10px 18px;
+    font-family: var(--font); font-size: 14px; font-weight: 700;
+    cursor: pointer;
+  }
+  .rc-print:hover { background: var(--canary-deep); }
+
+  /* The receipt card itself — light/printer-friendly inversion so a
+     printed (or "Save as PDF") copy actually reads as a paper
+     receipt instead of a black brick. We deliberately override the
+     site's dark theme inside the card via the print-friendly
+     class. The interactive shell stays dark. */
+  .receipt {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+    padding: clamp(28px, 4vw, 44px);
+  }
+  .receipt h1 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1.1; margin-bottom: 4px;
+  }
+  .receipt .ryde-id {
+    color: var(--fg-3); font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .rc-section {
+    margin-top: var(--s5);
+    padding-top: var(--s4);
+    border-top: 1px solid var(--rule);
+  }
+  .rc-section h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--fg-3);
+    margin-bottom: 12px;
+  }
+  .rc-kv {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 6px 0;
+    font-size: 15px;
+    color: var(--fg);
+  }
+  .rc-kv .k { color: var(--fg-3); }
+  .rc-kv .v { font-weight: 600; }
+  .rc-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 14px 0 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--rule);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .rc-total .v { color: var(--canary); }
+  .rc-route .addr { display: flex; gap: 12px; align-items: flex-start; padding: 6px 0; }
+  .rc-route .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    margin-top: 6px; flex-shrink: 0;
+  }
+  .rc-route .dot--pickup { background: var(--canary); }
+  .rc-route .dot--dropoff { background: #4ADE80; }
+  .rc-route .label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--fg-3);
+  }
+  .rc-route .addr p {
+    font-size: 15px; color: var(--fg); margin-top: 2px; line-height: 1.4;
+  }
+
+  .rc-state {
+    text-align: center; padding: 80px 20px; color: var(--fg-3);
+  }
+  .rc-state h2 { font-size: 22px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+
+  /* Print-only styles — invert the receipt to black-on-white so it
+     comes out of a printer (or "Save as PDF") as a real-looking
+     receipt. Hides the dark site chrome, header, buttons. */
+  @media print {
+    body, html { background: #fff !important; color: #000 !important; }
+    .site-header, .site-footer, .rc-actions { display: none !important; }
+    .rc-wrap { padding: 0; max-width: 100%; }
+    .receipt {
+      background: #fff !important;
+      color: #000 !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 24px !important;
+    }
+    .receipt h1, .rc-kv, .rc-total, .rc-section h2,
+    .rc-route .label, .rc-route .addr p { color: #000 !important; }
+    .rc-kv .k, .ryde-id, .rc-section h2, .rc-route .label { color: #555 !important; }
+    .rc-total { border-top-color: #000 !important; }
+    .rc-section { border-top-color: #ccc !important; }
+    .rc-total .v { color: #000 !important; }
+  }
+</style>
+</head>
+<body data-page="receipt">
+
+<main>
+  <section class="rc-wrap">
+    <div class="rc-actions">
+      <a class="rc-back" href="/rides">← Back to my rides</a>
+      <button id="rc-print" class="rc-print" type="button" hidden>Print / Save PDF</button>
+    </div>
+
+    <div id="rc-loading" class="rc-state">Loading receipt…</div>
+    <div id="rc-error"   class="rc-state" hidden>
+      <h2>Couldn't load this receipt</h2>
+      <p>The ride may not exist, may belong to another account, or the network may be unreachable.</p>
+    </div>
+
+    <article id="rc-content" class="receipt" hidden>
+      <h1 id="rc-headline">Joyride receipt</h1>
+      <div class="ryde-id" id="rc-ryde-id"></div>
+
+      <div class="rc-section rc-route">
+        <h2>Trip</h2>
+        <div class="addr">
+          <span class="dot dot--pickup" aria-hidden="true"></span>
+          <div>
+            <div class="label" id="rc-pickup-label">Pickup</div>
+            <p id="rc-pickup-addr">—</p>
+          </div>
+        </div>
+        <div class="addr">
+          <span class="dot dot--dropoff" aria-hidden="true"></span>
+          <div>
+            <div class="label" id="rc-dropoff-label">Dropoff</div>
+            <p id="rc-dropoff-addr">—</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rc-section" id="rc-driver-section" hidden>
+        <h2>Driver</h2>
+        <div class="rc-kv"><span class="k">Name</span><span class="v" id="rc-driver-name">—</span></div>
+        <div class="rc-kv"><span class="k">Vehicle</span><span class="v" id="rc-driver-vehicle">—</span></div>
+      </div>
+
+      <div class="rc-section">
+        <h2>Charges</h2>
+        <div id="rc-charges"></div>
+        <div class="rc-total">
+          <span>Total</span>
+          <span class="v" id="rc-total-value">$0.00</span>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/site.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Pull the ride id from the query string. /receipt?id=42.
+  var rydeId = parseInt(new URLSearchParams(window.location.search).get("id") || "", 10);
+  if (!Number.isFinite(rydeId) || rydeId <= 0) {
+    show("error");
+    return;
+  }
+
+  // Auth gate — receipts are private. Bounce to login if there's no
+  // token so we don't render an empty "couldn't load" for a logged-
+  // out user (better UX to send them through login first).
+  (async function gate() {
+    if (!JoyrideAPI.getToken() && !JoyrideAPI.readCachedUser()) {
+      window.location.replace("/login");
+      return;
+    }
+    loadReceipt();
+  })();
+
+  document.getElementById("rc-print").addEventListener("click", function () {
+    window.print();
+  });
+
+  async function loadReceipt() {
+    try {
+      var data = await JoyrideAPI.apiGet("/api/rider/rides/" + rydeId);
+      if (!data || !data.ryde) { show("error"); return; }
+      render(data.ryde);
+    } catch (err) {
+      console.error("[receipt] load failed", err);
+      if (err && err.status === 401) {
+        window.location.replace("/login");
+        return;
+      }
+      show("error");
+    }
+  }
+
+  function show(which) {
+    document.getElementById("rc-loading").hidden = which !== "loading";
+    document.getElementById("rc-error").hidden   = which !== "error";
+    document.getElementById("rc-content").hidden = which !== "content";
+    document.getElementById("rc-print").hidden   = which !== "content";
+  }
+
+  function render(r) {
+    // Headline reads "Joyride receipt — {date}" so a printed/PDF copy
+    // is uniquely identifiable. Trip id surfaces below.
+    var when = r.completedAt || r.scheduledAt || r.createdAt;
+    var headline = "Joyride receipt";
+    if (when) {
+      var d = new Date(when);
+      if (!isNaN(d.getTime())) {
+        headline += " — " + d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+      }
+    }
+    document.getElementById("rc-headline").textContent = headline;
+    document.getElementById("rc-ryde-id").textContent = "Trip #" + r.id;
+
+    document.getElementById("rc-pickup-addr").textContent  = r.pickupAddress  || "—";
+    document.getElementById("rc-dropoff-addr").textContent = r.dropoffAddress || "—";
+
+    // Driver section — hidden when the ride never matched a driver
+    // (cancelled-before-match, no_match).
+    if (r.driver) {
+      var v = r.driver.vehicle;
+      var vehicleText = v ? [v.year, v.color, v.make, v.model].filter(Boolean).join(" ") : "—";
+      document.getElementById("rc-driver-name").textContent    = r.driver.name || "—";
+      document.getElementById("rc-driver-vehicle").textContent = vehicleText || "—";
+      document.getElementById("rc-driver-section").hidden = false;
+    }
+
+    // Charges — recompute taxes fresh from the current admin rates
+    // surfaced via feeBreakdown so the rate labels and the dollar
+    // amounts always agree (mirrors the in-app receipt math). Hide
+    // any line whose value is 0 to keep the receipt tidy.
+    var fb = r.feeBreakdown || {};
+    var status = r.status || "";
+    var isCancelled = status === "cancelled";
+
+    var baseFare = num(r.baseFare);
+    var waitFee  = num(r.waitFee);
+    var tip      = num(r.tipAmount);
+    var cancelFee = isCancelled ? num(r.cancelFeeCharged) : 0;
+    if (isCancelled) {
+      // Cancellation fees aren't taxable + baseFare/tip are zeroed
+      // out on the rider side (matches the in-app receipt logic).
+      baseFare = 0;
+      tip = 0;
+    }
+    var totalFare = baseFare + waitFee + cancelFee;
+    var salesTax    = isCancelled ? 0 : totalFare * (num(fb.salesTaxPercent)   / 100);
+    var govFee      = isCancelled ? 0 : totalFare * (num(fb.govFeePercent)     / 100) + num(fb.govFeeFlat);
+    var airportTax  = isCancelled ? 0 : totalFare * (num(fb.airportTaxPercent) / 100) + num(fb.airportTaxFlat);
+    var total = totalFare + salesTax + govFee + airportTax + tip;
+
+    var rows = [
+      { label: "Base fare",   value: baseFare },
+      { label: "Wait fee",    value: waitFee  },
+      { label: "Cancellation fee", value: cancelFee },
+      { label: "Sales tax (" + pct(fb.salesTaxPercent) + ")",     value: salesTax },
+      { label: "Rideshare fee (" + pct(fb.govFeePercent) + " + $" + num(fb.govFeeFlat).toFixed(2) + ")", value: govFee },
+      { label: "Airport tax (" + pct(fb.airportTaxPercent) + " + $" + num(fb.airportTaxFlat).toFixed(2) + ")", value: airportTax },
+      { label: "Tip",         value: tip      },
+    ];
+    var chargesEl = document.getElementById("rc-charges");
+    chargesEl.innerHTML = rows
+      .filter(function (row) { return row.value > 0.0049; })
+      .map(function (row) {
+        return '<div class="rc-kv"><span class="k">' + escapeHtml(row.label) + "</span>" +
+               '<span class="v">$' + row.value.toFixed(2) + "</span></div>";
+      })
+      .join("");
+    document.getElementById("rc-total-value").textContent = "$" + total.toFixed(2);
+
+    show("content");
+  }
+
+  function num(v) {
+    if (v == null) return 0;
+    var n = typeof v === "number" ? v : parseFloat(String(v));
+    return Number.isFinite(n) ? n : 0;
+  }
+  function pct(v) {
+    var n = num(v);
+    return n.toFixed(n % 1 === 0 ? 0 : 2) + "%";
+  }
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+})();
+</script>
+
+</body>
+</html>

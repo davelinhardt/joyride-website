@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — My rides</title>
+<link rel="icon" href="/assets/mark-canary.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .rides-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px) 120px;
+  }
+  .rides-head {
+    margin-bottom: var(--s6);
+  }
+  .rides-head h1 {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .rides-head p {
+    color: var(--fg-3);
+    font-size: 17px;
+    margin-top: var(--s3);
+    max-width: 56ch;
+  }
+  /* Filter row — same chip pattern as the in-app Activity tab (All /
+     Pending / Scheduled / Completed / Cancelled). Active chip flips
+     to the canary background. */
+  .rides-filters {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: var(--s5);
+  }
+  .rides-filters button {
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s var(--ease), color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .rides-filters button:hover { border-color: var(--canary); }
+  .rides-filters button.is-active {
+    background: var(--canary);
+    color: var(--ink);
+    border-color: var(--canary);
+  }
+
+  /* Ride card. Each is a clickable link to /receipt?id=N — even
+     in-progress / pending rides surface a card so the rider can
+     see what's happening. */
+  .ride-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--s4);
+    align-items: center;
+    padding: var(--s5);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+    margin-bottom: var(--s3);
+    text-decoration: none;
+    color: var(--fg);
+    transition: border-color .15s var(--ease), transform .15s var(--ease);
+  }
+  .ride-card:hover { border-color: var(--canary); transform: translateY(-1px); }
+  .ride-card .driver-photo {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+  }
+  .ride-card .driver-photo--placeholder {
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--canary); font-weight: 700; font-size: 20px;
+    background: var(--ink);
+  }
+  .ride-card .body { min-width: 0; }
+  .ride-card .when {
+    font-size: 12px; color: var(--fg-3);
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .ride-card .addresses {
+    font-size: 15px; color: var(--fg);
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    line-height: 1.35;
+  }
+  .ride-card .addresses .arrow { color: var(--fg-3); margin: 0 6px; }
+  .ride-card .driver-name { color: var(--fg-3); font-size: 13px; margin-top: 4px; }
+  .ride-card .right { text-align: right; }
+  .ride-card .fare {
+    font-size: 20px; font-weight: 700; color: var(--canary);
+    line-height: 1;
+  }
+  .ride-card .status {
+    margin-top: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--fg-3);
+  }
+  .ride-card .status--completed { color: #4ADE80; }
+  .ride-card .status--cancelled { color: #FCA5A5; }
+  .ride-card .status--searching,
+  .ride-card .status--matched,
+  .ride-card .status--confirmed,
+  .ride-card .status--in_progress { color: var(--canary); }
+
+  /* Empty / loading / error states share one quiet centered block. */
+  .rides-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--fg-3);
+  }
+  .rides-state h2 { font-size: 22px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+  .rides-state p  { max-width: 48ch; margin: 0 auto; font-size: 15px; line-height: 1.5; }
+
+  /* Load-more button at the foot of the list when there's another page. */
+  .load-more {
+    display: block;
+    margin: var(--s5) auto 0;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 12px 22px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .load-more:hover { border-color: var(--canary); }
+</style>
+</head>
+<body data-page="rides">
+
+<main>
+  <section class="rides-wrap">
+    <header class="rides-head">
+      <h1>My rides</h1>
+      <p>Every ride you've taken on Joyride. Tap any ride to view its receipt and download a PDF.</p>
+    </header>
+
+    <div class="rides-filters" id="rides-filters">
+      <button data-status="all" class="is-active">All</button>
+      <button data-status="completed">Completed</button>
+      <button data-status="scheduled">Scheduled</button>
+      <button data-status="pending">Pending</button>
+      <button data-status="cancelled">Cancelled</button>
+    </div>
+
+    <div id="rides-loading" class="rides-state">Loading your rides…</div>
+    <div id="rides-empty" class="rides-state" hidden>
+      <h2>No rides yet</h2>
+      <p>Once you book your first ride on the Joyride app, it'll appear here with a downloadable receipt.</p>
+    </div>
+    <div id="rides-error" class="rides-state" hidden>
+      <h2>Couldn't load your rides</h2>
+      <p>Try refreshing the page. If the problem keeps happening, log out and back in.</p>
+    </div>
+
+    <div id="rides-list"></div>
+    <button id="load-more" class="load-more" hidden type="button">Load more</button>
+  </section>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/site.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Auth gate — the rider tool is a private surface. No session →
+  // bounce to /login so they don't see the "Couldn't load your
+  // rides" error state on first arrival.
+  (async function gate() {
+    var cached = JoyrideAPI.readCachedUser();
+    if (!cached && !JoyrideAPI.getToken()) {
+      window.location.replace("/login");
+      return;
+    }
+    if (!cached) {
+      var fresh = await JoyrideAPI.loadCurrentUser();
+      if (!fresh) window.location.replace("/login");
+    }
+  })();
+
+  var listEl    = document.getElementById("rides-list");
+  var loadingEl = document.getElementById("rides-loading");
+  var emptyEl   = document.getElementById("rides-empty");
+  var errorEl   = document.getElementById("rides-error");
+  var moreBtn   = document.getElementById("load-more");
+  var filtersEl = document.getElementById("rides-filters");
+
+  var currentStatus = "all";
+  var nextOffset    = null;
+  var firstPageDone = false;
+
+  // Wire the filter chips. Each click resets the list to the first
+  // page of the new status, so we don't intermix completed + cancelled
+  // when switching mid-list.
+  filtersEl.querySelectorAll("button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var status = btn.dataset.status;
+      if (status === currentStatus) return;
+      filtersEl.querySelectorAll("button").forEach(function (b) { b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      currentStatus = status;
+      resetAndLoad();
+    });
+  });
+
+  moreBtn.addEventListener("click", function () {
+    if (nextOffset == null) return;
+    loadPage(nextOffset);
+  });
+
+  function setState(which) {
+    loadingEl.hidden = which !== "loading";
+    emptyEl.hidden   = which !== "empty";
+    errorEl.hidden   = which !== "error";
+  }
+
+  function resetAndLoad() {
+    listEl.innerHTML = "";
+    moreBtn.hidden = true;
+    nextOffset = null;
+    firstPageDone = false;
+    setState("loading");
+    loadPage(0);
+  }
+
+  async function loadPage(offset) {
+    try {
+      var qs = "?status=" + encodeURIComponent(currentStatus)
+             + "&offset=" + offset
+             + "&limit=50";
+      var data = await JoyrideAPI.apiGet("/api/rider/rides" + qs);
+      var items = (data && data.items) || [];
+      items.forEach(appendRideCard);
+      nextOffset = data && data.nextOffset != null ? data.nextOffset : null;
+      moreBtn.hidden = nextOffset == null;
+
+      // Only show the empty state if THIS was the first page and we
+      // got nothing back — paginated empties (next page = no more)
+      // should not flip the whole list to empty.
+      if (!firstPageDone) {
+        firstPageDone = true;
+        if (items.length === 0) {
+          setState("empty");
+        } else {
+          setState("none");
+        }
+      } else {
+        setState("none");
+      }
+    } catch (err) {
+      console.error("[rides] load failed", err);
+      if (err && err.status === 401) {
+        window.location.replace("/login");
+        return;
+      }
+      setState("error");
+    }
+  }
+
+  function appendRideCard(r) {
+    var a = document.createElement("a");
+    a.className = "ride-card";
+    a.href = "/receipt?id=" + encodeURIComponent(r.id);
+
+    // Driver photo (or initials bubble fallback when the driver is
+    // missing / has no avatar — e.g. cancelled-before-match rides).
+    var driverName = (r.driver && r.driver.name) || "Joyride driver";
+    var driverPhoto = r.driver && r.driver.avatarUrl;
+    var photoEl;
+    if (driverPhoto) {
+      photoEl = document.createElement("img");
+      photoEl.className = "driver-photo";
+      photoEl.src = driverPhoto;
+      photoEl.alt = driverName;
+    } else {
+      photoEl = document.createElement("div");
+      photoEl.className = "driver-photo driver-photo--placeholder";
+      photoEl.textContent = (driverName[0] || "?").toUpperCase();
+    }
+    a.appendChild(photoEl);
+
+    // Body — date + pickup/dropoff + driver name.
+    var body = document.createElement("div");
+    body.className = "body";
+    var when = r.completedAt || r.scheduledAt || r.createdAt;
+    body.innerHTML =
+      '<div class="when">' + formatWhen(when) + "</div>" +
+      '<div class="addresses">' +
+        escapeHtml(r.pickupAddress || "—") +
+        '<span class="arrow">→</span>' +
+        escapeHtml(r.dropoffAddress || "—") +
+      "</div>" +
+      '<div class="driver-name">' + escapeHtml(driverName) + "</div>";
+    a.appendChild(body);
+
+    // Right column — fare + status badge.
+    var right = document.createElement("div");
+    right.className = "right";
+    var fareText = formatFare(r);
+    right.innerHTML =
+      '<div class="fare">' + fareText + "</div>" +
+      '<div class="status status--' + (r.status || "") + '">' + (r.status || "").replace(/_/g, " ") + "</div>";
+    a.appendChild(right);
+
+    listEl.appendChild(a);
+  }
+
+  // "May 19, 2026 · 1:42 PM" — short + parseable in the visitor's
+  // locale. Returns "—" when the date is missing/invalid so the row
+  // doesn't render "NaN" or "Invalid Date".
+  function formatWhen(value) {
+    if (!value) return "—";
+    var d = value instanceof Date ? value : new Date(value);
+    if (isNaN(d.getTime())) return "—";
+    var date = d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    var time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    return date + " · " + time;
+  }
+
+  // Best-effort fare display — prefer the final billed amount when
+  // present (completedAmount / estimatedFare), fall back to "—".
+  function formatFare(r) {
+    var candidates = [r.totalFare, r.completedAmount, r.estimatedFare, r.baseFare];
+    for (var i = 0; i < candidates.length; i++) {
+      var v = candidates[i];
+      if (v == null) continue;
+      var n = parseFloat(String(v));
+      if (Number.isFinite(n) && n > 0) return "$" + n.toFixed(2);
+    }
+    return "—";
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  resetAndLoad();
+})();
+</script>
+
+</body>
+</html>

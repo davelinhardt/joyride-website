@@ -12,6 +12,8 @@
     { "source": "/contact", "destination": "/contact.html" },
     { "source": "/design-system", "destination": "/design-system.html" },
     { "source": "/driver", "destination": "/driver.html" },
+    { "source": "/rides", "destination": "/rides.html" },
+    { "source": "/receipt", "destination": "/receipt.html" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [
