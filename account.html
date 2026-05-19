@@ -167,9 +167,15 @@
     contentEl.hidden = false;
     document.getElementById("hello-name").textContent = user.firstName || "there";
 
-    // Subline mirrors userType.
+    // Subline mirrors role + userType. Admin gets a chooser-style
+    // line because they may have multiple legitimate destinations
+    // (admin tool + their own driver profile, etc.) and we want it
+    // to feel intentional — not like the page is "in the way" of
+    // the admin tool.
     var sub = document.getElementById("account-sub");
-    if (user.userType === "driver" || user.userType === "both") {
+    if (user.role === "admin") {
+      sub.textContent = "Choose where you want to go. Admin tool, your driver profile, and your account are all one tap away.";
+    } else if (user.userType === "driver" || user.userType === "both") {
       sub.textContent = "Manage your rides, your driver profile, and your shareable link.";
     } else {
       sub.textContent = "View your rides, download receipts, and manage your account.";

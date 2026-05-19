@@ -132,25 +132,24 @@
   /**
    * Where should a freshly-logged-in user land?
    *
-   *   admin   → existing admin dashboard on the API host (we don't
-   *             re-build admin on Vercel; it stays on Railway).
-   *   driver  → their own public profile, which doubles as their
-   *             "share this URL with potential riders" page. Username
-   *             is unique on `riders.username`.
-   *   rider   → /account, which surfaces ride history + receipt
-   *             download (the "rider tool").
+   * **/account, always.**
    *
-   * `both` users (rare — drivers who also use the rider app) get the
-   * driver landing since the rider tool is reachable from /account
-   * via the nav anyway.
+   * Earlier this short-circuited admins straight to /admin and
+   * drivers straight to /{username}, but that broke multi-role users
+   * (admin who is also a driver — Dave hit this on 2026-05-19; an
+   * admin who tries to log in to view their driver profile gets
+   * yanked into the admin tool with no way to choose). The right UX
+   * is to land everyone on the /account chooser, which already
+   * renders type-aware action cards (Admin tool, Driver profile,
+   * My rides, Download apps) and lets the user pick deliberately.
+   *
+   * Pure admins / pure drivers / pure riders all see one
+   * primary-styled (yellow) card matching their main capability,
+   * with the others as secondary cards — so it's still one tap to
+   * the most-likely destination, just no unwanted redirect.
    */
   function routeAfterAuth(user) {
     if (!user) return "/login";
-    if (user.role === "admin") return API_BASE + "/admin";
-    if (user.userType === "driver" || user.userType === "both") {
-      if (user.username) return "/" + encodeURIComponent(user.username);
-      return "/account";
-    }
     return "/account";
   }
 
