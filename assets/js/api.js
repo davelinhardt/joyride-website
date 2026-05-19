@@ -130,9 +130,14 @@
   }
 
   /**
-   * Where should a freshly-logged-in user land?
+   * Where should a freshly-logged-in user land? Always /account.
    *
-   * **/account, always.**
+   * NOTE: do not use markdown-style `**bold**` syntax in this kind
+   * of JSDoc block — the `**\/` sequence (asterisk-asterisk-slash)
+   * is interpreted by the JS parser as closing the comment, which
+   * silently breaks the whole file. Lost an hour debugging this on
+   * 2026-05-19 — keep emphasis to single underscores or just plain
+   * prose.
    *
    * Earlier this short-circuited admins straight to /admin and
    * drivers straight to /{username}, but that broke multi-role users
