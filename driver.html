@@ -100,10 +100,17 @@
     gap: var(--s3);
     margin-bottom: var(--s5);
   }
+  /* Rounded-rectangle tile, matching the design system's stat /
+     component-tile treatment (see drivers.html .stat and
+     design-system.html .component-tile — both use --r-lg radius +
+     --s5/s6 padding + 1px rule border). The earlier var(--r-md)
+     token doesn't exist (the scale is --r-sm / --r / --r-lg /
+     --r-xl), so the property silently fell back to 0 and the tiles
+     read as squares. */
   .dp-stat {
     background: var(--surface-2);
-    padding: 16px 18px;
-    border-radius: var(--r-md);
+    padding: var(--s5) var(--s4);
+    border-radius: var(--r-lg);
     border: 1px solid var(--rule);
     text-align: center;
   }
@@ -131,12 +138,11 @@
     .dp-actions { grid-template-columns: 1fr; }
   }
   .dp-actions .btn {
+    /* Inherit the design system's pill shape + sizing — overriding
+       border-radius/height here was producing square-cornered
+       buttons that didn't match the header CTAs. */
     width: 100%;
     justify-content: center;
-    font-size: 15px;
-    font-weight: 700;
-    padding: 14px 20px;
-    border-radius: var(--r-md);
   }
 
   .dp-bio {
@@ -153,24 +159,10 @@
     margin-bottom: 8px;
   }
 
-  /* Book CTA — primary action. Until the apps publish this is a
-     placeholder that opens an "app store coming soon" modal. After
-     publish, we'll route to a Universal Link with ?driver=username
-     so the rider app can pre-select this driver. */
-  .dp-book {
-    display: flex; flex-direction: column; gap: 12px;
-    align-items: stretch;
-  }
-  .dp-book .btn--primary {
-    font-size: 17px; padding: 18px 28px;
-    border-radius: var(--r-md);
-    width: 100%;
-    justify-content: center;
-  }
-  .dp-book .helper {
-    font-size: 13px; color: var(--fg-3); text-align: center;
-  }
-  .dp-book .helper a { color: var(--canary); }
+  /* (.dp-book block removed 2026-05-19 — the bottom Book CTA + helper
+     line were superseded by the .dp-actions row above the stats.
+     Leaving this note here in case search-and-replace lands a future
+     dev back on this position.) */
 </style>
 </head>
 <body data-page="driver">
@@ -280,7 +272,7 @@
   // a stale cached copy is being served — bump on any meaningful
   // edit to driver.htmls auth/fetch logic.
   var debug = {
-    pageVersion: "2026-05-19#10 (Download App + Book A Ride CTAs above stats; centered tiles)",
+    pageVersion: "2026-05-19#11 (rounded tiles + pill buttons; fixed bad --r-md token)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
