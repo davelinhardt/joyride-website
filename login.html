@@ -434,17 +434,17 @@
     JoyrideAPI.setToken(result.sessionToken);
     JoyrideAPI.cacheUser(result.rider);
 
-    // Driver applicants land on /account with a banner that nudges
-    // them to download the driver app — the actual driver-onboarding
-    // multi-step flow lives in the Expo app, not the website.
-    // (See joiryde-driver/app/onboarding for that flow.)
+    // Both rider + driver signups land on /account — the chooser
+    // surfaces the right next-step cards (download apps, view
+    // driver page, open admin tool) without needing a separate
+    // welcome banner. The ?welcome= post-signup banner was
+    // removed 2026-05-19 (Dave: empty bar showed for regular
+    // logins too because of a CSS/HTML hidden conflict). The
+    // `role` value is still passed up here so we can route or
+    // surface different cards later if we want.
     var dest = JoyrideAPI.routeAfterAuth(result.rider);
-    if (role === "driver") {
-      dest = "/account?welcome=driver";
-    } else {
-      dest = "/account?welcome=rider";
-    }
     window.location.assign(dest);
+    void role;
   }
 })();
 </script>

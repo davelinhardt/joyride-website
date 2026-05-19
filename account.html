@@ -28,29 +28,6 @@
     margin-bottom: var(--s7);
     max-width: 56ch;
   }
-  /* Welcome banner — surfaces after signup with the role-specific
-     next-step nudge. Yellow border for the driver path (download the
-     driver app) and a softer outline for the rider path. */
-  .welcome-banner {
-    padding: 18px 22px;
-    border-radius: 14px;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    margin-bottom: var(--s6);
-    display: flex; gap: 14px; align-items: flex-start;
-  }
-  .welcome-banner.is-driver { border-color: var(--canary); }
-  .welcome-banner .dot {
-    flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--canary); margin-top: 8px;
-  }
-  .welcome-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .welcome-banner p { font-size: 14px; color: var(--fg-3); line-height: 1.5; }
-  .welcome-banner button.dismiss {
-    margin-left: auto; background: transparent; border: 0; color: var(--fg-3);
-    font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1;
-  }
-
   /* Action grid — one big card per available section.
      Cards render conditionally based on the user's userType + role.
      Driver users see their public-profile URL prominently because that's
@@ -127,17 +104,6 @@
       <h1 class="account-hello">Hi, <span id="hello-name">there</span>.</h1>
       <p class="account-sub" id="account-sub">Welcome to your Joyride account.</p>
 
-      <!-- Post-signup welcome banner. Populated by the JS below based on
-           the ?welcome= URL param (set by login.html after signup). -->
-      <div id="welcome-banner" class="welcome-banner" hidden>
-        <span class="dot" aria-hidden="true"></span>
-        <div>
-          <h3 id="welcome-title"></h3>
-          <p id="welcome-body"></p>
-        </div>
-        <button class="dismiss" type="button" aria-label="Dismiss" onclick="document.getElementById('welcome-banner').hidden = true;">×</button>
-      </div>
-
       <div class="action-grid" id="action-grid">
         <!-- Cards injected by JS based on user.userType / user.role -->
       </div>
@@ -181,30 +147,8 @@
       sub.textContent = "View your rides, download receipts, and manage your account.";
     }
 
-    renderWelcomeBanner(user);
     renderActionCards(user);
     renderVerifyStatus(user);
-  }
-
-  // ?welcome=driver|rider from login.html post-signup. Yellow border
-  // for drivers because the next-step nudge is "go download the
-  // driver app to complete your application."
-  function renderWelcomeBanner(user) {
-    var params = new URLSearchParams(window.location.search);
-    var welcome = params.get("welcome");
-    if (!welcome) return;
-    var banner = document.getElementById("welcome-banner");
-    var title  = document.getElementById("welcome-title");
-    var body   = document.getElementById("welcome-body");
-    banner.hidden = false;
-    if (welcome === "driver") {
-      banner.classList.add("is-driver");
-      title.textContent = "You're in. Now: download the Joyride driver app.";
-      body.textContent = "We mirror your account into the driver app — but you'll finish your driver application (license, insurance, vehicle, background check) inside the app. App links are coming soon.";
-    } else {
-      title.textContent = "You're in. Welcome to Joyride.";
-      body.textContent = "Download the Joyride rider app to book rides. App links are coming soon.";
-    }
   }
 
   // Three-way chooser per Dave (2026-05-19): Rider, Driver, Admin.
