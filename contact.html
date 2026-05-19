@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — Contact</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .contact-hero { padding-block: clamp(48px, 7vw, 96px) clamp(32px, 4vw, 56px); }
+  .contact-hero h1 { font-size: clamp(48px, 8vw, 112px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.94; }
+
+  .contact-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--s9); }
+  @media (max-width: 880px) { .contact-grid { grid-template-columns: 1fr; gap: var(--s7); } }
+
+  .contact-info { display: grid; gap: var(--s6); }
+  .info-block { padding: var(--s6); border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--white); }
+  .info-block .lbl { font-size: 12px; font-weight: 600; color: var(--ink-3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: var(--s2); }
+  .info-block a { font-weight: 600; }
+  .info-block a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  form.contact-form { display: grid; gap: var(--s5); padding: var(--s7); background: var(--canary); border-radius: var(--r-xl); }
+  form.contact-form .field input, form.contact-form .field textarea, form.contact-form .field select { background: rgba(255,255,255,0.7); border-color: transparent; }
+  form.contact-form .field input:focus, form.contact-form .field textarea:focus, form.contact-form .field select:focus { background: var(--white); }
+</style>
+</head>
+<body data-page="contact">
+
+<main>
+  <section class="contact-hero wrap">
+    <span class="eyebrow">Contact</span>
+    <h1 class="mt-4">Say hi.</h1>
+    <p class="lead mt-5" style="font-size: clamp(18px, 1.6vw, 22px);">Press, partnerships, support, ideas — we read every message. Pick a path or use the form.</p>
+  </section>
+
+  <section class="section wrap">
+    <div class="contact-grid">
+      <form class="contact-form" onsubmit="event.preventDefault(); this.innerHTML='<h2>Thanks — we\\'ll be in touch soon.</h2>';">
+        <h2 style="font-size: clamp(28px, 3vw, 40px);">Send us a message.</h2>
+        <div class="field"><label>Your name</label><input required placeholder="Name"></div>
+        <div class="field"><label>Email</label><input required type="email" placeholder="you@example.com"></div>
+        <div class="field"><label>I'm reaching out about</label><select><option>General question</option><option>Driver support</option><option>Rider support</option><option>Press</option><option>Partnerships</option><option>Investors</option></select></div>
+        <div class="field"><label>Message</label><textarea required placeholder="Tell us a bit..." rows="5"></textarea></div>
+        <button class="btn btn--primary" type="submit" style="justify-self: start;">Send <span class="arrow">→</span></button>
+      </form>
+
+      <div class="contact-info">
+        <div class="info-block">
+          <div class="lbl">General</div>
+          <a href="mailto:hello@joyride.com">hello@joyride.com</a>
+        </div>
+        <div class="info-block">
+          <div class="lbl">Driver support</div>
+          <a href="mailto:drivers@joyride.com">drivers@joyride.com</a>
+          <p class="mt-3" style="color: var(--ink-3); font-size: 14px;">Mon–Fri · 7am–9pm CT</p>
+        </div>
+        <div class="info-block">
+          <div class="lbl">Rider support</div>
+          <a href="mailto:riders@joyride.com">riders@joyride.com</a>
+          <p class="mt-3" style="color: var(--ink-3); font-size: 14px;">24/7 in-app chat for active rides</p>
+        </div>
+        <div class="info-block">
+          <div class="lbl">Press</div>
+          <a href="mailto:press@joyride.com">press@joyride.com</a>
+        </div>
+        <div class="info-block">
+          <div class="lbl">HQ</div>
+          <p>Austin, TX</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="site.js"></script>
+</body>
+</html>

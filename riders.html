@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — For Riders</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .page-hero { padding-block: clamp(48px, 7vw, 96px) clamp(48px, 6vw, 80px); }
+  .page-hero h1 { font-size: clamp(48px, 8vw, 112px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.94; }
+  .page-hero h1 em { font-style: normal; color: var(--canary-deep); }
+  .page-hero .lead { margin-top: var(--s6); font-size: clamp(18px, 1.8vw, 22px); }
+
+  .phone-hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: var(--s8); align-items: center; }
+  .phone-mock {
+    background: var(--ink); border-radius: 44px; aspect-ratio: 9/19;
+    max-width: 320px; margin: 0 auto;
+    padding: 14px; position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+  }
+  .phone-mock::before { content: ''; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: 100px; height: 22px; background: #000; border-radius: 999px; z-index: 2; }
+  .phone-screen { background: var(--canary); border-radius: 32px; height: 100%; overflow: hidden; padding: 60px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .phone-card { background: var(--white); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; }
+  .phone-card .av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #ddd, #aaa); flex-shrink: 0; }
+  .phone-card .info { flex: 1; }
+  .phone-card .info .nm { font-weight: 600; font-size: 14px; }
+  .phone-card .info .meta { font-size: 11px; color: var(--ink-3); }
+  .phone-card .price { font-weight: 700; font-size: 16px; }
+  @media (max-width: 880px) { .phone-hero { grid-template-columns: 1fr; } }
+
+  .perks { grid-template-columns: repeat(3, 1fr); }
+  .perk { padding: var(--s6); border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--white); }
+  .perk .icon { width: 48px; height: 48px; border-radius: 12px; background: var(--canary); display: flex; align-items: center; justify-content: center; margin-bottom: var(--s5); font-size: 24px; }
+  .perk h3 { margin-bottom: var(--s3); font-size: 22px; }
+  @media (max-width: 880px) { .perks { grid-template-columns: 1fr; } }
+
+  .download { background: var(--ink); color: var(--paper); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: center; }
+  .app-buttons { display: flex; gap: var(--s4); flex-wrap: wrap; margin-top: var(--s6); }
+  .app-btn { display: inline-flex; align-items: center; gap: 12px; padding: 14px 22px; background: var(--canary); border-radius: 14px; color: var(--ink); font-weight: 600; }
+  .app-btn:hover { background: var(--canary-deep); }
+  .app-btn .small { font-size: 11px; opacity: .7; display: block; margin-bottom: 2px; }
+  .app-btn .big { font-size: 17px; line-height: 1; }
+  @media (max-width: 720px) { .download { grid-template-columns: 1fr; } }
+
+  details { border-top: 1px solid var(--rule); padding-block: var(--s5); }
+  details:last-of-type { border-bottom: 1px solid var(--rule); }
+  details summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: clamp(20px, 2.2vw, 28px); font-weight: 600; letter-spacing: -0.02em; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: '+'; font-size: 32px; font-weight: 400; transition: transform .2s var(--ease); }
+  details[open] summary::after { transform: rotate(45deg); }
+  details > p { margin-top: var(--s4); color: var(--ink-2); max-width: 70ch; }
+</style>
+</head>
+<body data-page="riders">
+
+<main>
+  <section class="page-hero wrap">
+    <div class="phone-hero">
+      <div>
+        <span class="eyebrow">For riders</span>
+        <h1 class="mt-4">Better drivers. <em>Better rides.</em></h1>
+        <p class="lead">When drivers keep what they earn, they show up happier, drive better, and stick around longer. You ride with people who chose this work — and chose you.</p>
+        <div class="cluster mt-7">
+          <a href="#download" class="btn btn--primary">Get the app <span class="arrow">→</span></a>
+          <a href="#how" class="btn btn--ghost">See how it works</a>
+        </div>
+      </div>
+      <div class="phone-mock">
+        <div class="phone-screen">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Drivers near you</div>
+          <div class="phone-card"><div class="av"></div><div class="info"><div class="nm">Marcus T.</div><div class="meta">★ 4.97 · 3 min away</div></div><div class="price">$2.10/mi</div></div>
+          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#f0c,#a06)"></div><div class="info"><div class="nm">Priya S.</div><div class="meta">★ 5.00 · 4 min away · ♥ saved</div></div><div class="price">$2.40/mi</div></div>
+          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#3a8,#185)"></div><div class="info"><div class="nm">James K.</div><div class="meta">★ 4.92 · 6 min away</div></div><div class="price">$1.95/mi</div></div>
+          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#fa3,#d70)"></div><div class="info"><div class="nm">Sasha L.</div><div class="meta">★ 4.99 · 7 min away</div></div><div class="price">$2.20/mi</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="how">
+    <span class="eyebrow">Why riders love it</span>
+    <h2 class="mt-3 mb-7" style="max-width: 18ch;">Pick your driver. Pay one fair price. Done.</h2>
+    <div class="grid perks">
+      <div class="perk"><div class="icon">★</div><h3>Choose your driver.</h3><p>Browse drivers near you with real ratings, vehicle photos, and transparent rates. No black-box matching.</p></div>
+      <div class="perk"><div class="icon">♥</div><h3>Save your favorites.</h3><p>Found a great driver? Save them. Book again next time. Schedule weekly recurring trips.</p></div>
+      <div class="perk"><div class="icon">$</div><h3>See the price upfront.</h3><p>No surge math, no after-trip surprises. The rate you see is the rate you pay.</p></div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="grid grid-2" style="gap: var(--s8); align-items: center;">
+      <div>
+        <span class="eyebrow">Same ride, fairer model</span>
+        <h2 class="mt-3" style="max-width: 16ch;">When drivers thrive, your ride gets better.</h2>
+        <p class="lead mt-5">Big platforms churn through drivers because the economics don't work. Joyride drivers stick around — which means more experienced drivers, cleaner cars, and people who genuinely want to do this work.</p>
+        <ul class="stack-sm mt-6" style="list-style: none; padding: 0; font-size: 17px;">
+          <li>✓ Higher driver retention = more experienced rides</li>
+          <li>✓ Drivers earn more, so they invest in their service</li>
+          <li>✓ Build relationships with drivers you actually like</li>
+          <li>✓ Clean, transparent pricing — every time</li>
+        </ul>
+      </div>
+      <div class="photo photo--portrait" aria-label="Happy rider and driver" style="background:none;padding:0;border-radius:var(--r-xl);overflow:hidden;--pattern-display:none"><img src="assets/rider-driver.webp" alt="A smiling driver at the wheel with a happy rider in the back seat" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <span class="eyebrow">Frequently asked</span>
+    <h2 class="mt-3 mb-7">Rider questions, answered.</h2>
+    <details open><summary>How is Joyride different from Uber or Lyft?</summary><p>Drivers run their own businesses on Joyride. They pay a flat monthly subscription instead of giving up 25–40% of every fare. You see real driver profiles, real prices, and you choose who you ride with.</p></details>
+    <details><summary>Can I still book a ride right now?</summary><p>Yes — you'll see drivers available near you and can book in seconds, just like you'd expect. You can also schedule rides ahead.</p></details>
+    <details><summary>Are prices higher than Uber?</summary><p>Often lower or about the same — and there's no surge multiplier. Drivers set transparent rates so you can compare and pick what works for you.</p></details>
+    <details><summary>How do I save a driver as a favorite?</summary><p>Tap ♥ on their profile after a trip. They'll show up at the top next time, and you can book them directly.</p></details>
+    <details><summary>What about safety?</summary><p>All drivers are background-checked, vehicles are inspected, and every ride is GPS-tracked with in-app emergency support. Driver profiles show real verified reviews from past riders.</p></details>
+  </section>
+
+  <section class="section wrap" id="download">
+    <div class="download">
+      <div>
+        <span class="eyebrow" style="color: var(--canary-deep);">Pre-launch</span>
+        <h2 class="mt-3" style="max-width: 14ch;">Get the app. Be first in your city.</h2>
+        <p class="lead" style="color: #c8c8c0;">We're rolling out city by city in 2026. Download the app and we'll let you know when Joyride lands near you.</p>
+        <div class="app-buttons">
+          <a href="#" class="app-btn"><span>📱</span><span><span class="small">Download on the</span><span class="big">App Store</span></span></a>
+          <a href="#" class="app-btn"><span>▶</span><span><span class="small">Get it on</span><span class="big">Google Play</span></span></a>
+        </div>
+      </div>
+      <div class="phone-mock" style="max-width: 240px;">
+        <div class="phone-screen" style="padding: 60px 18px 18px;">
+          <div style="font-weight:700;font-size:12px;margin-bottom:4px;">Your saved drivers</div>
+          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#f0c,#a06)"></div><div class="info"><div class="nm">Priya S.</div><div class="meta">★ 5.00 · ♥</div></div></div>
+          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#3a8,#185)"></div><div class="info"><div class="nm">James K.</div><div class="meta">★ 4.92</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="site.js"></script>
+</body>
+</html>

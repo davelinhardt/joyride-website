@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — Design System</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .ds-section { border-top: 1px solid var(--rule); }
+  .ds-section:first-of-type { border-top: 0; }
+  .ds-grid { display: grid; gap: var(--s5); }
+  .swatch { aspect-ratio: 3/2; border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid var(--rule); }
+  .swatch.dark { color: #fff; }
+  .swatch code { font-family: ui-monospace, monospace; font-size: 12px; opacity: .8; }
+  .swatch strong { font-size: 15px; font-weight: 600; }
+  .type-row { padding: 18px 0; border-bottom: 1px dashed var(--rule); display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: baseline; }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row code { font-family: ui-monospace, monospace; font-size: 12px; color: var(--ink-3); }
+  .ds-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .ds-grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 880px) { .ds-grid-3, .ds-grid-4 { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 540px) { .ds-grid-3, .ds-grid-4 { grid-template-columns: 1fr; } }
+  .spacer-demo { background: var(--canary); height: 32px; border-radius: 4px; }
+  .component-tile { padding: var(--s6); background: var(--white); border: 1px solid var(--rule); border-radius: var(--r-lg); }
+</style>
+</head>
+<body data-page="ds">
+
+<main class="wrap" style="padding-block: var(--s9);">
+  <header style="margin-bottom: var(--s9);">
+    <div class="kicker mb-5"><img src="assets/mark-black.svg" style="width:18px;height:18px"> Design System</div>
+    <h1 class="display">Joyride brand kit</h1>
+    <p class="lead mt-5">A bold canary primary, ink-black ground, and a warm paper neutral. Inter Tight throughout. Built for big confident type, generous whitespace, and the smiley as a recurring graphic motif.</p>
+  </header>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Colors</h2>
+    <div class="ds-grid ds-grid-4">
+      <div class="swatch" style="background:#FFEF00"><strong>Canary</strong><code>#FFEF00</code></div>
+      <div class="swatch dark" style="background:#000000"><strong>Ink</strong><code>#000000</code></div>
+      <div class="swatch" style="background:#FAFAF7"><strong>Paper</strong><code>#FAFAF7</code></div>
+      <div class="swatch" style="background:#FFFFFF"><strong>White</strong><code>#FFFFFF</code></div>
+      <div class="swatch dark" style="background:#2A2A2A"><strong>Ink-2</strong><code>#2A2A2A</code></div>
+      <div class="swatch dark" style="background:#555555"><strong>Ink-3</strong><code>#555555</code></div>
+      <div class="swatch" style="background:#E5E5E0"><strong>Rule</strong><code>#E5E5E0</code></div>
+      <div class="swatch" style="background:#E8D900"><strong>Canary-deep</strong><code>#E8D900</code></div>
+    </div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Typography</h2>
+    <p class="lead mb-7">Inter Tight at weights 400, 500, 600, 700, 800. Display sizes use tight tracking; body uses neutral tracking.</p>
+    <div class="type-row"><code>display / 600</code><div class="display">Enjoy the ride.</div></div>
+    <div class="type-row"><code>h1 / 600</code><h1>A new kind of rideshare</h1></div>
+    <div class="type-row"><code>h2 / 600</code><h2>Drivers keep 100% of the fare</h2></div>
+    <div class="type-row"><code>h3 / 600</code><h3>Set your own price. Build your client list.</h3></div>
+    <div class="type-row"><code>h4 / 600</code><h4>Section heading or card title</h4></div>
+    <div class="type-row"><code>body-lg / 400</code><p class="lead">Joyride is the marketplace where drivers run their own businesses and riders get a fairer experience.</p></div>
+    <div class="type-row"><code>body / 400</code><p>Drivers pay a flat monthly subscription to access the marketplace, instead of giving up 25–40% of every fare.</p></div>
+    <div class="type-row"><code>eyebrow / 600</code><span class="eyebrow">For drivers</span></div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Spacing scale</h2>
+    <div class="stack-sm">
+      <div><span class="eyebrow">s2 · 8px</span><div class="spacer-demo" style="width:8px"></div></div>
+      <div><span class="eyebrow">s4 · 16px</span><div class="spacer-demo" style="width:16px"></div></div>
+      <div><span class="eyebrow">s5 · 24px</span><div class="spacer-demo" style="width:24px"></div></div>
+      <div><span class="eyebrow">s6 · 32px</span><div class="spacer-demo" style="width:32px"></div></div>
+      <div><span class="eyebrow">s7 · 48px</span><div class="spacer-demo" style="width:48px"></div></div>
+      <div><span class="eyebrow">s8 · 64px</span><div class="spacer-demo" style="width:64px"></div></div>
+      <div><span class="eyebrow">s9 · 96px</span><div class="spacer-demo" style="width:96px"></div></div>
+      <div><span class="eyebrow">s10 · 128px</span><div class="spacer-demo" style="width:128px"></div></div>
+    </div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Buttons</h2>
+    <div class="cluster">
+      <button class="btn btn--primary">Apply to drive <span class="arrow">→</span></button>
+      <button class="btn btn--canary">Get the app <span class="arrow">→</span></button>
+      <button class="btn btn--ghost">Learn more</button>
+      <button class="btn btn--primary btn--sm">Small primary</button>
+      <button class="btn btn--ghost btn--sm">Small ghost</button>
+    </div>
+    <div class="cluster mt-6">
+      <span class="pill"><span class="dot"></span> Pre-launch</span>
+      <span class="pill pill--ghost">For drivers</span>
+    </div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Cards & blocks</h2>
+    <div class="ds-grid ds-grid-3">
+      <div class="card"><h3 class="mb-3">Standard card</h3><p>Default card on paper. Border + radius.</p></div>
+      <div class="card card--canary"><h3 class="mb-3">Canary card</h3><p>For featured content and value props.</p></div>
+      <div class="card card--black"><h3 class="mb-3">Ink card</h3><p>Inverted treatment. Strong contrast.</p></div>
+    </div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Form fields</h2>
+    <div class="ds-grid ds-grid-3" style="max-width:900px">
+      <div class="field"><label>Full name</label><input placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>City</label><select><option>Choose a city</option><option>Austin</option><option>Denver</option></select></div>
+      <div class="field" style="grid-column: span 3"><label>Message</label><textarea placeholder="Tell us a bit..."></textarea></div>
+    </div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-6">Brand mark</h2>
+    <div class="ds-grid ds-grid-3">
+      <div class="component-tile" style="display:flex;align-items:center;justify-content:center;background:#FFEF00"><img src="assets/lockup-canary.svg" style="max-height:80px"></div>
+      <div class="component-tile" style="display:flex;align-items:center;justify-content:center"><img src="assets/lockup-white.svg" style="max-height:80px"></div>
+      <div class="component-tile" style="display:flex;align-items:center;justify-content:center;background:#000"><img src="assets/lockup-black.svg" style="max-height:80px"></div>
+    </div>
+  </section>
+
+  <section class="ds-section section--tight">
+    <h2 class="mb-5">Pages</h2>
+    <div class="cluster">
+      <a class="btn btn--primary" href="index.html">Home →</a>
+      <a class="btn btn--ghost" href="drivers.html">Drivers</a>
+      <a class="btn btn--ghost" href="riders.html">Riders</a>
+      <a class="btn btn--ghost" href="blog.html">Latest Updates</a>
+      <a class="btn btn--ghost" href="contact.html">Contact</a>
+    </div>
+  </section>
+</main>
+
+<script src="site.js"></script>
+</body>
+</html>

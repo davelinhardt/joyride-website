@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — For Drivers</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .page-hero { padding-block: clamp(48px, 7vw, 96px) clamp(48px, 6vw, 80px); }
+  .page-hero h1 { font-size: clamp(48px, 8vw, 112px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.94; }
+  .page-hero h1 em { font-style: normal; color: var(--canary-deep); }
+  .page-hero .lead { margin-top: var(--s6); font-size: clamp(18px, 1.8vw, 22px); }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); margin-top: var(--s8); }
+  .stat { padding: var(--s6); border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--white); }
+  .stat .num { font-size: clamp(40px, 5vw, 64px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .stat .lbl { color: var(--ink-3); margin-top: var(--s3); font-size: 15px; }
+
+  /* Calculator */
+  .calc { background: var(--ink); color: var(--paper); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); }
+  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s8); margin-top: var(--s7); }
+  .calc-input label { display: block; font-size: 14px; font-weight: 600; color: #c8c8c0; margin-bottom: var(--s3); }
+  .calc-input .val { font-size: clamp(36px, 5vw, 56px); font-weight: 700; color: var(--canary); margin-bottom: var(--s4); letter-spacing: -0.03em; }
+  .calc-input input[type=range] {
+    width: 100%; height: 6px; appearance: none; background: rgba(255,255,255,0.15); border-radius: 999px;
+  }
+  .calc-input input[type=range]::-webkit-slider-thumb {
+    appearance: none; width: 28px; height: 28px; border-radius: 50%; background: var(--canary); border: 0; cursor: pointer;
+  }
+  .calc-input input[type=range]::-moz-range-thumb {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--canary); border: 0; cursor: pointer;
+  }
+  .calc-result { background: rgba(255,255,255,0.04); border-radius: var(--r-lg); padding: var(--s6); display: grid; gap: var(--s5); }
+  .calc-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--s4); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .calc-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .calc-row .label { font-size: 14px; color: #c8c8c0; }
+  .calc-row .amt { font-size: clamp(20px, 2.4vw, 32px); font-weight: 600; }
+  .calc-row.win .amt { color: var(--canary); }
+  @media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  /* Steps */
+  .driver-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s4); }
+  .driver-step { padding: var(--s6); border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--white); }
+  .driver-step .n { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--canary); font-weight: 700; margin-bottom: var(--s4); }
+  .driver-step h3 { margin-bottom: var(--s3); font-size: 22px; }
+  @media (max-width: 880px) { .driver-steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .driver-steps { grid-template-columns: 1fr; } }
+
+  /* FAQ */
+  details { border-top: 1px solid var(--rule); padding-block: var(--s5); }
+  details:last-of-type { border-bottom: 1px solid var(--rule); }
+  details summary {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-size: clamp(20px, 2.2vw, 28px); font-weight: 600; letter-spacing: -0.02em;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: '+'; font-size: 32px; font-weight: 400; transition: transform .2s var(--ease); }
+  details[open] summary::after { transform: rotate(45deg); }
+  details > p { margin-top: var(--s4); color: var(--ink-2); max-width: 70ch; }
+
+  /* Apply */
+  .apply { background: var(--canary); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 80px); }
+  .apply-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); }
+  .apply form { display: grid; gap: var(--s4); }
+  .apply form .field input, .apply form .field select { background: rgba(255,255,255,0.7); border-color: transparent; }
+  @media (max-width: 880px) { .apply-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="drivers">
+
+<main>
+  <section class="page-hero wrap">
+    <span class="eyebrow">For drivers</span>
+    <h1 class="mt-4">Run your business. <em>Keep your money.</em></h1>
+    <p class="lead">Joyride is the rideshare marketplace built around the people who actually drive. One flat monthly subscription. Set your own prices. Build a real client list. Keep 100% of every fare.</p>
+    <div class="cluster mt-7">
+      <a href="#apply" class="btn btn--primary">Apply to drive <span class="arrow">→</span></a>
+      <a href="#calculator" class="btn btn--ghost">See your earnings</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">100%</div><div class="lbl">of every fare goes to you</div></div>
+      <div class="stat"><div class="num">$49</div><div class="lbl">flat monthly subscription</div></div>
+      <div class="stat"><div class="num">0%</div><div class="lbl">commission, ever</div></div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="calculator">
+    <div class="calc">
+      <span class="eyebrow" style="color: var(--canary-deep);">Earnings calculator</span>
+      <h2 class="mt-3" style="max-width: 16ch;">See what you'd actually take home.</h2>
+
+      <div class="calc-grid">
+        <div class="stack-sm">
+          <div class="calc-input">
+            <label>Monthly fares</label>
+            <div class="val" id="fareVal">$4,000</div>
+            <input type="range" id="fareSlider" min="500" max="12000" step="100" value="4000">
+          </div>
+          <div class="calc-input mt-5">
+            <label>Compared to platform take rate</label>
+            <div class="val" id="rateVal">28%</div>
+            <input type="range" id="rateSlider" min="20" max="40" step="1" value="28">
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-row">
+            <span class="label">Big rideshare net</span>
+            <span class="amt" id="bigNet">$2,880</span>
+          </div>
+          <div class="calc-row win">
+            <span class="label">Joyride net</span>
+            <span class="amt" id="joyNet">$3,951</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">Extra in your pocket / month</span>
+            <span class="amt" style="color: var(--canary);" id="diff">+$1,071</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">Per year</span>
+            <span class="amt" style="color: var(--canary);" id="yearly">+$12,852</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <span class="eyebrow">How it works</span>
+    <h2 class="mt-3 mb-7" style="max-width: 18ch;">From application to first ride in days.</h2>
+    <div class="driver-steps">
+      <div class="driver-step"><div class="n">1</div><h3>Apply</h3><p>Tell us about you and your vehicle. We'll review and onboard quickly.</p></div>
+      <div class="driver-step"><div class="n">2</div><h3>Subscribe</h3><p>One flat monthly fee. No per-ride cut. Cancel anytime.</p></div>
+      <div class="driver-step"><div class="n">3</div><h3>Set your rates</h3><p>Choose your prices for the kinds of rides you want to do.</p></div>
+      <div class="driver-step"><div class="n">4</div><h3>Drive & earn</h3><p>Riders book you. You keep every dollar of every fare.</p></div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="grid grid-2" style="gap: var(--s7);">
+      <div class="photo photo--portrait" aria-label="Driver and rider" style="background:none;padding:0;aspect-ratio:4/5;border-radius:var(--r-xl);overflow:hidden;--pattern-display:none"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80" alt="A happy rider smiling" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div>
+        <span class="eyebrow">A real business</span>
+        <h2 class="mt-3" style="max-width: 16ch;">Your repeat riders are your repeat riders.</h2>
+        <p class="lead mt-5">When a rider books you, they can save you to favorites. Build a regular client list — airport runs, school pickups, weekly grocery trips — that comes back to you, not to an algorithm.</p>
+        <ul class="stack-sm mt-6" style="list-style: none; padding: 0; font-size: 17px;">
+          <li>✓ Direct rebooking from your saved riders</li>
+          <li>✓ Schedule recurring trips with regulars</li>
+          <li>✓ Tips & ratings stay on your profile, forever</li>
+          <li>✓ Export your client list anytime — it's yours</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <span class="eyebrow">Frequently asked</span>
+    <h2 class="mt-3 mb-7">Driver questions, answered.</h2>
+    <details open>
+      <summary>What does the $49 monthly subscription cover?</summary>
+      <p>Access to the Joyride marketplace, dispatch system, in-app payments, rider ratings, customer support, and the driver business tools (calendar, client list, earnings reports). No commission on any ride.</p>
+    </details>
+    <details>
+      <summary>Can I really set my own prices?</summary>
+      <p>Yes. You set base rates, per-mile, per-minute, and surge windows. Riders see your rates upfront before booking. You can change them anytime.</p>
+    </details>
+    <details>
+      <summary>What if I don't get enough rides?</summary>
+      <p>You can cancel your subscription anytime, no penalty. We're transparent about market demand in each city before you sign up — no inflated promises.</p>
+    </details>
+    <details>
+      <summary>What are the vehicle requirements?</summary>
+      <p>Standard rideshare requirements vary by city — generally a 4-door vehicle, 12 years old or newer, in good condition, with current registration and insurance. We'll walk you through your city's specifics during onboarding.</p>
+    </details>
+    <details>
+      <summary>How do payouts work?</summary>
+      <p>Riders pay through the app at the end of each ride. Funds land in your account daily. No waiting on weekly payouts.</p>
+    </details>
+    <details>
+      <summary>Do you offer insurance?</summary>
+      <p>Yes — commercial rideshare coverage is included while you're on a Joyride trip. Personal insurance covers you the rest of the time, same as you carry today.</p>
+    </details>
+  </section>
+
+  <section class="section wrap" id="apply">
+    <div class="apply">
+      <div class="apply-grid">
+        <div>
+          <span class="eyebrow">Apply to drive</span>
+          <h2 class="mt-3" style="max-width: 14ch;">Ready to keep what you earn?</h2>
+          <p class="lead mt-5" style="color: var(--ink-2);">Fill this out and we'll be in touch within 48 hours about openings in your city.</p>
+        </div>
+        <form onsubmit="event.preventDefault(); this.innerHTML='<h3>Thanks — we\\'ll be in touch.</h3>'">
+          <div class="field"><label>Full name</label><input required placeholder="Your name"></div>
+          <div class="field"><label>Email</label><input required type="email" placeholder="you@example.com"></div>
+          <div class="field"><label>Phone</label><input required type="tel" placeholder="(555) 555-5555"></div>
+          <div class="field"><label>City</label><select required><option value="">Choose a city</option><option>Austin</option><option>Denver</option><option>Portland</option><option>Phoenix</option><option>Other</option></select></div>
+          <div class="field"><label>Vehicle year & model</label><input required placeholder="e.g. 2020 Toyota Camry"></div>
+          <button class="btn btn--primary" type="submit">Submit application <span class="arrow">→</span></button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="site.js"></script>
+<script>
+  // Earnings calculator
+  const fareSlider = document.getElementById('fareSlider');
+  const rateSlider = document.getElementById('rateSlider');
+  const fareVal = document.getElementById('fareVal');
+  const rateVal = document.getElementById('rateVal');
+  const bigNet = document.getElementById('bigNet');
+  const joyNet = document.getElementById('joyNet');
+  const diff = document.getElementById('diff');
+  const yearly = document.getElementById('yearly');
+  const fmt = n => '$' + Math.round(n).toLocaleString();
+  function update() {
+    const f = +fareSlider.value, r = +rateSlider.value;
+    fareVal.textContent = fmt(f);
+    rateVal.textContent = r + '%';
+    const big = f * (1 - r/100);
+    const joy = f - 49;
+    const d = joy - big;
+    bigNet.textContent = fmt(big);
+    joyNet.textContent = fmt(joy);
+    diff.textContent = '+' + fmt(d);
+    yearly.textContent = '+' + fmt(d * 12);
+  }
+  fareSlider.addEventListener('input', update);
+  rateSlider.addEventListener('input', update);
+  update();
+</script>
+</body>
+</html>

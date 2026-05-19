@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — Latest Updates</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .blog-hero { padding-block: clamp(48px, 7vw, 96px) clamp(32px, 4vw, 56px); }
+  .blog-hero h1 { font-size: clamp(48px, 8vw, 112px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.94; }
+
+  .feat { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--s7); border-radius: var(--r-xl); overflow: hidden; background: var(--ink); color: var(--paper); }
+  .feat .photo { aspect-ratio: 16/10; border-radius: 0; }
+  .feat .body { padding: clamp(32px, 4vw, 56px); display: flex; flex-direction: column; justify-content: center; }
+  .feat h2 { font-size: clamp(28px, 3.5vw, 44px); margin-block: var(--s4); color: var(--canary); }
+  .feat p { color: #c8c8c0; }
+  .feat .tag { display: inline-block; padding: 4px 10px; background: var(--canary); color: var(--ink); border-radius: 999px; font-size: 12px; font-weight: 600; }
+  @media (max-width: 880px) { .feat { grid-template-columns: 1fr; } }
+
+  .post-grid { grid-template-columns: repeat(3, 1fr); gap: var(--s7) var(--s5); }
+  .post { display: flex; flex-direction: column; gap: var(--s4); }
+  .post .photo { aspect-ratio: 4/3; }
+  .post .meta { display: flex; gap: var(--s3); font-size: 13px; color: var(--ink-3); }
+  .post .meta .tag { padding: 2px 10px; background: var(--canary); color: var(--ink); border-radius: 999px; font-weight: 600; }
+  .post h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.02em; }
+  .post:hover h3 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .post p { color: var(--ink-2); }
+  @media (max-width: 880px) { .post-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .post-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="blog">
+
+<main>
+  <section class="blog-hero wrap">
+    <span class="eyebrow">Latest updates</span>
+    <h1 class="mt-4">From the road.</h1>
+    <p class="lead mt-5" style="font-size: clamp(18px, 1.6vw, 22px);">Product news, city launches, driver stories, and what we're learning as we build a fairer marketplace.</p>
+  </section>
+
+  <section class="wrap section--tight">
+    <a href="#" class="feat">
+      <div class="photo" aria-label="Featured post image" style="background:none;padding:0"><img src="assets/illo-blog-featured.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+      <div class="body">
+        <span class="tag">Announcement</span>
+        <h2>Joyride launches in Austin this fall — meet our first 200 drivers.</h2>
+        <p>We're starting in Austin because Austin asked first. Here's what to expect on day one — and how we picked our founding driver class.</p>
+        <div class="cluster mt-5">
+          <span style="font-size: 14px; color: #888;">April 18, 2026 · 6 min read</span>
+        </div>
+      </div>
+    </a>
+  </section>
+
+  <section class="section wrap">
+    <div class="split mb-7">
+      <h2>All posts</h2>
+      <div class="cluster">
+        <a href="#" class="pill">All</a>
+        <a href="#" class="pill pill--ghost">Drivers</a>
+        <a href="#" class="pill pill--ghost">Riders</a>
+        <a href="#" class="pill pill--ghost">Cities</a>
+        <a href="#" class="pill pill--ghost">Product</a>
+      </div>
+    </div>
+
+    <div class="grid post-grid">
+      <a href="#" class="post">
+        <div class="photo" style="background:none"><img src="assets/illo-blog-1.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+        <div class="meta"><span class="tag">Drivers</span><span>April 12, 2026 · 4 min</span></div>
+        <h3>What "100% of the fare" actually looks like at the end of the month.</h3>
+        <p>Three Austin drivers walk through their first earnings statements — and what changed.</p>
+      </a>
+      <a href="#" class="post">
+        <div class="photo" style="background:none"><img src="assets/illo-blog-2.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+        <div class="meta"><span class="tag">Product</span><span>April 5, 2026 · 3 min</span></div>
+        <h3>Why we built saved drivers and recurring trips first.</h3>
+        <p>Repeat business is the foundation of any real service work. Here's how we shipped it.</p>
+      </a>
+      <a href="#" class="post">
+        <div class="photo" style="background:none"><img src="assets/illo-blog-3.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+        <div class="meta"><span class="tag">Cities</span><span>March 28, 2026 · 5 min</span></div>
+        <h3>Denver and Portland — what we're hearing from drivers there.</h3>
+        <p>We've talked to 400 drivers across two cities. Here are the patterns.</p>
+      </a>
+      <a href="#" class="post">
+        <div class="photo" style="background:none"><img src="assets/illo-blog-4.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+        <div class="meta"><span class="tag">Riders</span><span>March 20, 2026 · 4 min</span></div>
+        <h3>Transparent pricing isn't just better for drivers — it's better for riders.</h3>
+        <p>What happens when you remove the surge math from the equation.</p>
+      </a>
+      <a href="#" class="post">
+        <div class="photo" style="background:none"><img src="assets/illo-blog-5.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+        <div class="meta"><span class="tag">Company</span><span>March 14, 2026 · 7 min</span></div>
+        <h3>The marketplace economics behind Joyride.</h3>
+        <p>Why a flat subscription beats a percentage cut for both sides — and how the math holds up at scale.</p>
+      </a>
+      <a href="#" class="post">
+        <div class="photo" style="background:none"><img src="assets/illo-blog-6.svg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block"></div>
+        <div class="meta"><span class="tag">Drivers</span><span>March 5, 2026 · 5 min</span></div>
+        <h3>How to set your rates: a working guide for new Joyride drivers.</h3>
+        <p>What to charge, when to charge it, and how to win repeat riders.</p>
+      </a>
+    </div>
+  </section>
+</main>
+
+<script src="site.js"></script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — A new kind of rideshare</title>
+<link rel="icon" href="assets/mark-canary.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Hero */
+  .hero { padding-block: clamp(40px, 6vw, 88px) clamp(64px, 8vw, 120px); }
+  .hero-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--s7); align-items: end; margin-bottom: var(--s7); }
+  .hero h1 { font-size: clamp(56px, 9vw, 132px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.92; }
+  .hero h1 em { font-style: normal; color: var(--canary-deep); }
+  .hero .smiley-mark { width: clamp(80px, 10vw, 140px); justify-self: end; }
+  .hero-meta { display: flex; flex-direction: column; gap: var(--s4); align-items: flex-start; }
+  .hero-cta-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4);
+    margin-top: var(--s7);
+  }
+  .hero-cta {
+    display: flex; flex-direction: column; gap: var(--s3);
+    padding: clamp(28px, 3.5vw, 48px); border-radius: var(--r-xl);
+    border: 1.5px solid var(--ink); position: relative; overflow: hidden;
+    transition: transform .2s var(--ease), background .2s var(--ease);
+  }
+  .hero-cta:hover { transform: translateY(-3px); }
+  .hero-cta--driver { background: var(--canary); border-color: var(--canary); }
+  .hero-cta--rider { background: var(--ink); color: var(--canary); border-color: var(--ink); }
+  .hero-cta .label { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; opacity: .7; }
+  .hero-cta h2 { font-size: clamp(28px, 3vw, 44px); margin-block: var(--s2) var(--s4); }
+  .hero-cta p { max-width: 38ch; }
+  .hero-cta .go {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: var(--s5); font-weight: 600; font-size: 17px;
+  }
+  .hero-cta .go .arrow { transition: transform .2s var(--ease); }
+  .hero-cta:hover .go .arrow { transform: translateX(6px); }
+  @media (max-width: 880px) {
+    .hero-head { grid-template-columns: 1fr; }
+    .hero .smiley-mark { justify-self: start; }
+    .hero-cta-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Marquee strip */
+  .marquee {
+    background: var(--ink); color: var(--canary);
+    padding-block: var(--s5);
+    overflow: hidden; white-space: nowrap;
+  }
+  .marquee-track {
+    display: inline-flex; gap: var(--s7); padding-left: 100%;
+    animation: marquee 40s linear infinite;
+    font-size: clamp(28px, 3.5vw, 48px); font-weight: 600; letter-spacing: -0.02em;
+  }
+  .marquee-track span { display: inline-flex; align-items: center; gap: var(--s7); }
+  .marquee-track span::after { content: '✺'; color: var(--canary); }
+  @keyframes marquee { to { transform: translateX(-100%); } }
+
+  /* Value props */
+  .vp-grid { grid-template-columns: repeat(3, 1fr); }
+  .vp { padding: var(--s7) var(--s6); border-radius: var(--r-xl); border: 1px solid var(--rule); background: var(--white); }
+  .vp .num { font-size: 14px; font-weight: 600; color: var(--ink-3); margin-bottom: var(--s5); }
+
+  /* Tablet: horizontal scroll-snap with peek */
+  @media (max-width: 880px) and (min-width: 541px) {
+    .vp-grid {
+      display: flex;
+      grid-template-columns: none;
+      gap: var(--s4);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      padding-bottom: var(--s4);
+      scrollbar-width: thin;
+    }
+    .vp {
+      flex: 0 0 75%;
+      min-width: 320px;
+      scroll-snap-align: start;
+    }
+  }
+
+  /* Phone: full stack so each card breathes */
+  @media (max-width: 540px) {
+    .vp-grid { grid-template-columns: 1fr; gap: var(--s4); }
+    .vp { padding: var(--s6) var(--s5); }
+  }
+  .vp h3 { margin-bottom: var(--s3); }
+  .vp p { color: var(--ink-2); }
+
+  /* Compare */
+  .compare { background: var(--ink); color: var(--paper); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); }
+  .compare-table {
+    width: 100%; border-collapse: collapse; margin-top: var(--s7);
+    font-size: clamp(15px, 1.5vw, 18px);
+  }
+  .compare-table th, .compare-table td {
+    padding: 18px 20px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);
+    vertical-align: middle;
+  }
+  .compare-table th { font-weight: 600; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
+  .compare-table th.us { color: var(--canary); }
+  .compare-table tr td:first-child { font-weight: 500; color: #c8c8c0; width: 40%; }
+  .compare-table .yes { color: var(--canary); font-weight: 600; }
+  .compare-table .no { color: #777; }
+
+  /* Mobile: convert 4-col table to stacked cards */
+  @media (max-width: 720px) {
+    .compare-table thead { display: none; }
+    .compare-table, .compare-table tbody, .compare-table tr, .compare-table td { display: block; width: 100%; }
+    .compare-table tr {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--r-lg);
+      padding: var(--s4) var(--s5);
+      margin-bottom: var(--s4);
+    }
+    .compare-table td {
+      display: flex; justify-content: space-between; align-items: center; gap: var(--s4);
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: right;
+    }
+    .compare-table td:last-child { border-bottom: 0; }
+    .compare-table tr td:first-child {
+      width: auto; font-weight: 700; font-size: 18px;
+      letter-spacing: -0.01em; color: #fff !important;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding-bottom: 14px; margin-bottom: 4px;
+    }
+    .compare-table tr td:first-child::after { content: ''; }
+    .compare-table td[data-col]::before {
+      content: attr(data-col);
+      font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      text-align: left;
+      flex-shrink: 0;
+    }
+  }
+
+  /* How it works */
+  .steps { counter-reset: step; }
+  .step { display: grid; grid-template-columns: 80px 1fr 1.2fr; gap: var(--s6); align-items: start; padding-block: var(--s7); border-top: 1px solid var(--rule); }
+  .step:last-child { border-bottom: 1px solid var(--rule); }
+  .step .n { font-size: clamp(48px, 6vw, 72px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--canary-deep); }
+  .step h3 { margin-bottom: var(--s3); }
+  .step p { color: var(--ink-2); }
+  @media (max-width: 720px) {
+    .step { grid-template-columns: 1fr; gap: var(--s3); }
+  }
+
+  /* Final CTA */
+  .final-cta {
+    background: var(--canary); border-radius: var(--r-xl);
+    padding: clamp(56px, 8vw, 120px) clamp(32px, 5vw, 80px);
+    text-align: center;
+  }
+  .final-cta h2 { font-size: clamp(40px, 7vw, 96px); margin-bottom: var(--s5); }
+  .final-cta .cluster { justify-content: center; gap: var(--s4); }
+</style>
+</head>
+<body data-page="home">
+
+<main>
+  <section class="hero wrap">
+    <div class="hero-head">
+      <div>
+        <h1>Drivers keep <em>100%</em> of the fare. Riders get a <em>better ride.</em></h1>
+      </div>
+      <div class="hero-meta">
+        <img data-logo="hero-mark" src="assets/mark-hero.svg" class="smiley-mark" alt="">
+      </div>
+    </div>
+    <p class="lead" style="max-width: 56ch; font-size: clamp(18px, 1.8vw, 24px);">
+      Joyride is the marketplace where rideshare drivers run their own businesses — set their prices, build their client lists, and keep what they earn. One flat monthly fee, no per-ride cut.
+    </p>
+
+    <div class="hero-cta-grid">
+      <a href="drivers.html" class="hero-cta hero-cta--driver">
+        <span class="label">For drivers</span>
+        <h2>Run your business. Keep your money.</h2>
+        <p>One flat subscription. Set your own rates. Build a client list that's actually yours.</p>
+        <span class="go">See how it works <span class="arrow">→</span></span>
+      </a>
+      <a href="riders.html" class="hero-cta hero-cta--rider">
+        <span class="label">For riders</span>
+        <h2>Better rides. Better drivers. Fairer for both.</h2>
+        <p>When drivers are treated fairly, your ride is better. Choose drivers, save favorites, ride happier.</p>
+        <span class="go">Get the app <span class="arrow">→</span></span>
+      </a>
+    </div>
+  </section>
+
+  <div class="marquee">
+    <div class="marquee-track">
+      <span>Enjoy the ride</span><span>100% of the fare</span><span>One flat fee</span>
+      <span>Set your own price</span><span>Own your client list</span><span>Enjoy the ride</span>
+      <span>Drive on your terms</span><span>100% of the fare</span>
+    </div>
+  </div>
+
+  <section class="section wrap">
+    <div class="split mb-7" style="align-items: end;">
+      <div>
+        <span class="eyebrow">Why Joyride</span>
+        <h2 class="mt-3" style="max-width: 16ch;">Built for the people who actually do the driving.</h2>
+      </div>
+      <p class="lead" style="max-width: 40ch;">
+        Big rideshare platforms take 25–40% of every fare. We don't. Drivers pay one flat monthly fee, and everything else is theirs.
+      </p>
+    </div>
+
+    <div class="grid vp-grid">
+      <div class="vp">
+        <div class="num">01</div>
+        <h3>Keep 100% of every fare.</h3>
+        <p>No per-ride cut. No surge skim. The fare you charge is the fare you earn.</p>
+      </div>
+      <div class="vp" style="background: var(--canary); border-color: var(--canary);">
+        <div class="num">02</div>
+        <h3>Price your own rides.</h3>
+        <p>Set rates that work for your time, your vehicle, and your market. Charge what you're worth.</p>
+      </div>
+      <div class="vp">
+        <div class="num">03</div>
+        <h3>Own your client list.</h3>
+        <p>Repeat riders save you to favorites. Build a real book of business — not just streaming gigs.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="compare">
+      <span class="eyebrow" style="color: var(--canary-deep);">The math</span>
+      <h2 class="mt-3" style="max-width: 18ch;">A driver doing $4,000 / month in fares.</h2>
+      <p class="lead mt-4" style="color: #c8c8c0; max-width: 50ch;">
+        Same fares. Different platforms. Here's what's left after the platform takes its share.
+      </p>
+      <table class="compare-table">
+        <thead>
+          <tr><th>What you keep</th><th>Big rideshare A</th><th>Big rideshare B</th><th class="us">Joyride</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Take rate</td><td data-col="Big rideshare A"></td><td data-col="Big rideshare B">~32%</td><td class="yes" data-col="Joyride">$49 / month flat</td></tr>
+          <tr><td>Net to driver</td><td data-col="Big rideshare A">$2,880</td><td data-col="Big rideshare B">$2,720</td><td class="yes" data-col="Joyride">$3,951</td></tr>
+          <tr><td>Set your own price</td><td class="no" data-col="Big rideshare A">No</td><td class="no" data-col="Big rideshare B">No</td><td class="yes" data-col="Joyride">Yes</td></tr>
+          <tr><td>Repeat client list</td><td class="no" data-col="Big rideshare A">No</td><td class="no" data-col="Big rideshare B">No</td><td class="yes" data-col="Joyride">Yes</td></tr>
+          <tr><td>Choose your rides</td><td class="no" data-col="Big rideshare A">Limited</td><td class="no" data-col="Big rideshare B">Limited</td><td class="yes" data-col="Joyride">Always</td></tr>
+        </tbody>
+      </table>
+      <div class="cluster mt-7">
+        <a href="drivers.html" class="btn btn--canary">Try the calculator <span class="arrow">→</span></a>
+        <a href="drivers.html" class="btn btn--ghost" style="border-color: var(--canary); color: var(--canary);">Apply to drive</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <span class="eyebrow">How it works</span>
+    <h2 class="mt-3 mb-7" style="max-width: 18ch;">Two sides. One marketplace. Joy on both.</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="n">01</div>
+        <div><h3>Drivers subscribe.</h3></div>
+        <p>One flat monthly fee gives drivers access to the marketplace, dispatch, payments, and support. No commission. No surprises.</p>
+      </div>
+      <div class="step">
+        <div class="n">02</div>
+        <div><h3>Drivers set the price.</h3></div>
+        <p>Drivers publish their rates. Riders see real, transparent pricing — no algorithmic surge math.</p>
+      </div>
+      <div class="step">
+        <div class="n">03</div>
+        <div><h3>Riders book the ride.</h3></div>
+        <p>Riders pick a driver they trust, save favorites, and pay through the app. The fare goes straight to the driver.</p>
+      </div>
+      <div class="step">
+        <div class="n">04</div>
+        <div><h3>Both sides win.</h3></div>
+        <p>Drivers earn more. Riders get better service. Repeat trips build relationships, not metrics.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="final-cta">
+      <span class="eyebrow">Pre-launch · Join the waitlist</span>
+      <h2 class="mt-4">Enjoy the ride.</h2>
+      <p class="lead" style="margin: 0 auto var(--s7); color: var(--ink-2);">
+        We're rolling out city by city in 2026. Get on the list and we'll let you know when we land in yours.
+      </p>
+      <div class="cluster">
+        <a href="drivers.html" class="btn btn--primary">I want to drive <span class="arrow">→</span></a>
+        <a href="riders.html" class="btn btn--ghost">I want to ride</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="site.js"></script>
+</body>
+</html>

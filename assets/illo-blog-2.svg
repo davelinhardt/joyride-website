@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" role="img" aria-label="Saved drivers">
+  <rect width="600" height="450" fill="#FFEF00"></rect>
+  <g transform="translate(300 225)">
+    <path d="M 0 -110 L 30 -40 L 100 -30 L 50 20 L 65 90 L 0 55 L -65 90 L -50 20 L -100 -30 L -30 -40 Z" fill="#000"></path>
+  </g>
+</svg>

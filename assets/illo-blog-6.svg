@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" role="img" aria-label="Setting your rates">
+  <rect width="600" height="450" fill="#FFEF00"></rect>
+  <g transform="translate(300 225)">
+    <circle r="120" fill="none" stroke="#000" stroke-width="12"></circle>
+    <line x1="0" y1="-120" x2="0" y2="-95" stroke="#000" stroke-width="8" stroke-linecap="round"></line>
+    <line x1="0" y1="120" x2="0" y2="95" stroke="#000" stroke-width="8" stroke-linecap="round"></line>
+    <line x1="-120" y1="0" x2="-95" y2="0" stroke="#000" stroke-width="8" stroke-linecap="round"></line>
+    <line x1="120" y1="0" x2="95" y2="0" stroke="#000" stroke-width="8" stroke-linecap="round"></line>
+    <line x1="0" y1="0" x2="60" y2="-60" stroke="#000" stroke-width="14" stroke-linecap="round"></line>
+    <line x1="0" y1="0" x2="0" y2="40" stroke="#000" stroke-width="10" stroke-linecap="round"></line>
+    <circle r="10" fill="#000"></circle>
+    <text x="0" y="-140" font-family="Inter Tight, sans-serif" font-weight="800" font-size="36" fill="#000" text-anchor="middle">$</text>
+  </g>
+</svg>

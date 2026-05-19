@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Driver illustration">
+  <defs>
+    <linearGradient id="bg-d" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFEF00"></stop>
+      <stop offset="1" stop-color="#F5C400"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg-d)"></rect>
+  
+  <rect x="0" y="560" width="600" height="240" fill="#000" opacity="0.08"></rect>
+  
+  <g fill="#000" opacity="0.18">
+    <rect x="180" y="640" width="40" height="10" rx="2"></rect>
+    <rect x="280" y="640" width="40" height="10" rx="2"></rect>
+    <rect x="380" y="640" width="40" height="10" rx="2"></rect>
+  </g>
+  
+  <g>
+    
+    <path d="M 100 800 L 100 640 Q 100 520 200 500 L 400 500 Q 500 520 500 640 L 500 800 Z" fill="#000"></path>
+    
+    <circle cx="300" cy="380" r="120" fill="#000"></circle>
+    
+    <path d="M 180 360 Q 300 280 420 360 L 420 380 L 180 380 Z" fill="#000"></path>
+    <rect x="160" y="350" width="280" height="22" rx="11" fill="#000"></rect>
+    
+    <ellipse cx="270" cy="385" rx="9" ry="14" fill="#FFEF00"></ellipse>
+    <ellipse cx="330" cy="385" rx="9" ry="14" fill="#FFEF00"></ellipse>
+    <path d="M 258 425 Q 300 460 342 425" stroke="#FFEF00" stroke-width="10" stroke-linecap="round" fill="none"></path>
+    
+    <circle cx="300" cy="700" r="80" fill="none" stroke="#FFEF00" stroke-width="10"></circle>
+    <circle cx="300" cy="700" r="14" fill="#FFEF00"></circle>
+    <line x1="300" y1="630" x2="300" y2="686" stroke="#FFEF00" stroke-width="8"></line>
+    <line x1="232" y1="708" x2="286" y2="708" stroke="#FFEF00" stroke-width="8"></line>
+    <line x1="314" y1="708" x2="368" y2="708" stroke="#FFEF00" stroke-width="8"></line>
+  </g>
+</svg>
