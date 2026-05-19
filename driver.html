@@ -18,10 +18,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 <style>
+  /* Page shape — centered single column, mirrors the in-app driver
+     profile layout the rider sees when previewing a driver from
+     match candidates / favorites. */
   .dp-wrap {
-    max-width: 880px;
+    max-width: 640px;
     margin: 0 auto;
-    padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px) 120px;
+    padding: clamp(32px, 5vw, 56px) clamp(16px, 4vw, 28px) 96px;
+    text-align: center;
   }
 
   /* Loading / empty / not-found states share one layout so transitions
@@ -35,119 +39,141 @@
   .dp-state p { max-width: 48ch; margin: 0 auto; font-size: 16px; line-height: 1.5; }
   .dp-state a.btn { margin-top: 24px; }
 
-  /* Profile hero — photo + name + rating row, mirrors the in-app
-     driver-profile card the rider sees when matching. */
-  .dp-card {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: var(--r-xl);
-    padding: clamp(28px, 4vw, 48px);
-    margin-bottom: var(--s6);
-  }
-  .dp-head {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: clamp(20px, 3vw, 40px);
-    align-items: center;
-    margin-bottom: var(--s5);
-  }
-  @media (max-width: 540px) {
-    .dp-head { grid-template-columns: 1fr; text-align: center; }
-  }
+  /* Photo — centered round portrait, no card chrome (matches the
+     in-app screen where the photo sits on the screen background). */
   .dp-photo {
-    width: clamp(96px, 14vw, 144px);
-    height: clamp(96px, 14vw, 144px);
+    width: clamp(120px, 22vw, 168px);
+    height: clamp(120px, 22vw, 168px);
     border-radius: 50%;
     object-fit: cover;
     background: var(--surface-2);
     border: 2px solid var(--rule);
-    justify-self: center;
   }
   .dp-photo--initials {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: clamp(36px, 5vw, 56px);
+    font-size: clamp(40px, 7vw, 64px);
     font-weight: 700;
     color: var(--canary);
     background: var(--ink);
   }
+
   .dp-name {
-    font-size: clamp(32px, 4vw, 48px);
+    font-size: clamp(28px, 4vw, 36px);
     font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-top: 18px;
   }
   .dp-handle {
     color: var(--fg-3);
     font-size: 16px;
-    margin-bottom: 12px;
+    margin-top: 6px;
   }
+
+  /* 5-star rating row — mirrors the in-app screen exactly: filled
+     gold stars up to round(rating), outlined for the rest. Reads
+     "3.82 (9)" beside them when there ARE reviews; collapses to
+     just em-dash when there are none (avoids seed-default "5.00 (0)"
+     which reads as mock data). */
   .dp-rating-row {
-    display: flex; gap: 14px; align-items: center;
+    display: inline-flex; align-items: center;
+    gap: 8px; margin-top: 10px;
     color: var(--fg);
-    font-size: 15px;
-    flex-wrap: wrap;
-  }
-  .dp-stars { color: var(--canary); font-weight: 700; }
-  .dp-rating-row .sep { color: var(--fg-3); }
-
-  /* Stats row — totalRydes, hourly rate, vehicle summary */
-  .dp-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: var(--s3);
-    margin-bottom: var(--s5);
-  }
-  .dp-stat {
-    background: var(--surface-2);
-    padding: 16px 18px;
-    border-radius: var(--r-md);
-    border: 1px solid var(--rule);
-  }
-  .dp-stat .label {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--fg-3);
-  }
-  .dp-stat .value {
-    font-size: 22px; font-weight: 700; color: var(--fg);
-    margin-top: 4px;
-  }
-  .dp-stat .sub { font-size: 13px; color: var(--fg-3); margin-top: 2px; }
-
-  .dp-bio {
-    padding: 18px 0 8px;
-    color: var(--fg);
-    line-height: 1.6;
     font-size: 16px;
-    border-top: 1px solid var(--rule);
-    margin-top: var(--s4);
   }
-  .dp-bio h3 {
-    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--fg-3);
-    margin-bottom: 8px;
+  .dp-rating-row .stars {
+    color: var(--canary);
+    letter-spacing: 1px;
+    font-size: 20px;
+    line-height: 1;
   }
+  .dp-rating-row .score { font-weight: 600; }
+  .dp-rating-row .count { color: var(--fg-3); font-size: 14px; }
 
-  /* Book CTA — primary action. Until the apps publish this is a
-     placeholder that opens an "app store coming soon" modal. After
-     publish, we'll route to a Universal Link with ?driver=username
-     so the rider app can pre-select this driver. */
+  /* Book CTA — sits between the rating row and the stats grid so
+     it's the most prominent action on the page (in-app puts the
+     Favorite + Book buttons in this slot; we only need Book on
+     the web — see driver-profile.tsx for the in-app source). */
   .dp-book {
-    display: flex; flex-direction: column; gap: 12px;
+    margin-top: var(--s5);
+    display: flex; flex-direction: column; gap: 10px;
     align-items: stretch;
   }
   .dp-book .btn--primary {
-    font-size: 17px; padding: 18px 28px;
-    border-radius: var(--r-md);
+    font-size: 16px; padding: 16px 24px;
+    border-radius: 999px;
     width: 100%;
     justify-content: center;
+    font-weight: 700;
   }
   .dp-book .helper {
     font-size: 13px; color: var(--fg-3); text-align: center;
   }
   .dp-book .helper a { color: var(--canary); }
+
+  /* 3 stat tiles: Rides / Tenure / Rating. Equal-width on desktop,
+     stay 3-wide on mobile (matches the in-app `flex-row gap-4` from
+     driver-profile.tsx — small numbers, fixed columns). */
+  .dp-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s3);
+    margin-top: var(--s6);
+  }
+  .dp-stat {
+    background: var(--surface);
+    padding: 18px 12px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--rule);
+    text-align: center;
+  }
+  .dp-stat .value {
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 700;
+    color: var(--canary);
+    line-height: 1;
+  }
+  .dp-stat .label {
+    margin-top: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--fg-3);
+  }
+
+  /* Info card — used for Vehicle + About. Each renders title, body,
+     and (vehicle only) a car icon on the right. */
+  .dp-info {
+    margin-top: var(--s5);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-xl);
+    padding: 22px 24px;
+    text-align: left;
+  }
+  .dp-info h3 {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--canary);
+    margin-bottom: 12px;
+  }
+  .dp-vehicle-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .dp-vehicle .model { font-size: 17px; color: var(--fg); font-weight: 600; }
+  .dp-vehicle .year  { font-size: 14px; color: var(--fg-3); margin-top: 2px; }
+  .dp-vehicle .plate { font-size: 13px; color: var(--fg-3); margin-top: 10px; }
+  .dp-vehicle .plate strong { color: var(--fg); font-weight: 600; letter-spacing: 0.04em; }
+  .dp-vehicle .icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--canary);
+  }
+  .dp-bio-body { color: var(--fg); line-height: 1.55; font-size: 15px; }
 </style>
 </head>
 <body data-page="driver">
@@ -182,24 +208,21 @@
       <pre id="dp-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
     </div>
 
+    <!-- Profile content. Layout mirrors the in-app driver-profile
+         screen (joiryde-rider/app/driver-profile.tsx):
+           1. centered photo
+           2. name + @handle + 5-star rating row
+           3. Book CTA
+           4. 3 stat tiles (Rides / Tenure / Rating)
+           5. Vehicle card (model on line 1, year on line 2, license
+              plate at the bottom, car icon on the right)
+           6. About card -->
     <div id="dp-content" hidden>
-      <article class="dp-card">
-        <header class="dp-head">
-          <img id="dp-photo" class="dp-photo" alt="">
-          <div>
-            <h1 id="dp-name" class="dp-name"></h1>
-            <p id="dp-handle" class="dp-handle"></p>
-            <div id="dp-rating-row" class="dp-rating-row"></div>
-          </div>
-        </header>
+      <img id="dp-photo" class="dp-photo" alt="">
 
-        <div id="dp-stats" class="dp-stats"></div>
-
-        <div id="dp-bio" class="dp-bio" hidden>
-          <h3>About</h3>
-          <p id="dp-bio-body"></p>
-        </div>
-      </article>
+      <h1 id="dp-name" class="dp-name"></h1>
+      <p id="dp-handle" class="dp-handle"></p>
+      <div id="dp-rating-row" class="dp-rating-row"></div>
 
       <div class="dp-book">
         <a href="#download" id="dp-book-cta" class="btn btn--primary">
@@ -209,6 +232,29 @@
           Booking happens in the Joyride app. <a href="/login?signup=1">Create an account</a> or <a href="/login">log in</a> to get started.
         </p>
       </div>
+
+      <div id="dp-stats" class="dp-stats"></div>
+
+      <section id="dp-vehicle" class="dp-info dp-vehicle" hidden>
+        <h3>Vehicle</h3>
+        <div class="dp-vehicle-row">
+          <div>
+            <div class="model" id="dp-vehicle-model"></div>
+            <div class="year"  id="dp-vehicle-year" hidden></div>
+            <div class="plate" id="dp-vehicle-plate" hidden>
+              <span>License Plate: </span><strong id="dp-vehicle-plate-text"></strong>
+            </div>
+          </div>
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <section id="dp-bio" class="dp-info" hidden>
+        <h3>About</h3>
+        <p class="dp-bio-body" id="dp-bio-body"></p>
+      </section>
     </div>
   </section>
 </main>
@@ -248,7 +294,7 @@
   // a stale cached copy is being served — bump on any meaningful
   // edit to driver.htmls auth/fetch logic.
   var debug = {
-    pageVersion: "2026-05-19#7 (Driver since replaces hourly rate)",
+    pageVersion: "2026-05-19#8 (mirror in-app driver-profile layout)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
@@ -365,70 +411,69 @@
       photo.replaceWith(initialsBubble(initials));
     }
 
-    // Rating row — round to one decimal, omit review count when 0
-    // (showing "(0 reviews)" reads worse than nothing).
+    // 5-star rating row — mirrors the in-app screen exactly. Filled
+    // canary stars up to round(rating), outlined for the rest. When
+    // there are NO reviews yet we render outlined stars + an em-dash
+    // instead of "5.00 (0)" to avoid the seed-default look.
     var ratingRow = document.getElementById("dp-rating-row");
     var rating = parseFloat(String(d.rating)) || 5;
-    var ratingHtml = '<span class="dp-stars">★ ' + rating.toFixed(2) + "</span>";
+    var ratingRounded = Math.round(rating);
+    var stars = "";
+    for (var i = 1; i <= 5; i++) {
+      stars += (d.totalRatings > 0 && i <= ratingRounded) ? "★" : "☆";
+    }
+    var ratingHtml = '<span class="stars" aria-label="' + (d.totalRatings > 0 ? rating.toFixed(2) + " out of 5" : "No reviews yet") + '">' + stars + "</span>";
     if (d.totalRatings > 0) {
-      ratingHtml += '<span class="sep">·</span><span>' + d.totalRatings + " review" + (d.totalRatings === 1 ? "" : "s") + "</span>";
+      ratingHtml += '<span class="score">' + rating.toFixed(2) + "</span>";
+      ratingHtml += '<span class="count">(' + d.totalRatings.toLocaleString() + ")</span>";
+    } else {
+      ratingHtml += '<span class="count">—</span>';
     }
     ratingRow.innerHTML = ratingHtml;
 
-    // Stats: rides completed, driver tenure, vehicle. The hourly-rate
-    // box was removed 2026-05-19 (per Dave) in favor of "Driver since"
-    // so the visible signals on the page lean toward trust (how long
-    // they've been at this) rather than price (which the rider sees
-    // for real in the app at booking time anyway).
-    var stats = [];
-    stats.push({
-      label: "Rides completed",
-      value: String(d.totalRydes || 0),
-    });
-    if (d.driverSince) {
-      var since = new Date(d.driverSince);
-      if (!isNaN(since.getTime())) {
-        // "May 2026" — short month + year reads well in a small tile
-        // and avoids any "1 month ago"-style ambiguity.
-        var label = since.toLocaleDateString(undefined, { month: "short", year: "numeric" });
-        // Compute a sub-label like "3 months" or "2 years" relative
-        // to now for the tile's second line — gives the visitor an
-        // at-a-glance feel without doing month arithmetic in their
-        // head.
-        var msPerDay = 86400000;
-        var days = Math.max(0, Math.floor((Date.now() - since.getTime()) / msPerDay));
-        var sub;
-        if (days < 31) sub = days <= 1 ? "Just joined" : days + " days on Joyride";
-        else if (days < 365) {
-          var months = Math.max(1, Math.round(days / 30));
-          sub = months + " month" + (months === 1 ? "" : "s") + " on Joyride";
-        } else {
-          var years = Math.floor(days / 365);
-          var remMonths = Math.round((days - years * 365) / 30);
-          sub = years + " year" + (years === 1 ? "" : "s") + (remMonths > 0 ? ", " + remMonths + " mo" : "") + " on Joyride";
-        }
-        stats.push({ label: "Driver since", value: label, sub: sub });
-      }
-    }
-    if (d.vehicle && (d.vehicle.make || d.vehicle.model)) {
-      var v = d.vehicle;
-      var name = [v.year, v.color, v.make, v.model].filter(Boolean).join(" ");
-      stats.push({
-        label: "Vehicle",
-        value: name || "—",
-      });
-    }
+    // Three stat tiles — Rides / Tenure / Rating. Mirrors the in-app
+    // driver-profile triplet (joiryde-rider/app/driver-profile.tsx
+    // line ~358). Tenure uses the same flips-units-at-1-year logic
+    // as the shared computeTenureDisplay helper in the rider app.
+    var stats = [
+      { label: "Rides", value: String(d.totalRydes || 0) },
+      tenureStat(d.driverSince),
+      {
+        label: "Rating",
+        value: d.totalRatings > 0 ? rating.toFixed(1) : "—",
+      },
+    ];
     document.getElementById("dp-stats").innerHTML = stats
       .map(function (s) {
         return (
           '<div class="dp-stat">' +
-            '<div class="label">' + s.label + "</div>" +
             '<div class="value">' + s.value + "</div>" +
-            (s.sub ? '<div class="sub">' + s.sub + "</div>" : "") +
+            '<div class="label">' + s.label + "</div>" +
           "</div>"
         );
       })
       .join("");
+
+    // Vehicle card — two lines: model on line 1, year on line 2.
+    // (Per Dave 2026-05-19: the old single-line "2023 Tesla Model Y"
+    // wrapped the "Y" to its own line in the narrow tile and looked
+    // weird; splitting year off cleans it up.) License plate sits
+    // under the model/year when present.
+    if (d.vehicle && (d.vehicle.make || d.vehicle.model)) {
+      var v = d.vehicle;
+      var modelLine = [v.color, v.make, v.model].filter(Boolean).join(" ").trim();
+      document.getElementById("dp-vehicle").hidden = false;
+      document.getElementById("dp-vehicle-model").textContent = modelLine || "—";
+      if (v.year) {
+        var yearEl = document.getElementById("dp-vehicle-year");
+        yearEl.textContent = String(v.year);
+        yearEl.hidden = false;
+      }
+      if (v.licensePlate) {
+        document.getElementById("dp-vehicle-plate").hidden = false;
+        document.getElementById("dp-vehicle-plate-text").textContent = v.licensePlate;
+      }
+    }
 
     if (d.bio) {
       document.getElementById("dp-bio").hidden = false;
@@ -442,6 +487,31 @@
     document.getElementById("dp-book-firstname").textContent = firstName;
 
     show("content");
+  }
+
+  // Port of the rider apps `computeTenureDisplay` (lib/tenure-display.ts).
+  // Reading both side-by-side: < 1 year flips to "N Month(s)" with
+  // no `+` suffix; ≥ 1 year flips to "N+ Year(s)". When no date is
+  // available we floor at "1 Month" so the tile never reads "0".
+  function tenureStat(driverSinceIso) {
+    var since = driverSinceIso ? new Date(driverSinceIso) : null;
+    if (!since || isNaN(since.getTime())) {
+      return { label: "Months", value: "1" };
+    }
+    var ONE_MONTH_MS = 30.44 * 24 * 60 * 60 * 1000;
+    var totalMonths = Math.floor((Date.now() - since.getTime()) / ONE_MONTH_MS);
+    if (totalMonths >= 12) {
+      var years = Math.floor(totalMonths / 12);
+      return {
+        label: years === 1 ? "Year" : "Years",
+        value: years + "+",
+      };
+    }
+    var months = Math.max(1, totalMonths);
+    return {
+      label: months === 1 ? "Month" : "Months",
+      value: String(months),
+    };
   }
 
   function initialsBubble(text) {
