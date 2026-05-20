@@ -87,26 +87,6 @@
   .auth-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
   @media (max-width: 540px) { .auth-form .row { grid-template-columns: 1fr; } }
 
-  .auth-form .role-pick {
-    display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3);
-    margin-bottom: var(--s5);
-  }
-  .auth-form .role-pick label {
-    cursor: pointer;
-    padding: 18px;
-    border: 1.5px solid var(--rule);
-    border-radius: 14px;
-    background: var(--surface);
-    display: flex; flex-direction: column; gap: 4px;
-    transition: all .15s var(--ease);
-  }
-  .auth-form .role-pick label:has(input:checked) {
-    border-color: var(--canary); background: rgba(255,239,0,0.08);
-  }
-  .auth-form .role-pick input { position: absolute; opacity: 0; pointer-events: none; }
-  .auth-form .role-pick .nm { font-weight: 600; font-size: 16px; }
-  .auth-form .role-pick .desc { font-size: 13px; color: #BFBFBF; }
-
   .auth-form .submit {
     width: 100%; height: 56px;
     background: var(--canary); color: var(--ink);
@@ -191,25 +171,13 @@
 
       <form id="auth-form" novalidate>
 
-        <!-- Role pick on signup: drives a post-signup nudge to download
-             the driver app (the actual driver application flow lives in
-             the Expo app, not here). Both options create a `riders` row
-             via the same /api/rider/signup endpoint.
-             Order matters: "I want to ride" is first + default
-             selected (per Dave 2026-05-20) — most signups are riders;
-             drivers are a smaller, more deliberate audience. -->
-        <div class="role-pick" data-mode="signup">
-          <label>
-            <input type="radio" name="role" value="rider" checked>
-            <span class="nm">I want to ride</span>
-            <span class="desc">Better rides. Better drivers.</span>
-          </label>
-          <label>
-            <input type="radio" name="role" value="driver">
-            <span class="nm">I want to drive</span>
-            <span class="desc">Run your business. Set your prices.</span>
-          </label>
-        </div>
+        <!-- Role pick removed 2026-05-20 (Dave Option A): a Joyride
+             account is the universal identity for both riders and
+             drivers — same /api/rider/signup endpoint, same row in
+             `riders`, same credentials. Drivers later apply via the
+             Driver app once installed. /account surfaces both app
+             downloads so users can pick from there. -->
+
 
         <div class="row" data-mode="signup">
           <div class="field">
@@ -333,10 +301,6 @@
     var el = document.getElementById(id);
     return el ? el.value.trim() : "";
   }
-  function selectedRole() {
-    var checked = document.querySelector("input[name=role]:checked");
-    return checked ? checked.value : "rider";
-  }
   function submitBtn() {
     return document.querySelector('.submit[data-mode="' + getMode() + '"]');
   }
@@ -388,7 +352,6 @@
     var mobile    = val("mobile");
     var username  = val("username");
     var password  = val("password");
-    var role      = selectedRole();
 
     if (!firstName || !lastName) return showError("Please enter your first and last name.");
     if (!email || !email.includes("@")) return showError("Please enter a valid email address.");
@@ -411,17 +374,12 @@
     JoyrideAPI.setToken(result.sessionToken);
     JoyrideAPI.cacheUser(result.rider);
 
-    // Both rider + driver signups land on /account — the chooser
-    // surfaces the right next-step cards (download apps, view
-    // driver page, open admin tool) without needing a separate
-    // welcome banner. The ?welcome= post-signup banner was
-    // removed 2026-05-19 (Dave: empty bar showed for regular
-    // logins too because of a CSS/HTML hidden conflict). The
-    // `role` value is still passed up here so we can route or
-    // surface different cards later if we want.
-    var dest = JoyrideAPI.routeAfterAuth(result.rider);
-    window.location.assign(dest);
-    void role;
+    // Every signup creates the same Joyride account (riders row +
+    // mirrored users row) and lands on /account. The account chooser
+    // surfaces Download Rider App + Download Driver App so the user
+    // can pick whichever path they want from there — drivers later
+    // complete the application inside the Driver app.
+    window.location.assign(JoyrideAPI.routeAfterAuth(result.rider));
   }
 })();
 </script>

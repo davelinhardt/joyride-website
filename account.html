@@ -319,13 +319,30 @@
       });
     }
 
+    // Apps split into two explicit cards — Rider app + Driver app —
+    // so a fresh signup can decide which one (or both) they want.
+    // Drivers complete the multi-step driver application inside the
+    // Driver app (license, insurance, vehicle, background check);
+    // the website never owns that flow. Once approved, their
+    // /account picks up the Driver card automatically because the
+    // server-side userType flips.
+    // Both hrefs are placeholders until App Store + Play listings are
+    // public (per SESSION_HANDOFF: EAS Build is queued).
     cards.push({
-      key: "apps",
-      eyebrow: "Apps",
-      h2: "Download Joyride",
-      p: "The rider and driver apps are where rides actually happen. Links go live as soon as the apps ship.",
-      href: "/#download",
-      go: "Get the apps →",
+      key: "rider-app",
+      eyebrow: "Rider app",
+      h2: "Download the Rider app",
+      p: "Book rides, see your driver in real time, save favorites, manage payments. Coming soon to the App Store and Google Play.",
+      href: "/#download-rider",
+      go: "Get the Rider app →",
+    });
+    cards.push({
+      key: "driver-app",
+      eyebrow: "Driver app",
+      h2: "Download the Driver app",
+      p: "Want to drive? Install the Driver app and apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
+      href: "/#download-driver",
+      go: "Get the Driver app →",
     });
 
     grid.innerHTML = cards.map(function (c) {
