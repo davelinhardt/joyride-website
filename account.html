@@ -66,17 +66,96 @@
   .action-card p { font-size: 14px; line-height: 1.5; opacity: 0.85; }
   .action-card .go { margin-top: auto; font-weight: 600; font-size: 15px; }
 
-  /* Verify-status note — shows "email and mobile verified" or a
-     nudge to check inbox/SMS. Logout used to live next to this in
-     a footer-row; the canonical logout button now sits in the
-     site header on /account (see site.js → renderAuthCta). */
-  .verify-status {
+  /* Verification block — two rows (email + mobile), each with a
+     status badge. Mirrors the rider app's profile screen pattern
+     (joiryde-rider/app/(tabs)/profile.tsx → VerificationBadge):
+       - Verified  → green ✓ Verified pill
+       - Unverified → "Enter Code" · "Resend" links; tapping
+                      Enter Code expands an inline 6-digit input
+                      with a Verify button below the row. */
+  .verify-block {
+    margin-top: var(--s6);
     padding-top: var(--s5);
     border-top: 1px solid var(--rule);
-    color: var(--fg-3);
-    font-size: 14px;
   }
-  .verify-status.is-warn { color: #FCA5A5; }
+  .verify-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    flex-wrap: wrap;
+  }
+  .verify-row .label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--fg-3);
+    min-width: 60px;
+  }
+  .verify-row .value {
+    flex: 1; min-width: 0;
+    color: var(--fg); font-size: 15px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .verify-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .verify-badge.is-verified {
+    color: #22C55E;
+  }
+  .verify-badge .check {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #22C55E; color: #000;
+    font-size: 10px; font-weight: 800;
+  }
+  .verify-badge .action {
+    background: transparent; border: 0; padding: 0;
+    color: var(--canary); font-family: var(--font);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  .verify-badge .action[disabled] { opacity: 0.5; cursor: progress; }
+  .verify-badge .sep { color: #2A2A2A; }
+
+  /* Inline code-entry panel — expands under a row when "Enter Code"
+     is tapped. Hidden until activated. */
+  .verify-panel {
+    flex-basis: 100%;
+    margin-top: 4px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .verify-panel[hidden] { display: none; }
+  .verify-panel input {
+    flex: 1;
+    height: 40px;
+    padding: 0 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    color: var(--fg);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+  }
+  .verify-panel input:focus { outline: 0; border-color: var(--canary); }
+  .verify-panel .submit {
+    background: var(--canary); color: var(--ink);
+    border: 0; border-radius: 999px;
+    padding: 0 16px; height: 40px;
+    font-family: var(--font); font-size: 13px; font-weight: 700;
+    cursor: pointer;
+  }
+  .verify-panel .submit[disabled] { opacity: 0.5; cursor: progress; }
+  .verify-msg {
+    flex-basis: 100%;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--fg-3);
+  }
+  .verify-msg.is-error { color: #FCA5A5; }
+  .verify-msg.is-success { color: #22C55E; }
 </style>
 </head>
 <body data-page="account">
@@ -96,7 +175,34 @@
         <!-- Cards injected by JS based on user.userType / user.role -->
       </div>
 
-      <p id="verify-status" class="verify-status"></p>
+      <!-- Verification block — mirrors the rider app's profile
+           VerificationBadge UX (joiryde-rider/app/(tabs)/profile.tsx).
+           Each row carries the value + badge; the inline panel
+           below the badge expands when Enter Code is tapped. -->
+      <div class="verify-block">
+        <div class="verify-row" data-channel="email">
+          <span class="label">Email</span>
+          <span class="value" data-value></span>
+          <span class="verify-badge" data-badge></span>
+          <div class="verify-panel" hidden data-panel>
+            <input type="text" inputmode="numeric" autocomplete="one-time-code"
+              maxlength="6" placeholder="6-digit code" data-input>
+            <button type="button" class="submit" data-submit>Verify</button>
+          </div>
+          <div class="verify-msg" hidden data-msg></div>
+        </div>
+        <div class="verify-row" data-channel="sms">
+          <span class="label">Mobile</span>
+          <span class="value" data-value></span>
+          <span class="verify-badge" data-badge></span>
+          <div class="verify-panel" hidden data-panel>
+            <input type="text" inputmode="numeric" autocomplete="one-time-code"
+              maxlength="6" placeholder="6-digit code" data-input>
+            <button type="button" class="submit" data-submit>Verify</button>
+          </div>
+          <div class="verify-msg" hidden data-msg></div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -216,17 +322,118 @@
     }).join("");
   }
 
+  // Verification block — port of the rider app's VerificationBadge
+  // pattern. Two rows (email + mobile). Each row independently shows
+  // verified / unverified state and exposes inline Resend + Enter
+  // Code actions when not yet verified. Code submit calls
+  // /api/rider/check-verification and re-renders on success.
   function renderVerifyStatus(user) {
-    var el = document.getElementById("verify-status");
-    el.classList.remove("is-warn");
-    if (!user.mobileVerified) {
-      el.classList.add("is-warn");
-      el.textContent = "Your mobile isn't verified yet — check your texts for a 6-digit code.";
-    } else if (!user.emailVerified) {
-      el.textContent = "Your email isn't verified yet — check your inbox.";
-    } else {
-      el.textContent = "Email and mobile verified ✓";
+    renderVerifyRow("email", user.email,  user.emailVerified);
+    renderVerifyRow("sms",   user.mobile, user.mobileVerified);
+  }
+
+  function rowEls(channel) {
+    var row = document.querySelector('.verify-row[data-channel="' + channel + '"]');
+    return {
+      row: row,
+      value:  row.querySelector("[data-value]"),
+      badge:  row.querySelector("[data-badge]"),
+      panel:  row.querySelector("[data-panel]"),
+      input:  row.querySelector("[data-input]"),
+      submit: row.querySelector("[data-submit]"),
+      msg:    row.querySelector("[data-msg]"),
+    };
+  }
+
+  function renderVerifyRow(channel, value, verified) {
+    var els = rowEls(channel);
+    els.value.textContent = value || "—";
+    if (verified) {
+      // Verified pill — collapse any open panel + clear stale msgs.
+      els.badge.classList.add("is-verified");
+      els.badge.innerHTML = '<span class="check" aria-hidden="true">✓</span> Verified';
+      els.panel.hidden = true;
+      hideMsg(els);
+      return;
     }
+    // Unverified — render "Enter Code · Resend" actions. Click handlers
+    // are rebound each render so we never stack listeners.
+    els.badge.classList.remove("is-verified");
+    els.badge.innerHTML =
+      '<button type="button" class="action" data-toggle>Enter Code</button>' +
+      '<span class="sep">·</span>' +
+      '<button type="button" class="action" data-resend>Resend</button>';
+    var toggleBtn = els.badge.querySelector("[data-toggle]");
+    var resendBtn = els.badge.querySelector("[data-resend]");
+    toggleBtn.onclick = function () {
+      els.panel.hidden = !els.panel.hidden;
+      if (!els.panel.hidden) {
+        hideMsg(els);
+        els.input.focus();
+      }
+    };
+    resendBtn.onclick = async function () {
+      if (resendBtn.disabled) return;
+      resendBtn.disabled = true;
+      try {
+        await JoyrideAPI.apiPost("/api/rider/send-verification", { channel: channel });
+        showMsg(els, "success", channel === "email"
+          ? "A new code has been sent to your email."
+          : "A new code has been sent to your phone.");
+        els.panel.hidden = false;
+        els.input.focus();
+      } catch (err) {
+        showMsg(els, "error", (err && err.message) || "Couldn't send the code. Try again.");
+      } finally {
+        resendBtn.disabled = false;
+      }
+    };
+    els.submit.onclick = function () { submitCode(channel); };
+    els.input.onkeydown = function (e) {
+      if (e.key === "Enter") submitCode(channel);
+    };
+  }
+
+  async function submitCode(channel) {
+    var els = rowEls(channel);
+    var code = (els.input.value || "").trim();
+    if (code.length < 4) {
+      showMsg(els, "error", "Enter the code we sent you.");
+      return;
+    }
+    els.submit.disabled = true;
+    try {
+      var data = await JoyrideAPI.apiPost("/api/rider/check-verification", {
+        channel: channel,
+        code: code,
+      });
+      // Server returns the updated rider — refresh local cache so
+      // the badge flips to Verified and any other page reflects it.
+      if (data && data.rider) {
+        JoyrideAPI.cacheUser(data.rider);
+        showMsg(els, "success", "Verified ✓");
+        renderVerifyRow(channel,
+          channel === "email" ? data.rider.email : data.rider.mobile,
+          channel === "email" ? data.rider.emailVerified : data.rider.mobileVerified);
+      }
+    } catch (err) {
+      showMsg(els, "error", (err && err.message) || "Verification failed.");
+    } finally {
+      els.submit.disabled = false;
+    }
+  }
+
+  function showMsg(els, kind, text) {
+    els.msg.hidden = false;
+    els.msg.classList.remove("is-error", "is-success");
+    if (kind === "error")   els.msg.classList.add("is-error");
+    if (kind === "success") els.msg.classList.add("is-success");
+    els.msg.textContent = text;
+  }
+  function hideMsg(els) {
+    els.msg.hidden = true;
+    els.msg.classList.remove("is-error", "is-success");
+    els.msg.textContent = "";
   }
 
   // Logout is now bound to the yellow header button by site.js when
