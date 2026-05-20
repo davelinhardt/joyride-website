@@ -216,17 +216,20 @@
         <!-- Role pick on signup: drives a post-signup nudge to download
              the driver app (the actual driver application flow lives in
              the Expo app, not here). Both options create a `riders` row
-             via the same /api/rider/signup endpoint. -->
+             via the same /api/rider/signup endpoint.
+             Order matters: "I want to ride" is first + default
+             selected (per Dave 2026-05-20) — most signups are riders;
+             drivers are a smaller, more deliberate audience. -->
         <div class="role-pick" data-mode="signup">
           <label>
-            <input type="radio" name="role" value="driver" checked>
-            <span class="nm">I want to drive</span>
-            <span class="desc">Run your business. Set your prices.</span>
-          </label>
-          <label>
-            <input type="radio" name="role" value="rider">
+            <input type="radio" name="role" value="rider" checked>
             <span class="nm">I want to ride</span>
             <span class="desc">Better rides. Better drivers.</span>
+          </label>
+          <label>
+            <input type="radio" name="role" value="driver">
+            <span class="nm">I want to drive</span>
+            <span class="desc">Run your business. Set your prices.</span>
           </label>
         </div>
 
