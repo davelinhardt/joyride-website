@@ -305,12 +305,21 @@
   // Already logged in? Bounce straight to the right landing page.
   // Avoid an extra render of the login form when a returning user
   // hits /login (e.g. clicked the nav by reflex).
+  //
+  // IMPORTANT: require BOTH a cached user AND a live token before
+  // bouncing. A stale cached user without a token would otherwise
+  // bounce us to /account on every visit — and if /account couldn't
+  // verify, it would redirect back here, looping until the browser
+  // tab gave up. (Caused Daves "flashing /account" bug on 2026-05-19
+  // during a server redeploy.)
   (async function bounceIfAuthed() {
     var cached = JoyrideAPI.readCachedUser();
-    if (cached) {
+    var hasToken = !!JoyrideAPI.getToken();
+    if (cached && hasToken) {
       window.location.replace(JoyrideAPI.routeAfterAuth(cached));
       return;
     }
+    if (!hasToken) return; // No token → stay on /login, show the form.
     var fresh = await JoyrideAPI.loadCurrentUser();
     if (fresh) window.location.replace(JoyrideAPI.routeAfterAuth(fresh));
   })();

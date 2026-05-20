@@ -253,18 +253,36 @@
     window.location.assign("/login");
   });
 
-  // Boot. Cached-paint first to avoid flash, then verify with /me.
-  // If verification fails (expired token, etc.) bounce to login.
+  // Boot. Cached-paint first (instant UX), then verify with /me.
+  //
+  // IMPORTANT: only redirect to /login when there's *definitely* no
+  // session. A transient /me failure (server redeploying, network
+  // blip, 5xx) does NOT count — if we still have a cached user AND
+  // a token, paint the cached user and let the next page load
+  // retry. Otherwise we ping-pong with /login (which bounces back
+  // to /account because the cached user is still present), causing
+  // the flashing-tabs bug Dave hit 2026-05-19 right after a server
+  // redeploy.
+  //
+  // loadCurrentUser() clears auth on 401, so getToken() returning
+  // null after the call is the canonical "session expired" signal.
   (async function boot() {
     var cached = JoyrideAPI.readCachedUser();
     if (cached) paint(cached);
 
     var fresh = await JoyrideAPI.loadCurrentUser();
-    if (!fresh) {
-      window.location.replace("/login");
+    if (fresh) {
+      paint(fresh);
       return;
     }
-    paint(fresh);
+    // /me didn't resolve. If we still have a token + a cached user,
+    // this was a transient failure — keep the cached paint and bail
+    // out without redirecting. The user can refresh later.
+    if (JoyrideAPI.getToken() && cached) {
+      return;
+    }
+    // No session left to lean on → send them to log in.
+    window.location.replace("/login");
   })();
 })();
 </script>
