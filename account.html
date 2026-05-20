@@ -66,29 +66,17 @@
   .action-card p { font-size: 14px; line-height: 1.5; opacity: 0.85; }
   .action-card .go { margin-top: auto; font-weight: 600; font-size: 15px; }
 
-  .account-footer-row {
-    display: flex; align-items: center; gap: var(--s4);
+  /* Verify-status note — shows "email and mobile verified" or a
+     nudge to check inbox/SMS. Logout used to live next to this in
+     a footer-row; the canonical logout button now sits in the
+     site header on /account (see site.js → renderAuthCta). */
+  .verify-status {
     padding-top: var(--s5);
     border-top: 1px solid var(--rule);
     color: var(--fg-3);
     font-size: 14px;
   }
-  .account-footer-row .verify-warn {
-    color: #FCA5A5;
-  }
-  .logout-btn {
-    margin-left: auto;
-    background: transparent;
-    border: 1px solid var(--rule);
-    color: var(--fg);
-    padding: 10px 18px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-family: var(--font);
-    font-size: 14px; font-weight: 600;
-    transition: border-color .15s var(--ease), color .15s var(--ease);
-  }
-  .logout-btn:hover { border-color: #EF4444; color: #FCA5A5; }
+  .verify-status.is-warn { color: #FCA5A5; }
 </style>
 </head>
 <body data-page="account">
@@ -108,10 +96,7 @@
         <!-- Cards injected by JS based on user.userType / user.role -->
       </div>
 
-      <div class="account-footer-row">
-        <span id="verify-status"></span>
-        <button class="logout-btn" type="button" id="logout-btn">Log out</button>
-      </div>
+      <p id="verify-status" class="verify-status"></p>
     </div>
   </section>
 </main>
@@ -233,8 +218,9 @@
 
   function renderVerifyStatus(user) {
     var el = document.getElementById("verify-status");
+    el.classList.remove("is-warn");
     if (!user.mobileVerified) {
-      el.classList.add("verify-warn");
+      el.classList.add("is-warn");
       el.textContent = "Your mobile isn't verified yet — check your texts for a 6-digit code.";
     } else if (!user.emailVerified) {
       el.textContent = "Your email isn't verified yet — check your inbox.";
@@ -243,15 +229,9 @@
     }
   }
 
-  // Logout: POST /api/rider/logout best-effort, then clear the local
-  // token regardless (the local clear is what actually matters
-  // because the server endpoint just clears the cookie — and we don't
-  // use the cookie). Redirect to login.
-  document.getElementById("logout-btn").addEventListener("click", async function () {
-    try { await JoyrideAPI.apiPost("/api/rider/logout", {}); } catch (e) { /* best effort */ }
-    JoyrideAPI.clearAuth();
-    window.location.assign("/login");
-  });
+  // Logout is now bound to the yellow header button by site.js when
+  // body[data-page=account] — see renderAuthCta there. No need for
+  // a separate handler on this page.
 
   // Boot. Cached-paint first (instant UX), then verify with /me.
   //

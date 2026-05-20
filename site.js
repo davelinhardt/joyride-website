@@ -133,29 +133,73 @@ window.addEventListener('error', (e) => {
     var mobileStack = document.querySelector('.site-header .mobile-cta-stack');
     if (!ctaWrap) return;
     var loggedIn = !!user;
+    // On the /account page itself, the canonical primary CTA flips
+    // from "My account" (redundant — they're already there) to
+    // "Log out" (per Dave 2026-05-20: one consolidated logout
+    // affordance instead of a separate footer button on /account).
+    var onAccountPage = document.body && document.body.dataset && document.body.dataset.page === 'account';
+    var primaryIsLogout = loggedIn && onAccountPage;
+
     var label = loggedIn ? (user.firstName || 'Account') : 'Log in';
-    var primaryHref = loggedIn ? '/account' : '/login';
-    var primaryLabel = loggedIn ? 'My account' : 'Get the app';
-    var primaryArrow = '<span class="arrow">→</span>';
+    var ghostHref = loggedIn ? '/account' : '/login';
+    var primaryHref, primaryLabel, primaryArrow;
+    if (primaryIsLogout) {
+      primaryLabel = 'Log out';
+      primaryArrow = ''; // no → arrow on the logout CTA — it's not a forward action
+      primaryHref = '#';
+    } else if (loggedIn) {
+      primaryLabel = 'My account';
+      primaryArrow = '<span class="arrow">→</span>';
+      primaryHref = '/account';
+    } else {
+      primaryLabel = 'Get the app';
+      primaryArrow = '<span class="arrow">→</span>';
+      primaryHref = '/login';
+    }
 
     // Replace just the two .btn anchors in the desktop nav-cta. Keep
-    // the .menu-toggle button as-is.
+    // the .menu-toggle button as-is. Apply the same swap to the
+    // mobile stack so the header reads the same in both layouts.
     var desktopBtns = ctaWrap.querySelectorAll('a.btn');
+    var mobBtns = mobileStack ? mobileStack.querySelectorAll('a.btn') : [];
+    var primaries = [];
     if (desktopBtns.length >= 2) {
       desktopBtns[0].textContent = label;
-      desktopBtns[0].setAttribute('href', loggedIn ? '/account' : '/login');
-      desktopBtns[1].innerHTML = primaryLabel + ' ' + primaryArrow;
+      desktopBtns[0].setAttribute('href', ghostHref);
+      desktopBtns[1].innerHTML = primaryLabel + (primaryArrow ? ' ' + primaryArrow : '');
       desktopBtns[1].setAttribute('href', primaryHref);
+      primaries.push(desktopBtns[1]);
     }
-    if (mobileStack) {
-      var mobBtns = mobileStack.querySelectorAll('a.btn');
-      if (mobBtns.length >= 2) {
-        mobBtns[0].textContent = label;
-        mobBtns[0].setAttribute('href', loggedIn ? '/account' : '/login');
-        mobBtns[1].innerHTML = primaryLabel + ' ' + primaryArrow;
-        mobBtns[1].setAttribute('href', primaryHref);
+    if (mobBtns.length >= 2) {
+      mobBtns[0].textContent = label;
+      mobBtns[0].setAttribute('href', ghostHref);
+      mobBtns[1].innerHTML = primaryLabel + (primaryArrow ? ' ' + primaryArrow : '');
+      mobBtns[1].setAttribute('href', primaryHref);
+      primaries.push(mobBtns[1]);
+    }
+
+    // Bind the logout handler when we're in logout-mode. Using
+    // `.onclick = …` (not addEventListener) so the two-pass refresh
+    // (cached → fresh) cleanly replaces the previous handler
+    // instead of stacking listeners on each repaint. Clear the
+    // handler in non-logout mode so the button reverts to plain
+    // navigation.
+    primaries.forEach(function (btn) {
+      if (primaryIsLogout) {
+        btn.onclick = async function (e) {
+          e.preventDefault();
+          try {
+            // Best-effort server-side session clear (matches the
+            // older footer logout button's behavior).
+            await window.JoyrideAPI.apiPost('/api/rider/logout', {});
+          } catch (_) { /* ignore — local clear is what actually matters */ }
+          window.JoyrideAPI.clearAuth();
+          window.location.assign('/login');
+        };
+      } else {
+        btn.onclick = null;
       }
-    }
+    });
   }
 
   async function refreshAuthCta() {
