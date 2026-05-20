@@ -175,15 +175,17 @@ window.addEventListener('error', (e) => {
     // the .menu-toggle button as-is. Apply the same swap to the
     // mobile stack so the header reads the same in both layouts.
     //
-    // is-text-link toggle: when the primary is the Logout action,
-    // we want it to read as quiet text, not a yellow pill. Adding
-    // the marker class (rather than stripping .btn) keeps the
-    // anchor findable on the next render pass.
+    // is-text-link toggle: when the user is logged in, BOTH header
+    // CTAs read as quiet text (per Dave 2026-05-20: @username + Logout
+    // shouldn't look like pills). Adding the marker class (rather
+    // than stripping .btn) keeps the anchors findable on the next
+    // render pass. Logged-out users still get the yellow Get the app
+    // pill + ghost Log in pill.
     var desktopBtns = ctaWrap.querySelectorAll('a.btn');
     var mobBtns = mobileStack ? mobileStack.querySelectorAll('a.btn') : [];
     var primaries = [];
     function applyTextLink(anchor) {
-      if (primaryIsLogout) anchor.classList.add('is-text-link');
+      if (loggedIn) anchor.classList.add('is-text-link');
       else anchor.classList.remove('is-text-link');
     }
     if (desktopBtns.length >= 2) {
@@ -191,6 +193,7 @@ window.addEventListener('error', (e) => {
       desktopBtns[0].setAttribute('href', ghostHref);
       desktopBtns[1].innerHTML = primaryLabel + (primaryArrow ? ' ' + primaryArrow : '');
       desktopBtns[1].setAttribute('href', primaryHref);
+      applyTextLink(desktopBtns[0]);
       applyTextLink(desktopBtns[1]);
       primaries.push(desktopBtns[1]);
     }
@@ -199,6 +202,7 @@ window.addEventListener('error', (e) => {
       mobBtns[0].setAttribute('href', ghostHref);
       mobBtns[1].innerHTML = primaryLabel + (primaryArrow ? ' ' + primaryArrow : '');
       mobBtns[1].setAttribute('href', primaryHref);
+      applyTextLink(mobBtns[0]);
       applyTextLink(mobBtns[1]);
       primaries.push(mobBtns[1]);
     }
