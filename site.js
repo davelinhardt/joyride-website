@@ -133,24 +133,35 @@ window.addEventListener('error', (e) => {
     var mobileStack = document.querySelector('.site-header .mobile-cta-stack');
     if (!ctaWrap) return;
     var loggedIn = !!user;
-    // On the /account page itself, the canonical primary CTA flips
-    // from "My account" (redundant — they're already there) to
-    // "Log out" (per Dave 2026-05-20: one consolidated logout
-    // affordance instead of a separate footer button on /account).
-    var onAccountPage = document.body && document.body.dataset && document.body.dataset.page === 'account';
-    var primaryIsLogout = loggedIn && onAccountPage;
 
-    var label = loggedIn ? (user.firstName || 'Account') : 'Log in';
-    var ghostHref = loggedIn ? '/account' : '/login';
+    // Header CTAs:
+    //   Logged in  → ghost "@username" linking to /account, yellow
+    //                "Log out" primary (per Dave 2026-05-20: one
+    //                consolidated logout button everywhere, and the
+    //                username button as the entry to the account
+    //                tool).
+    //   Logged out → ghost "Log in" → /login, yellow "Get the app".
+    //
+    // The primary IS the logout button whenever loggedIn — its click
+    // handler is bound below so the same yellow button works on
+    // every page.
+    var primaryIsLogout = loggedIn;
+
+    var label, ghostHref;
+    if (loggedIn) {
+      var uname = user.username ? '@' + user.username : (user.firstName || 'Account');
+      label = uname;
+      ghostHref = '/account';
+    } else {
+      label = 'Log in';
+      ghostHref = '/login';
+    }
+
     var primaryHref, primaryLabel, primaryArrow;
     if (primaryIsLogout) {
       primaryLabel = 'Log out';
-      primaryArrow = ''; // no → arrow on the logout CTA — it's not a forward action
+      primaryArrow = ''; // no → arrow on logout — not a forward action
       primaryHref = '#';
-    } else if (loggedIn) {
-      primaryLabel = 'My account';
-      primaryArrow = '<span class="arrow">→</span>';
-      primaryHref = '/account';
     } else {
       primaryLabel = 'Get the app';
       primaryArrow = '<span class="arrow">→</span>';
