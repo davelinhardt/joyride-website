@@ -146,16 +146,18 @@ p  { margin: 0; text-wrap: pretty; }
   opacity: 1;
 }
 /* Mobile dropdown — bigger tap targets so a text link in the
-   hamburger menu still has 44px+ of touchable area. Also bumps
-   the font slightly to match the other dropdown nav items
-   (which are 18px per styles.css line 230). The mobile-cta-stack
-   rule earlier in this file sets width:100% + center align,
-   which we keep — only the height + padding need overriding. */
+   hamburger menu still has 44px+ of touchable area. Left-aligned
+   (per Dave 2026-05-20) to match the other dropdown nav items
+   above instead of being centered like the original yellow pills.
+   Font bumped slightly so it doesn't feel smaller than the
+   nav-link items (~18px) sitting above it. */
 @media (max-width: 880px) {
   .site-header.is-open nav .mobile-cta-stack .btn.is-text-link {
-    padding: 14px 12px !important;
+    padding: 14px !important;
     font-size: 16px;
     opacity: 1;
+    justify-content: flex-start !important;
+    text-align: left;
     border-top: 1px solid var(--border) !important;
     border-radius: 0 !important;
   }
