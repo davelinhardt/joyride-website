@@ -173,7 +173,68 @@
   }
   .verify-msg.is-error { color: #FCA5A5; }
   .verify-msg.is-success { color: #22C55E; }
-</style>
+
+  /* Modal mode — when the body has .verify-modal-open, the SAME
+     .verify-block we render inline becomes a centered full-screen
+     overlay. Same DOM nodes + same JS handlers; only CSS differs.
+     A dim backdrop sits behind it (rgba black 80%). Backdrop clicks
+     deliberately do NOT close — only the X button closes (per Dave
+     2026-05-20: "stays open until both codes are entered" unless
+     the user explicitly dismisses).
+
+     The close button + modal headline are only visible while
+     .verify-modal-open is on the body. */
+  .verify-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 100;
+    display: none;
+  }
+  body.verify-modal-open .verify-modal-backdrop { display: block; }
+
+  body.verify-modal-open { overflow: hidden; }
+  body.verify-modal-open .verify-block {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(540px, calc(100vw - 32px));
+    max-height: calc(100vh - 64px);
+    overflow: auto;
+    z-index: 101;
+    padding: 32px;
+  }
+  body.verify-modal-open .verify-block .verify-row {
+    padding: 14px 0;
+  }
+  /* Headline + tagline inside the verify-block, only shown in modal
+     mode. Hidden inline so the top-right widget stays compact. */
+  .verify-modal-only { display: none; }
+  body.verify-modal-open .verify-modal-only { display: block; }
+  body.verify-modal-open .verify-modal-headline {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  body.verify-modal-open .verify-modal-tagline {
+    color: var(--fg-3); font-size: 14px; line-height: 1.45;
+    margin-bottom: 18px;
+  }
+  body.verify-modal-open .verify-modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: 0;
+    color: var(--fg-3);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  body.verify-modal-open .verify-modal-close:hover {
+    color: var(--fg);
+    background: var(--surface-2);
+  }
 </head>
 <body data-page="account">
 
@@ -194,6 +255,15 @@
           <p class="account-sub" id="account-sub">Welcome to your Joyride account.</p>
         </div>
         <div class="verify-block">
+          <!-- Modal-only chrome — invisible inline; only shown when
+               body has .verify-modal-open. Close button, headline,
+               and tagline turn the same DOM node into a guided
+               post-signup verification step. -->
+          <button type="button" class="verify-modal-close verify-modal-only" id="verify-modal-close" aria-label="Verify later">×</button>
+          <div class="verify-modal-only">
+            <div class="verify-modal-headline">Verify your account</div>
+            <p class="verify-modal-tagline">We just sent a 6-digit code to your email and your phone. Enter both to finish setting up your account. You can verify later if you need to.</p>
+          </div>
           <div class="verify-row" data-channel="email">
             <span class="label">Email</span>
             <span class="value" data-value></span>
@@ -224,6 +294,11 @@
       </div>
     </div>
   </section>
+  <!-- Verification modal backdrop — z-index sits behind the verify
+       block (which is z-index 101 when modal-open). Clicking it does
+       NOT close the modal (intentional — only the X dismisses, per
+       the "stays open until both codes entered" rule). -->
+  <div class="verify-modal-backdrop" aria-hidden="true"></div>
 </main>
 
 <script src="/js/api.js"></script>
@@ -259,6 +334,7 @@
 
     renderActionCards(user);
     renderVerifyStatus(user);
+    maybeOpenVerifyModal(user);
   }
 
   // Three-way chooser per Dave (2026-05-19): Rider, Driver, Admin.
@@ -451,11 +527,67 @@
         renderVerifyRow(channel,
           channel === "email" ? data.rider.email : data.rider.mobile,
           channel === "email" ? data.rider.emailVerified : data.rider.mobileVerified);
+        // If the modal is open and both channels are now verified,
+        // auto-close (per Dave 2026-05-20: "modal stays open until
+        // both codes are entered" — the inverse implies "auto-close
+        // once both are done").
+        if (data.rider.emailVerified && data.rider.mobileVerified) {
+          closeVerifyModal();
+        }
       }
     } catch (err) {
       showMsg(els, "error", (err && err.message) || "Verification failed.");
     } finally {
       els.submit.disabled = false;
+    }
+  }
+
+  // ───── Verification modal ─────────────────────────────────────
+  // Triggered when ?verify=1 is on the URL AND at least one channel
+  // is unverified. The X button (.verify-modal-close) closes the
+  // modal AND clears the URL param so reloads don't re-open it.
+  // Backdrop click is intentionally inert — only X closes.
+  function openVerifyModal() {
+    document.body.classList.add("verify-modal-open");
+  }
+  function closeVerifyModal() {
+    document.body.classList.remove("verify-modal-open");
+    // Strip ?verify=1 from the URL without a reload so a refresh
+    // doesn't re-open the modal once the user has dismissed it
+    // (or completed verification).
+    try {
+      var url = new URL(window.location.href);
+      if (url.searchParams.has("verify")) {
+        url.searchParams.delete("verify");
+        window.history.replaceState({}, "", url.toString());
+      }
+    } catch (_) { /* old browsers — ignore */ }
+  }
+  var modalCloseBtn = document.getElementById("verify-modal-close");
+  if (modalCloseBtn) {
+    modalCloseBtn.onclick = function () { closeVerifyModal(); };
+  }
+  // Escape key also dismisses (matches typical modal UX, treated as
+  // the same affordance as the X — does NOT auto-resurface).
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && document.body.classList.contains("verify-modal-open")) {
+      closeVerifyModal();
+    }
+  });
+
+  // Decide whether to auto-open. Called once per paint after the
+  // user is hydrated. Idempotent: subsequent calls don't re-open
+  // a previously-closed modal because we strip ?verify=1 on close.
+  function maybeOpenVerifyModal(user) {
+    if (!user) return;
+    var wantsVerify = new URLSearchParams(window.location.search).get("verify") === "1";
+    var anyUnverified = !user.emailVerified || !user.mobileVerified;
+    if (wantsVerify && anyUnverified) {
+      openVerifyModal();
+    } else if (wantsVerify && !anyUnverified) {
+      // ?verify=1 but already fully verified — strip the param so a
+      // future reload behaves normally.
+      closeVerifyModal();
     }
   }
 

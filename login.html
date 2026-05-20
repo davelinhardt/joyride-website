@@ -375,11 +375,14 @@
     JoyrideAPI.cacheUser(result.rider);
 
     // Every signup creates the same Joyride account (riders row +
-    // mirrored users row) and lands on /account. The account chooser
-    // surfaces Download Rider App + Download Driver App so the user
-    // can pick whichever path they want from there — drivers later
-    // complete the application inside the Driver app.
-    window.location.assign(JoyrideAPI.routeAfterAuth(result.rider));
+    // mirrored users row) and lands on /account. The ?verify=1 param
+    // tells /account to auto-open the verification modal immediately
+    // — server already fired both email + SMS codes inside the
+    // signup mutation (see rider-auth.ts), so they'll be waiting in
+    // the user's inbox / texts when the modal appears.
+    var base = JoyrideAPI.routeAfterAuth(result.rider);
+    var sep = base.indexOf("?") === -1 ? "?" : "&";
+    window.location.assign(base + sep + "verify=1");
   }
 })();
 </script>
