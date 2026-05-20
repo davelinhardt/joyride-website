@@ -124,15 +124,15 @@ p  { margin: 0; text-wrap: pretty; }
 .btn .arrow { transition: transform .2s var(--ease); }
 .btn:hover .arrow { transform: translateX(3px); }
 
-/* Logout in the header reads as plain text, not a yellow pill —
-   applied to the primary header CTA when the user is logged in
-   (site.js renderAuthCta toggles this class). Keeps the .btn class
-   so the next render pass can still find the anchor. */
+/* @username + Logout in the header read as plain text, not yellow
+   pills — applied to BOTH header CTAs when logged in (site.js
+   renderAuthCta toggles this class). Keeps the .btn class on the
+   element so the next render-pass lookups still find them. */
 .btn.is-text-link {
   background: transparent !important;
   border: 0 !important;
   height: auto !important;
-  padding: 0 !important;
+  padding: 6px 8px !important;
   color: var(--fg) !important;
   font-weight: 500;
   font-size: 14px;
@@ -144,6 +144,21 @@ p  { margin: 0; text-wrap: pretty; }
   filter: none;
   color: var(--canary) !important;
   opacity: 1;
+}
+/* Mobile dropdown — bigger tap targets so a text link in the
+   hamburger menu still has 44px+ of touchable area. Also bumps
+   the font slightly to match the other dropdown nav items
+   (which are 18px per styles.css line 230). The mobile-cta-stack
+   rule earlier in this file sets width:100% + center align,
+   which we keep — only the height + padding need overriding. */
+@media (max-width: 880px) {
+  .site-header.is-open nav .mobile-cta-stack .btn.is-text-link {
+    padding: 14px 12px !important;
+    font-size: 16px;
+    opacity: 1;
+    border-top: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+  }
 }
 
 /* Pills / chips */
