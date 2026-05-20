@@ -304,6 +304,7 @@
 
 <script src="/js/api.js"></script>
 <script src="/site.js"></script>
+<script src="/js/verify-modal-logic.js"></script>
 <script>
 (function () {
   "use strict";
@@ -591,15 +592,16 @@
   // Decide whether to auto-open. Called once per paint after the
   // user is hydrated. Idempotent: subsequent calls don't re-open
   // a previously-closed modal because we strip ?verify=1 on close.
+  // Decision logic lives in /js/verify-modal-logic.js so it can be
+  // unit-tested under Node — see verify-modal-logic.test.cjs.
   function maybeOpenVerifyModal(user) {
     if (!user) return;
-    var wantsVerify = new URLSearchParams(window.location.search).get("verify") === "1";
-    var anyUnverified = !user.emailVerified || !user.mobileVerified;
-    if (wantsVerify && anyUnverified) {
+    var L = window.JoyrideVerifyModal;
+    if (!L) return; // module failed to load; fail-soft, don't blank the page
+    var search = window.location.search;
+    if (L.shouldOpenVerifyModal(search, user)) {
       openVerifyModal();
-    } else if (wantsVerify && !anyUnverified) {
-      // ?verify=1 but already fully verified — strip the param so a
-      // future reload behaves normally.
+    } else if (L.shouldCloseVerifyModal(search, user)) {
       closeVerifyModal();
     }
   }
