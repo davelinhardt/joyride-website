@@ -15,6 +15,20 @@
     margin: 0 auto;
     padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px) 120px;
   }
+  /* Two-column header — greeting + subline on the left, the verify
+     block on the right (per Dave 2026-05-20: use the empty area to
+     the right of the headline rather than dropping verify under the
+     action grid). Collapses to single column on narrow screens. */
+  .account-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    gap: clamp(24px, 4vw, 48px);
+    align-items: start;
+    margin-bottom: var(--s7);
+  }
+  @media (max-width: 720px) {
+    .account-top { grid-template-columns: 1fr; }
+  }
   .account-hello {
     font-size: clamp(36px, 5vw, 56px);
     font-weight: 700;
@@ -25,8 +39,8 @@
   .account-sub {
     color: var(--fg-3);
     font-size: 17px;
-    margin-bottom: var(--s7);
     max-width: 56ch;
+    margin-bottom: 0;
   }
   /* Action grid — one big card per available section.
      Cards render conditionally based on the user's userType + role.
@@ -67,16 +81,19 @@
   .action-card .go { margin-top: auto; font-weight: 600; font-size: 15px; }
 
   /* Verification block — two rows (email + mobile), each with a
-     status badge. Mirrors the rider app's profile screen pattern
+     status badge. Lives in the top-right column of .account-top so
+     it sits next to the greeting instead of hanging off the bottom
+     of the page. Mirrors the rider app's profile-screen pattern
      (joiryde-rider/app/(tabs)/profile.tsx → VerificationBadge):
        - Verified  → green ✓ Verified pill
        - Unverified → "Enter Code" · "Resend" links; tapping
                       Enter Code expands an inline 6-digit input
                       with a Verify button below the row. */
   .verify-block {
-    margin-top: var(--s6);
-    padding-top: var(--s5);
-    border-top: 1px solid var(--rule);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+    padding: 18px 20px;
   }
   .verify-row {
     display: flex;
@@ -168,40 +185,42 @@
     <div id="account-loading" style="opacity: 0.6;">Loading your account…</div>
 
     <div id="account-content" hidden>
-      <h1 class="account-hello">Hi, <span id="hello-name">there</span>.</h1>
-      <p class="account-sub" id="account-sub">Welcome to your Joyride account.</p>
+      <!-- Two-column top section: greeting left, verify-block right.
+           Collapses to single column on narrow screens via the
+           .account-top media query. -->
+      <div class="account-top">
+        <div>
+          <h1 class="account-hello">Hi, <span id="hello-name">there</span>.</h1>
+          <p class="account-sub" id="account-sub">Welcome to your Joyride account.</p>
+        </div>
+        <div class="verify-block">
+          <div class="verify-row" data-channel="email">
+            <span class="label">Email</span>
+            <span class="value" data-value></span>
+            <span class="verify-badge" data-badge></span>
+            <div class="verify-panel" hidden data-panel>
+              <input type="text" inputmode="numeric" autocomplete="one-time-code"
+                maxlength="6" placeholder="6-digit code" data-input>
+              <button type="button" class="submit" data-submit>Verify</button>
+            </div>
+            <div class="verify-msg" hidden data-msg></div>
+          </div>
+          <div class="verify-row" data-channel="sms">
+            <span class="label">Mobile</span>
+            <span class="value" data-value></span>
+            <span class="verify-badge" data-badge></span>
+            <div class="verify-panel" hidden data-panel>
+              <input type="text" inputmode="numeric" autocomplete="one-time-code"
+                maxlength="6" placeholder="6-digit code" data-input>
+              <button type="button" class="submit" data-submit>Verify</button>
+            </div>
+            <div class="verify-msg" hidden data-msg></div>
+          </div>
+        </div>
+      </div>
 
       <div class="action-grid" id="action-grid">
         <!-- Cards injected by JS based on user.userType / user.role -->
-      </div>
-
-      <!-- Verification block — mirrors the rider app's profile
-           VerificationBadge UX (joiryde-rider/app/(tabs)/profile.tsx).
-           Each row carries the value + badge; the inline panel
-           below the badge expands when Enter Code is tapped. -->
-      <div class="verify-block">
-        <div class="verify-row" data-channel="email">
-          <span class="label">Email</span>
-          <span class="value" data-value></span>
-          <span class="verify-badge" data-badge></span>
-          <div class="verify-panel" hidden data-panel>
-            <input type="text" inputmode="numeric" autocomplete="one-time-code"
-              maxlength="6" placeholder="6-digit code" data-input>
-            <button type="button" class="submit" data-submit>Verify</button>
-          </div>
-          <div class="verify-msg" hidden data-msg></div>
-        </div>
-        <div class="verify-row" data-channel="sms">
-          <span class="label">Mobile</span>
-          <span class="value" data-value></span>
-          <span class="verify-badge" data-badge></span>
-          <div class="verify-panel" hidden data-panel>
-            <input type="text" inputmode="numeric" autocomplete="one-time-code"
-              maxlength="6" placeholder="6-digit code" data-input>
-            <button type="button" class="submit" data-submit>Verify</button>
-          </div>
-          <div class="verify-msg" hidden data-msg></div>
-        </div>
       </div>
     </div>
   </section>
