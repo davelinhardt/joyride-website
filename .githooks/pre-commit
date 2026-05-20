@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Pre-commit HTML sanity check.
+#
+# Catches the family of bugs where a structural tag (<style>, <script>,
+# <head>, <body>) is opened but never closed — which causes the HTML5
+# parser to consume the rest of the page as raw text and render a blank
+# screen. The 2026-05-20 missing-</style> incident was exactly this.
+#
+# Runs on every .html file staged for commit. Uses Python's stdlib
+# html.parser plus a manual balance check for the raw-text elements
+# (<style>, <script>) whose contents the parser doesn't tokenise.
+#
+# Zero dependencies — Python 3 is on every macOS / linux box by default.
+
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.html$' || true)
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+errors=0
+for f in $staged; do
+  if [ ! -f "$f" ]; then
+    continue
+  fi
+  python3 - "$f" <<'PYEOF'
+import sys, re
+
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as fh:
+    html = fh.read()
+
+errors = []
+
+# Raw-text elements: HTML5 parser keeps consuming until it sees the
+# matching close tag. Missing closes are catastrophic — the rest of
+# the document gets eaten. Check tag counts directly.
+for tag in ("style", "script", "head", "body", "html"):
+    opens  = len(re.findall(rf"<{tag}[\s>]", html, re.IGNORECASE))
+    closes = len(re.findall(rf"</{tag}\s*>",  html, re.IGNORECASE))
+    if opens != closes:
+        errors.append(f"  <{tag}>: {opens} open vs {closes} close")
+
+# Also sanity-check that any <style> or <script> open is followed by
+# a close before the next open or end-of-file.
+for tag in ("style", "script"):
+    depth = 0
+    for m in re.finditer(rf"</?{tag}[\s>]", html, re.IGNORECASE):
+        if m.group(0).startswith("</"):
+            depth -= 1
+        else:
+            depth += 1
+        if depth > 1:
+            errors.append(f"  nested <{tag}> — likely missing close before line {html[:m.start()].count(chr(10))+1}")
+            break
+        if depth < 0:
+            errors.append(f"  unexpected </{tag}> at line {html[:m.start()].count(chr(10))+1}")
+            break
+
+if errors:
+    print(f"\n✗ HTML validation failed: {path}")
+    for e in errors:
+        print(e)
+    sys.exit(1)
+PYEOF
+  if [ $? -ne 0 ]; then
+    errors=$((errors + 1))
+  fi
+done
+
+if [ $errors -gt 0 ]; then
+  echo ""
+  echo "Pre-commit blocked: fix the HTML issues above and re-stage."
+  echo "(To bypass in an emergency: git commit --no-verify)"
+  exit 1
+fi
+
+exit 0
