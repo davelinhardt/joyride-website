@@ -313,28 +313,39 @@
   var loadingEl = document.getElementById("account-loading");
   var contentEl = document.getElementById("account-content");
 
+  // Belt-and-suspenders try wrapper — a single render failure in any
+  // sub-section shouldn't blank the whole account page. We log the
+  // error to console (Dave hit a blank state on @founder signup
+  // 2026-05-20; we now never silently swallow rendering errors).
+  function safe(label, fn) {
+    try { fn(); }
+    catch (err) {
+      console.error("[account] " + label + " failed:", err);
+    }
+  }
+
   function paint(user) {
     loadingEl.hidden = true;
     contentEl.hidden = false;
-    document.getElementById("hello-name").textContent = user.firstName || "there";
 
-    // Subline mirrors role + userType. Admin gets a chooser-style
-    // line because they may have multiple legitimate destinations
-    // (admin tool + their own driver profile, etc.) and we want it
-    // to feel intentional — not like the page is "in the way" of
-    // the admin tool.
-    var sub = document.getElementById("account-sub");
-    if (user.role === "admin") {
-      sub.textContent = "Choose where you want to go. Admin tool, your driver profile, and your account are all one tap away.";
-    } else if (user.userType === "driver" || user.userType === "both") {
-      sub.textContent = "Manage your rides, your driver profile, and your shareable link.";
-    } else {
-      sub.textContent = "View your rides, download receipts, and manage your account.";
-    }
+    safe("hello", function () {
+      document.getElementById("hello-name").textContent = user.firstName || "there";
+    });
 
-    renderActionCards(user);
-    renderVerifyStatus(user);
-    maybeOpenVerifyModal(user);
+    safe("sub", function () {
+      var sub = document.getElementById("account-sub");
+      if (user.role === "admin") {
+        sub.textContent = "Choose where you want to go. Admin tool, your driver profile, and your account are all one tap away.";
+      } else if (user.userType === "driver" || user.userType === "both") {
+        sub.textContent = "Manage your rides, your driver profile, and your shareable link.";
+      } else {
+        sub.textContent = "View your rides, download receipts, and manage your account.";
+      }
+    });
+
+    safe("renderActionCards",   function () { renderActionCards(user); });
+    safe("renderVerifyStatus",  function () { renderVerifyStatus(user); });
+    safe("maybeOpenVerifyModal", function () { maybeOpenVerifyModal(user); });
   }
 
   // Three-way chooser per Dave (2026-05-19): Rider, Driver, Admin.
@@ -548,6 +559,7 @@
   // modal AND clears the URL param so reloads don't re-open it.
   // Backdrop click is intentionally inert — only X closes.
   function openVerifyModal() {
+    console.log("[account] opening verification modal");
     document.body.classList.add("verify-modal-open");
   }
   function closeVerifyModal() {
