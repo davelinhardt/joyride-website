@@ -124,6 +124,28 @@ p  { margin: 0; text-wrap: pretty; }
 .btn .arrow { transition: transform .2s var(--ease); }
 .btn:hover .arrow { transform: translateX(3px); }
 
+/* Logout in the header reads as plain text, not a yellow pill —
+   applied to the primary header CTA when the user is logged in
+   (site.js renderAuthCta toggles this class). Keeps the .btn class
+   so the next render pass can still find the anchor. */
+.btn.is-text-link {
+  background: transparent !important;
+  border: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  color: var(--fg) !important;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0;
+  opacity: 0.85;
+}
+.btn.is-text-link:hover {
+  background: transparent !important;
+  filter: none;
+  color: var(--canary) !important;
+  opacity: 1;
+}
+
 /* Pills / chips */
 .pill {
   display: inline-flex; align-items: center; gap: 8px;
