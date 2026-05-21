@@ -65,7 +65,7 @@ window.addEventListener('error', (e) => {
             <a href="/" class="brand">
               <img src="/assets/lockup-on-dark.svg" alt="Joyride">
             </a>
-            <p class="blurb"><strong style="color:var(--canary);">Enjoy the ride.</strong> A new kind of rideshare. Drivers keep 100% of the fare. Riders get a fairer ride.</p>
+            <p class="blurb"><strong style="color:var(--canary);">Enjoy the ride.</strong> A new kind of rideshare. Drivers can keep 100% of the fare. Riders get a fairer ride.</p>
             <form class="newsletter" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Thanks ✓'; this.querySelector('input').value='';">
               <input type="email" required placeholder="Your email" aria-label="Email for newsletter">
               <button type="submit">Subscribe</button>
