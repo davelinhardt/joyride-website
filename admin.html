@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joyride Admin</title>
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      /* Light theme — black as primary action, yellow reserved for brand pill only */
+      --bg: #f7f7f8; --panel: #ffffff; --panel-2: #f3f4f6; --border: #e5e7eb; --border-2: #d1d5db;
+      --text: #111827; --muted: #6b7280;
+      --accent: #FFEF00;        /* brand yellow — used only as pill background */
+      --action: #111827;        /* primary action color (buttons, active chips) */
+      --action-text: #ffffff;   /* text on primary action surfaces */
+      --action-soft: #f3f4f6;   /* hover / nav-active background */
+      --action-soft-text: #111827;
+      --success: #16a34a; --danger: #dc2626; --row-hover: #fafbfc;
+    }
+    html[data-theme="dark"] {
+      --bg: #0a0a0a; --panel: #111; --panel-2: #1a1a1a; --border: #222; --border-2: #333;
+      --text: #fff; --muted: #9BA1A6;
+      --accent: #FFEF00;
+      --action: #FFEF00;
+      --action-text: #000;
+      --action-soft: rgba(255,239,0,.1);
+      --action-soft-text: #FFEF00;
+      --success: #22C55E; --danger: #EF4444; --row-hover: #1a1a1a;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+
+    /* Login */
+    #loginView { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--bg); }
+    .login-card { background: var(--accent); color: #000; border: 1px solid #000; border-radius: 16px;
+      padding: 36px; width: 100%; max-width: 420px; }
+    .login-logo { font-size: 26px; color: #000; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+    .login-logo .logo-mark { height: 40px; width: auto; }
+    .login-logo .logo-brand { font-weight: 500; }
+    .login-logo .logo-divider { width: 1px; height: 28px; background: rgba(0,0,0,.35); }
+    .login-logo .logo-label { font-weight: 400; font-size: 18px; opacity: .75; }
+    .login-sub { color: #000; opacity: .7; font-size: 14px; margin-bottom: 28px; }
+    .login-card .field-label { font-size: 12px; color: #000; opacity: .65; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+    .login-card .field-input { width: 100%; padding: 12px 14px; background: #fff; border: 1px solid #000;
+      border-radius: 10px; color: #000; font-size: 15px; margin-bottom: 16px; }
+    .login-card .field-input:focus { outline: 2px solid #000; outline-offset: -1px; border-color: #000; }
+    .login-card .btn-primary { background: #000; color: #fff; }
+    .login-card .btn-primary:hover { filter: brightness(1.15); }
+    .login-card .login-error { color: #991b1b; }
+    /* Default (non-login) field styles */
+    .field-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+    .field-input { width: 100%; padding: 12px 14px; background: var(--panel-2); border: 1px solid var(--border-2);
+      border-radius: 10px; color: var(--text); font-size: 15px; margin-bottom: 16px; }
+    .field-input:focus { outline: none; border-color: var(--action); }
+
+    /* Canonical Joyride admin input style — dark grey card with brand-yellow
+       text, oversized padding for tap-friendly entry. Started as a Rate
+       Sampler modal style; now reused across every form in the admin tool.
+       Opt-in via class="fancy-input" so table-cell inputs (Taxes & Fees row
+       editors) can keep their compact density. */
+    .fancy-input,
+    #addRouteModal input,
+    #addRouteModal textarea,
+    #enterRatesModal input[type="text"],
+    #enterRatesModal input[type="number"],
+    #enterRatesModal textarea,
+    #enterRatesModal select {
+      width: 100%;
+      padding: 14px 16px;
+      background: #2A2A2A;
+      border: 1px solid #3A3A3A;
+      border-radius: 10px;
+      color: #FFEF00;
+      font-size: 17px;
+      font-weight: 600;
+      font-family: inherit;
+    }
+    .fancy-input::placeholder,
+    #addRouteModal input::placeholder,
+    #addRouteModal textarea::placeholder,
+    #enterRatesModal input::placeholder,
+    #enterRatesModal textarea::placeholder { color: #666; font-weight: 400; }
+    .fancy-input:focus,
+    #addRouteModal input:focus,
+    #addRouteModal textarea:focus,
+    #enterRatesModal input:focus,
+    #enterRatesModal textarea:focus,
+    #enterRatesModal select:focus {
+      outline: none;
+      border-color: #FFEF00;
+      background: #1F1F1F;
+    }
+    /* Checkboxes — bigger so the touch target matches the new input height. */
+    #enterRatesModal input[type="checkbox"] {
+      width: 20px; height: 20px;
+      accent-color: #FFEF00;
+      cursor: pointer;
+    }
+
+    /* Benchmark Data Grid — heatmap-style table showing the per-minute
+       rate the pricing helper will use for each class × time-of-day tag. */
+    .bench-grid { border-collapse: separate; border-spacing: 0; width: 100%; }
+    .bench-grid th, .bench-grid td {
+      padding: 10px 12px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .bench-grid th { background: var(--panel-2); color: var(--muted);
+      text-transform: uppercase; letter-spacing: .5px; font-weight: 700; font-size: 11px; }
+    .bench-grid th.bench-class-col, .bench-grid td.bench-class-col {
+      text-align: left; font-weight: 700; color: var(--text);
+      background: var(--panel-2);
+      position: sticky; left: 0;
+      min-width: 140px;
+    }
+    .bench-grid td.bench-cell-filled { color: var(--text); font-weight: 600; }
+    .bench-grid td.bench-cell-empty { color: var(--muted); opacity: 0.5; }
+    .bench-grid td.bench-cell-stale { color: #F97316; }
+    .bench-grid .bench-age { display: block; font-size: 10px; color: var(--muted);
+      font-weight: 400; margin-top: 2px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 12px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; }
+    .btn-primary { background: var(--action); color: var(--action-text); }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border-2); }
+    .btn-ghost:hover { border-color: var(--action); color: var(--action); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-full { width: 100%; }
+    .login-error { color: var(--danger); font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; }
+
+    /* App shell */
+    #appView { display: none; min-height: 100vh; }
+    .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--panel); border-right: 1px solid var(--border); padding: 20px 0;
+      display: flex; flex-direction: column; }
+    .brand { padding: 0 20px 24px; display: flex; align-items: baseline; gap: 8px; }
+    .brand .logo-mark { height: 28px; width: auto; color: var(--text); }
+    .brand .logo-brand { font-size: 20px; font-weight: 500; color: var(--text); }
+    .brand .logo-divider { width: 1px; height: 16px; background: var(--border-2); align-self: center; }
+    .brand .logo-label { font-size: 14px; font-weight: 400; color: var(--muted); }
+    .nav { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 0 8px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      border-radius: 8px; color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; }
+    .nav-item:hover { background: var(--panel-2); color: var(--text); }
+    .nav-item.active { background: var(--action-soft); color: var(--action-soft-text); font-weight: 600; }
+    .nav-section { font-size: 11px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 1px; padding: 16px 14px 6px; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .sidebar-footer .who { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .sidebar-footer .who strong { color: var(--text); display: block; }
+
+    /* min-width:0 lets the 1fr grid track shrink below the natural
+       width of its contents — without it, a wide table (or any
+       wider-than-viewport child) would push the whole .shell grid
+       and the body would scroll instead of .main. With min-width:0
+       in place, overflow-x:auto on .main can actually scroll the
+       main pane while the sidebar stays fixed on the left. */
+    .main { padding: 28px 32px; overflow-x: auto; min-width: 0; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .topbar h1 { font-size: 22px; font-weight: 700; }
+    .topbar .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .search-wrap { position: relative; margin-bottom: 16px; max-width: 480px; }
+    .search-input { width: 100%; padding: 11px 14px 11px 38px; background: var(--panel);
+      border: 1px solid var(--border-2); border-radius: 10px; color: var(--text); font-size: 14px; }
+    .search-input:focus { outline: none; border-color: var(--action); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .chip { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border-2);
+      background: transparent; color: var(--muted); font-size: 13px; }
+    .chip.active { background: var(--action); color: var(--action-text); border-color: var(--action); font-weight: 600; }
+    .chip:hover:not(.active) { border-color: var(--action); color: var(--action); }
+
+    .table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    /* Compact-grid mode for the Taxes & Fees table — narrow inputs and
+       tight padding so the table is around 800px wide. Combined with
+       overflow-x:auto on the wrap, that means: wide viewport → fits
+       fine, no scrollbar; narrow viewport → scrolls horizontally.
+       width:max-content on the table is the critical bit: it makes
+       the table size to its natural content width instead of being
+       forced to width:100% by the global table rule (which would
+       fill the wrap and leave nothing to scroll). */
+    .compact-grid { width: max-content; }
+    .compact-grid td, .compact-grid th { padding: 8px 8px; }
+    .compact-grid input { width: 72px; box-sizing: border-box; padding: 6px 8px; }
+    .compact-grid input[data-f="state"], .compact-grid #taxNewState { width: 48px; text-align: center; }
+    .compact-grid input[data-f="city"], .compact-grid #taxNewCity { width: 96px; }
+    .compact-grid .btn { padding: 6px 10px; font-size: 12px; }
+    /* When .fancy-input lands inside the Taxes & Fees table, keep the
+       visual identity (dark grey, yellow text, bold) but shrink the
+       padding/font so the table doesn't push past the viewport — the
+       same horizontal-scroll problem we wrestled with on 2026-05-15. */
+    .compact-grid .fancy-input {
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; padding: 12px 16px; color: var(--muted); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-weight: 600; }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--panel-2); }
+    tr { cursor: pointer; }
+    tr:hover td { background: var(--panel-2); }
+    tr:last-child td { border-bottom: none; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px;
+      font-weight: 600; text-transform: capitalize; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-submitted { background: #fef3c7; color: #92400e; }
+    .badge-approved { background: #d1fae5; color: #065f46; }
+    .badge-active { background: #d1fae5; color: #065f46; }
+    .badge-denied { background: #fee2e2; color: #991b1b; }
+    .badge-rejected { background: #fee2e2; color: #991b1b; }
+    .badge-deactivated { background: #f3f4f6; color: #4b5563; }
+    .badge-deleted { background: #fecaca; color: #7f1d1d; }
+    .badge-suspended { background: #fff7ed; color: #9a3412; }
+    .badge-in_progress { background: #e0e7ff; color: #3730a3; }
+    .badge-none { background: #f3f4f6; color: #6b7280; }
+    .badge-admin { background: var(--accent); color: #000; margin-left: 6px; }
+    html[data-theme="dark"] .badge-pending { background: rgba(255,239,0,.15); color: #FFEF00; }
+    html[data-theme="dark"] .badge-submitted { background: rgba(255,239,0,.15); color: #FFEF00; }
+    html[data-theme="dark"] .badge-approved { background: rgba(34,197,94,.15); color: #22C55E; }
+    html[data-theme="dark"] .badge-active { background: rgba(34,197,94,.2); color: #22C55E; }
+    html[data-theme="dark"] .badge-denied { background: rgba(239,68,68,.15); color: #EF4444; }
+    html[data-theme="dark"] .badge-rejected { background: rgba(239,68,68,.15); color: #EF4444; }
+    html[data-theme="dark"] .badge-deactivated { background: rgba(155,161,166,.15); color: #9BA1A6; }
+    html[data-theme="dark"] .badge-deleted { background: rgba(239,68,68,.2); color: #F87171; }
+    html[data-theme="dark"] .badge-suspended { background: rgba(249,115,22,.15); color: #FB923C; }
+    html[data-theme="dark"] .badge-in_progress { background: rgba(99,102,241,.15); color: #818CF8; }
+    html[data-theme="dark"] .badge-none { background: rgba(155,161,166,.1); color: #9BA1A6; }
+
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+
+    /* Drawer */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none;
+      align-items: stretch; justify-content: flex-end; z-index: 50; }
+    .drawer-overlay.active { display: flex; }
+    .drawer { background: var(--panel); border-left: 1px solid var(--border); width: 520px; max-width: 100vw;
+      height: 100vh; overflow-y: auto; padding: 24px 28px; }
+    .drawer h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .drawer .drawer-sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .drawer-section { margin-bottom: 20px; }
+    .drawer-section h3 { font-size: 12px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .5px; margin-bottom: 10px; font-weight: 600; }
+    .kv { display: grid; grid-template-columns: 140px 1fr; gap: 8px 12px; font-size: 14px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { color: var(--text); word-break: break-word; }
+    .drawer textarea { width: 100%; padding: 12px; background: var(--panel-2); border: 1px solid var(--border-2);
+      border-radius: 8px; color: var(--text); font-size: 14px; resize: vertical; min-height: 100px;
+      font-family: inherit; }
+    .drawer textarea:focus { outline: none; border-color: var(--action); }
+    .status-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .status-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-2);
+      background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .status-btn:hover:not(:disabled):not([class*="active-"]) { border-color: var(--action); color: var(--action); }
+    .status-btn.active-pending, .status-btn.active-submitted { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+    .status-btn.active-approved, .status-btn.active-active { background: var(--success); color: #fff; border-color: var(--success); }
+    .status-btn.active-denied, .status-btn.active-deactivated, .status-btn.active-rejected, .status-btn.active-deleted { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .status-btn.active-suspended { background: #ea580c; color: #fff; border-color: #ea580c; }
+    .status-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .drawer-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .stripe-check { padding: 10px 12px; border-radius: 8px; background: var(--panel-2); font-size: 13px; margin-bottom: 6px; }
+    .stripe-check.ok { color: var(--success); }
+    .stripe-check.missing { color: var(--danger); }
+    .doc-row { display:flex; align-items:center; justify-content:space-between; padding: 10px 12px; border-radius: 8px; background: var(--panel-2); margin-bottom: 6px; font-size: 13px; }
+    .doc-label { color: var(--text); font-weight: 500; }
+    .doc-link { color: var(--action); text-decoration: none; font-weight: 600; font-size: 12px; padding: 4px 10px; border-radius: 6px; background: var(--action-soft); }
+    .doc-link:hover { text-decoration: underline; }
+    .doc-missing { color: var(--muted); font-size: 12px; font-style: italic; }
+
+    /* Detail Page */
+    .detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .back-btn { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; }
+    .back-btn:hover { background: var(--action-soft); border-color: var(--action); color: var(--action); }
+    .detail-name { font-size: 28px; font-weight: 700; margin: 0; }
+    .detail-sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+    .detail-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .detail-card h3 { font-size: 12px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .5px; margin: 0 0 14px 0; font-weight: 600; }
+    .detail-card.full { grid-column: 1 / -1; }
+    .detail-card textarea { width: 100%; padding: 12px; background: var(--panel-2); border: 1px solid var(--border-2);
+      border-radius: 8px; color: var(--text); font-size: 14px; resize: vertical; min-height: 100px; font-family: inherit; }
+    .detail-card textarea:focus { outline: none; border-color: var(--action); }
+
+    /* Document thumbnails — big and clickable to open a lightbox */
+    .doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 600px) { .doc-grid { grid-template-columns: 1fr; } }
+    .doc-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; cursor: pointer; transition: border-color .15s, transform .15s; }
+    .doc-card:hover { border-color: var(--action); transform: translateY(-1px); }
+    .doc-card.empty { cursor: default; opacity: .6; }
+    .doc-card.empty:hover { border-color: var(--border); transform: none; }
+    .doc-thumb { width: 100%; height: 140px; background: var(--panel); display: flex; align-items: center;
+      justify-content: center; overflow: hidden; color: var(--muted); font-size: 12px; }
+    .doc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .doc-caption { padding: 10px 12px; font-size: 13px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; justify-content: space-between; }
+    .doc-caption .pill-ok { font-size: 10px; font-weight: 700; color: var(--success); letter-spacing: .5px; }
+    .doc-caption .pill-missing { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .5px; }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 100;
+      display: none; align-items: center; justify-content: center; padding: 40px; flex-direction: column; }
+    .lightbox.active { display: flex; }
+    .lightbox-close { position: absolute; top: 20px; right: 20px; background: transparent; border: none;
+      color: #fff; font-size: 32px; cursor: pointer; line-height: 1; }
+    .lightbox-title { position: absolute; top: 24px; left: 24px; color: #fff; font-size: 16px; font-weight: 600; }
+    .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
+
+    .role-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+      background: var(--panel-2); font-size: 11px; font-weight: 600; color: var(--muted); }
+    .role-pill.admin { background: var(--accent); color: #000; }
+
+    /* Hero card: profile left, status blocks right */
+    .hero-row { display: grid; grid-template-columns: minmax(280px, 2fr) 3fr; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .hero-row { grid-template-columns: 1fr; } }
+    .hero-profile h3 { margin-top: 0; }
+    .hero-statuses { display: flex; flex-direction: column; gap: 18px;
+      border-left: 1px solid var(--border); padding-left: 24px; }
+    @media (max-width: 900px) { .hero-statuses { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 18px; } }
+    .hero-status-block h3 { margin-top: 0; margin-bottom: 8px; }
+    .hero-hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+    /* Document history rows under each thumbnail */
+    .doc-history { background: var(--panel); padding: 10px 12px; border-top: 1px solid var(--border); }
+    .doc-history-label { font-size: 10px; text-transform: uppercase; letter-spacing: .5px;
+      color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+    .doc-history-item { display: flex; align-items: center; gap: 10px; padding: 6px 0;
+      font-size: 12px; cursor: pointer; }
+    .doc-history-item:hover { color: var(--action); }
+    .doc-history-item + .doc-history-item { border-top: 1px dashed var(--border); }
+    .doc-history-thumb { width: 40px; height: 40px; border-radius: 4px; overflow: hidden;
+      background: var(--panel-2); flex-shrink: 0; }
+    .doc-history-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .doc-history-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+    .doc-history-date { color: var(--text); font-weight: 500; }
+    .doc-history-sub { color: var(--muted); font-size: 11px; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 18px; font-size: 14px; z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5); display: none; }
+    .toast.show { display: block; }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
+    .toast.success { border-color: var(--success); color: var(--success); }
+
+    @media (max-width: 768px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .drawer { width: 100vw; }
+      .main { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN view removed: this page is now reachable only via joyride.cool/login →
+     /account → "Admin tool" card. The auth gate inside the inline script
+     handles unauthenticated and non-admin redirects. -->
+
+<!-- APP -->
+<div id="appView">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="logo-mark" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-width="6"/>
+          <ellipse cx="29" cy="32" rx="3" ry="5.5" fill="currentColor"/>
+          <ellipse cx="51" cy="32" rx="3" ry="5.5" fill="currentColor"/>
+          <path d="M 22 46 Q 40 64 58 46" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <text x="92" y="56" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" fill="currentColor">Joyride</text>
+        </svg>
+        <span class="logo-divider"></span>
+        <span class="logo-label">Admin</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-section">Operations</div>
+        <div class="nav-item active" data-view="users">
+          <span>👥</span> User Management
+        </div>
+        <div class="nav-item" data-view="applications">
+          <span>📋</span> Driver Apps
+        </div>
+        <div class="nav-item" data-view="taxes">
+          <span>🧾</span> Taxes &amp; Fees
+        </div>
+        <div class="nav-item" data-view="rate-sampler">
+          <span>🚖</span> Rate Sampler
+        </div>
+        <div class="nav-item" data-view="settings">
+          <span>⚙️</span> Settings
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="who">
+          Signed in as
+          <strong id="adminName">—</strong>
+          <span id="adminEmail">—</span>
+        </div>
+        <button class="btn btn-ghost btn-full" id="themeToggleBtn" style="margin-bottom:8px">🌓 Toggle Theme</button>
+        <button class="btn btn-ghost btn-full" id="logoutBtn">Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- USERS VIEW -->
+      <div id="usersView">
+        <div class="topbar">
+          <div>
+            <h1>User Management</h1>
+            <div class="sub">Search, manage status, notes, and roles.</div>
+          </div>
+        </div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="userSearch" placeholder="Search by name, username, email, or phone..." />
+        </div>
+        <div class="chips" id="userChips">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="riders">Riders</button>
+          <button class="chip" data-filter="drivers">Drivers</button>
+          <button class="chip" data-filter="pending_riders">Pending Riders</button>
+          <button class="chip" data-filter="pending_apps">Pending Applications</button>
+          <button class="chip" data-filter="suspended_drivers">Suspended Drivers</button>
+          <button class="chip" data-filter="admins">Admins</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Rider Status</th>
+                <th>Driver App</th>
+                <th>Driver Status</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+          <div class="empty" id="userEmpty" style="display:none">
+            <h3>No users found</h3>
+            <p>Try a different search or filter.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPLICATIONS VIEW -->
+      <div id="applicationsView" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1>Driver Applications</h1>
+            <div class="sub">Review submitted applications for approval.</div>
+          </div>
+        </div>
+        <div class="chips" id="appChips">
+          <button class="chip active" data-app-filter="all">All</button>
+          <button class="chip" data-app-filter="submitted">Pending</button>
+          <button class="chip" data-app-filter="approved">Approved</button>
+          <button class="chip" data-app-filter="rejected">Rejected</button>
+          <button class="chip" data-app-filter="in_progress">In Progress</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Applicant</th>
+                <th>Email</th>
+                <th>Vehicle</th>
+                <th>Plan</th>
+                <th>Status</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody id="appTableBody"></tbody>
+          </table>
+          <div class="empty" id="appEmpty" style="display:none">
+            <h3>No applications found</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAXES VIEW -->
+      <div id="taxesView" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1>Taxes &amp; Gov Fees</h1>
+            <div class="sub">Per-market tax + fee rates. Applied at receipt time: Taxes &amp; gov fees = gov % × total fare + flat; Sales tax = sales tax % × total fare.</div>
+          </div>
+        </div>
+        <div class="table-wrap" style="overflow-x:auto">
+          <table class="compact-grid">
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>City</th>
+                <th>Sales tax %</th>
+                <th>Gov fee %</th>
+                <th>Gov fee flat $</th>
+                <th>Airport tax %</th>
+                <th>Airport tax $</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="taxTableBody"></tbody>
+            <tfoot>
+              <tr id="taxAddRow">
+                <td><input id="taxNewState" class="fancy-input" maxlength="2" placeholder="NC" style="text-transform:uppercase" /></td>
+                <td><input id="taxNewCity" class="fancy-input" placeholder="Raleigh" /></td>
+                <td><input id="taxNewSales" class="fancy-input" inputmode="decimal" placeholder="0.00" /></td>
+                <td><input id="taxNewGovPct" class="fancy-input" inputmode="decimal" placeholder="1.50" /></td>
+                <td><input id="taxNewGovFlat" class="fancy-input" inputmode="decimal" placeholder="0.00" /></td>
+                <td><input id="taxNewAirport" class="fancy-input" inputmode="decimal" placeholder="0.00" /></td>
+                <td><input id="taxNewAirportFlat" class="fancy-input" inputmode="decimal" placeholder="3.00" /></td>
+                <td><button class="btn btn-primary" id="taxAddBtn">Add market</button></td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="empty" id="taxEmpty" style="display:none">
+            <h3>No markets configured</h3>
+            <p>Add one above to get started.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div id="settingsView" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1>Settings</h1>
+            <div class="sub">App-wide knobs. Changes take effect on the next time the rider/driver clients open the active-ride screen.</div>
+          </div>
+        </div>
+        <div class="table-wrap" style="padding:24px">
+          <h3 style="margin-top:0">Wait-time grace period</h3>
+          <p style="color:#9BA1A6;font-size:13px;margin-bottom:16px;max-width:560px">
+            How long the driver waits at pickup before the rider starts being charged a wait fee.
+            During this window the rider's Wait Time stat counts <em>down</em> from this value and
+            Wait Fees stays at $0.00. After it expires, Wait Time counts up and the fee accrues.
+          </p>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <label for="gracePeriodInput" style="font-weight:600">Grace period (minutes):</label>
+            <input id="gracePeriodInput" class="fancy-input" type="number" min="0" step="0.5" placeholder="2" style="width:160px" />
+            <button class="btn btn-primary" id="graceSaveBtn">Save</button>
+            <span id="graceSaveStatus" style="color:#22C55E;font-size:13px"></span>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="padding:24px;margin-top:16px">
+          <h3 style="margin-top:0">Subscription Plans</h3>
+          <p style="color:#9BA1A6;font-size:13px;margin-bottom:16px;max-width:640px">
+            Monthly subscription fee and transaction fee % per plan. Transaction fee % is the cut
+            Joyride takes from each ride's Total Fare (e.g. 7 means 7% per ryde). Drivers see these
+            values on Profile → Subscription Plans &amp; Billing; the transaction fee % also drives
+            the per-ride Transaction Fee on every Ride Detail breakdown.
+          </p>
+          <table id="plansTable" style="width:100%">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:6px 8px">Plan</th>
+                <th style="text-align:left;padding:6px 8px">Monthly fee ($)</th>
+                <th style="text-align:left;padding:6px 8px">Transaction Fee (%)</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="plansEditBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RATE SAMPLER VIEW -->
+      <div id="rateSamplerView" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1>Rate Sampler</h1>
+            <div class="sub">Manually enter Uber &amp; Lyft fares on curated routes. Per-minute rates derived here feed the driver app's "Uber &amp; Lyft Benchmarks" pricing mode.</div>
+          </div>
+        </div>
+
+        <!-- Active routes -->
+        <div class="table-wrap" style="margin-bottom:24px">
+          <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+            <h3 style="margin:0">Active Routes</h3>
+            <button class="btn btn-primary" id="addRouteBtn">+ Add Route</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Label</th>
+                <th>Pickup</th>
+                <th>Dropoff</th>
+                <th>Last Sampled</th>
+                <th>Source</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="routesTableBody"></tbody>
+          </table>
+          <div class="empty" id="routesEmpty" style="display:none">
+            <h3>No routes yet</h3>
+            <p>Add a route or pick one from the suggestions below.</p>
+          </div>
+        </div>
+
+        <!-- Suggestions from real rydes -->
+        <div class="table-wrap" style="margin-bottom:24px">
+          <div style="padding:16px 24px;border-bottom:1px solid var(--border)">
+            <h3 style="margin:0">Suggested Routes <span style="color:var(--muted);font-weight:400;font-size:13px">(top 10 common ryde patterns, last 90 days)</span></h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Pickup</th>
+                <th>Dropoff</th>
+                <th>Rides</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="suggestionsTableBody"></tbody>
+          </table>
+          <div class="empty" id="suggestionsEmpty" style="display:none">
+            <h3>No common patterns yet</h3>
+            <p>Suggestions appear once your platform has logged real rydes.</p>
+          </div>
+        </div>
+
+        <!-- Benchmark data grid — what the driver pricing helper will actually use -->
+        <div class="table-wrap" style="margin-bottom:24px;overflow:auto">
+          <div style="padding:16px 24px;border-bottom:1px solid var(--border)">
+            <h3 style="margin:0">Benchmark Pricing Data <span style="color:var(--muted);font-weight:400;font-size:13px">(latest $/min by class × time of day)</span></h3>
+            <div style="color:var(--muted);font-size:12px;margin-top:6px">The driver pricing helper picks the cell matching the rider's current time of day. If that cell is empty, it falls back to the most recent sample for the class across other time buckets. If no sample exists at all, drivers using benchmark mode fall through to Rate Card.</div>
+          </div>
+          <div id="benchGridWrap" style="padding:16px 24px"></div>
+          <div class="empty" id="benchGridEmpty" style="display:none;border-top:1px solid var(--border)">
+            <h3>No data yet</h3>
+            <p>Enter rates on a route above to populate this grid.</p>
+          </div>
+        </div>
+
+        <!-- Recent samples -->
+        <div class="table-wrap">
+          <div style="padding:16px 24px;border-bottom:1px solid var(--border)">
+            <h3 style="margin:0">Recent Samples <span style="color:var(--muted);font-weight:400;font-size:13px">(last 50)</span></h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Route</th>
+                <th>Provider</th>
+                <th>Class</th>
+                <th>Price</th>
+                <th>$/min</th>
+                <th>Tag</th>
+              </tr>
+            </thead>
+            <tbody id="samplesTableBody"></tbody>
+          </table>
+          <div class="empty" id="samplesEmpty" style="display:none">
+            <h3>No samples logged yet</h3>
+            <p>Enter rates on a route above to get started.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Route modal -->
+      <div id="addRouteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;width:min(560px,92vw);max-height:90vh;overflow:auto">
+          <h2 style="margin:0 0 16px 0">Add Route</h2>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Paste full addresses — they'll be geocoded server-side. You can edit the label after creation if needed.</p>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <label>
+              <div style="font-weight:600;margin-bottom:4px">Pickup address</div>
+              <input id="addRoutePickup" type="text" placeholder="e.g. 403 Highlands Lake Dr, Cary, NC" style="width:100%" />
+            </label>
+            <label>
+              <div style="font-weight:600;margin-bottom:4px">Dropoff address</div>
+              <input id="addRouteDropoff" type="text" placeholder="e.g. Raleigh-Durham International Airport" style="width:100%" />
+            </label>
+            <label>
+              <div style="font-weight:600;margin-bottom:4px">Label (optional)</div>
+              <input id="addRouteLabel" type="text" placeholder="e.g. Cary → RDU" style="width:100%" />
+            </label>
+            <div id="addRouteError" style="color:#EF4444;font-size:13px;display:none"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+              <button class="btn btn-ghost" id="addRouteCancelBtn">Cancel</button>
+              <button class="btn btn-primary" id="addRouteSaveBtn">Add Route</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enter Rates modal -->
+      <div id="enterRatesModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;width:min(640px,92vw);max-height:90vh;overflow:auto">
+          <h2 style="margin:0 0 4px 0">Enter Rates</h2>
+          <div id="enterRatesRouteLabel" style="color:var(--muted);font-size:13px;margin-bottom:12px">—</div>
+
+          <div style="background:rgba(255,239,0,0.06);border:1px solid rgba(255,239,0,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;user-select:text">
+            <div style="display:flex;gap:8px;margin-bottom:6px">
+              <span style="font-weight:700;color:var(--muted);min-width:64px">PICKUP</span>
+              <span id="enterRatesPickup" style="flex:1">—</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span style="font-weight:700;color:var(--muted);min-width:64px">DROPOFF</span>
+              <span id="enterRatesDropoff" style="flex:1">—</span>
+            </div>
+            <div style="color:var(--muted);font-size:11px;margin-top:8px;font-style:italic">Paste these into Uber &amp; Lyft to look up quotes.</div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+            <label style="flex:1;min-width:160px">
+              <div style="font-weight:600;margin-bottom:4px">Time of day <span style="color:#EF4444">*</span></div>
+              <select id="enterRatesTag" style="width:100%" required>
+                <option value="">— Required —</option>
+                <option value="morning_peak">Morning peak (7–9a)</option>
+                <option value="midday">Midday (10a–3p)</option>
+                <option value="evening_peak">Evening peak (4–7p)</option>
+                <option value="late_night">Late night (9p–1a)</option>
+                <option value="weekend">Weekend</option>
+              </select>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;padding-top:22px">
+              <input id="enterRatesSurge" type="checkbox" />
+              <span>Surge active</span>
+            </label>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-bottom:16px">
+            <div style="grid-column:1/3;font-weight:700;color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:1px">Uber</div>
+            <label>UberX <input data-class="UberX" data-provider="uber" type="number" min="0" step="0.01" placeholder="$" style="width:100%" /></label>
+            <label>Uber Comfort <input data-class="Uber Comfort" data-provider="uber" type="number" min="0" step="0.01" placeholder="$" style="width:100%" /></label>
+            <label>Uber Premier <input data-class="Uber Premier" data-provider="uber" type="number" min="0" step="0.01" placeholder="$" style="width:100%" /></label>
+
+            <div style="grid-column:1/3;font-weight:700;color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:1px;margin-top:8px">Lyft</div>
+            <label>Lyft Standard <input data-class="Lyft Standard" data-provider="lyft" type="number" min="0" step="0.01" placeholder="$" style="width:100%" /></label>
+            <label>Lyft Extra Comfort <input data-class="Lyft Extra Comfort" data-provider="lyft" type="number" min="0" step="0.01" placeholder="$" style="width:100%" /></label>
+            <label>Lyft Black <input data-class="Lyft Black" data-provider="lyft" type="number" min="0" step="0.01" placeholder="$" style="width:100%" /></label>
+          </div>
+
+          <label style="display:block;margin-bottom:12px">
+            <div style="font-weight:600;margin-bottom:4px">Notes (optional)</div>
+            <textarea id="enterRatesNotes" rows="2" placeholder="Surge multiplier value, weather, special event, etc." style="width:100%"></textarea>
+          </label>
+
+          <div id="enterRatesError" style="color:#EF4444;font-size:13px;display:none;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-ghost" id="enterRatesCancelBtn">Cancel</button>
+            <button class="btn btn-primary" id="enterRatesSaveBtn">Save Samples</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER DETAIL VIEW (shown instead of list when a row is clicked) -->
+      <div id="userDetailView" style="display:none">
+        <div class="detail-header">
+          <button class="back-btn" id="backToListBtn">← Back</button>
+          <div style="flex:1">
+            <h1 class="detail-name" id="drawerName">—</h1>
+            <div class="detail-sub" id="drawerSub">—</div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <!-- Hero card: profile + all status controls in one place -->
+          <div class="detail-card full">
+            <div class="hero-row">
+              <div class="hero-profile">
+                <h3>Profile</h3>
+                <dl class="kv" id="drawerKv"></dl>
+              </div>
+              <div class="hero-statuses">
+                <div class="hero-status-block" id="riderStatusSection" style="display:none">
+                  <h3>Rider Account Status</h3>
+                  <div class="status-grid" id="riderStatusGrid"></div>
+                  <div class="hero-hint" id="riderStatusHint">Account moderation — use Deactivated / Deleted to revoke access.</div>
+                </div>
+                <!-- Payment method (Stripe stand-in). Active == has valid
+                     payment method on file. Flipped manually by admin until
+                     the Stripe webhooks are wired. -->
+                <div class="hero-status-block" id="riderPaymentSection" style="display:none">
+                  <h3>Payment Method (Stripe)</h3>
+                  <div class="status-grid" id="riderPaymentGrid"></div>
+                  <div class="hero-hint">
+                    Riders need a verified payment method to book a ride.
+                    TODO(stripe): this flips automatically when the rider
+                    adds a card. For MVP, admin can toggle here.
+                  </div>
+                </div>
+                <div class="hero-status-block" id="appStatusSection" style="display:none">
+                  <h3>Driver Application Status</h3>
+                  <div class="status-grid" id="appStatusGrid"></div>
+                  <div class="hero-hint" id="appStatusHint"></div>
+                </div>
+                <div class="hero-status-block" id="driverStatusSection" style="display:none">
+                  <h3>Driver Account Status</h3>
+                  <div class="status-grid" id="driverStatusGrid"></div>
+                  <div class="hero-hint">Only Active drivers with an approved application can receive rydes.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Application Documents (drivers) -->
+          <div class="detail-card full" id="appDocsSection" style="display:none">
+            <h3>Application Documents</h3>
+            <div style="color:var(--muted);font-size:12px;margin-bottom:12px">Click any document to enlarge and review. Previous versions are kept for the audit trail.</div>
+            <div class="doc-grid" id="appDocsList"></div>
+          </div>
+
+          <!-- Stripe Status -->
+          <div class="detail-card" id="stripeSection" style="display:none">
+            <h3>Stripe Status</h3>
+            <div id="drawerStripe"></div>
+          </div>
+
+          <!-- Rider Feedback (drivers only) -->
+          <div class="detail-card full" id="feedbackSection" style="display:none">
+            <h3>Rider Feedback</h3>
+            <div id="feedbackSummary" style="margin-bottom:14px"></div>
+            <div id="feedbackCategories" style="margin-bottom:14px"></div>
+            <div id="feedbackRides"></div>
+          </div>
+
+          <!-- Admin Notes -->
+          <div class="detail-card full">
+            <h3>Admin Notes</h3>
+            <textarea id="drawerNotes" class="fancy-input" rows="4" placeholder="Notes about this user (visible to admins only)..."></textarea>
+            <div style="margin-top:10px">
+              <button class="btn btn-primary" id="saveNotesBtn">Save Notes</button>
+            </div>
+          </div>
+
+          <!-- Role -->
+          <div class="detail-card full">
+            <h3>Role</h3>
+            <button class="btn btn-ghost" id="roleToggleBtn">—</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Lightbox for document preview -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-title" id="lightboxTitle">—</div>
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+  <img id="lightboxImg" alt="Document preview" />
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- JoyrideAPI helper — single source of truth for Bearer-token auth.
+     Must load BEFORE the inline admin script so apiFetch can delegate. -->
+<script src="/js/api.js"></script>
+<script>
+  let currentUsers = [];
+  let currentFilter = 'all';
+  let currentSearch = '';
+  let openUserId = null;
+  let currentUserDetail = null;
+  let meId = null;
+
+  function toast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show ' + type;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // apiFetch — central helper for every admin API call. Delegates to
+  // JoyrideAPI (defined in /js/api.js) which auto-attaches the Bearer
+  // token from localStorage. This page lives on joyride.cool but talks
+  // to the Railway API server (https://joiryde-api-production.up.railway.app)
+  // — JoyrideAPI.API_BASE points there. Server-side, admin endpoints
+  // already accept the same Bearer header via the extractToken helper
+  // in joiryde-server-deploy/server/admin-dashboard.ts. Returns the
+  // parsed JSON body or throws an Error on non-2xx (matching the
+  // original contract so the rest of the page works unchanged).
+  async function apiFetch(path, opts = {}) {
+    const method = (opts.method || 'GET').toUpperCase();
+    const body = opts.body ? (typeof opts.body === 'string' ? JSON.parse(opts.body) : opts.body) : undefined;
+    try {
+      if (method === 'GET') return await JoyrideAPI.apiGet('/admin' + path);
+      if (method === 'POST') return await JoyrideAPI.apiPost('/admin' + path, body);
+      if (method === 'PATCH') return await JoyrideAPI.apiPatch('/admin' + path, body);
+      if (method === 'DELETE') return await JoyrideAPI.apiDelete('/admin' + path);
+      throw new Error('Unsupported method: ' + method);
+    } catch (err) {
+      // Re-throw as a plain Error to preserve the "throw on !ok" contract
+      // the rest of the page expects. JoyrideAPI errors carry .status +
+      // .body; downstream UI only reads err.message so this is fine.
+      const e = new Error(err && err.message ? err.message : 'Request failed');
+      e.status = err && err.status;
+      throw e;
+    }
+  }
+
+  // ─── Auth gate ─────────────────────────────────────────────────────────
+  // This page is reached only via joyride.cool/login → /account → Admin
+  // tool. If the user has no token, send them to /login. If they have a
+  // token but aren't an admin, send them back to /account (which gates
+  // the Admin tool card on role anyway, so this is belt-and-suspenders).
+  async function checkSession() {
+    // Hydrate from cache for an instant first paint before /me round-trip.
+    const cached = JoyrideAPI.readCachedUser();
+    if (!JoyrideAPI.getToken() && !cached) {
+      window.location.replace('/login');
+      return false;
+    }
+    let user = cached;
+    try {
+      user = await JoyrideAPI.loadCurrentUser();
+    } catch (_) {
+      // Transient failure — stick with the cached user if we have one.
+      // A definitive 401 already cleared auth inside loadCurrentUser.
+    }
+    if (!user) {
+      window.location.replace('/login');
+      return false;
+    }
+    if (user.role !== 'admin') {
+      // Logged in but not an admin — bounce to the account chooser.
+      window.location.replace('/account');
+      return false;
+    }
+    meId = user.id;
+    showApp(user);
+    return true;
+  }
+  function showApp(admin) {
+    document.getElementById('appView').style.display = 'block';
+    const fullName = ((admin.firstName || '') + ' ' + (admin.lastName || '')).trim();
+    document.getElementById('adminName').textContent = admin.name || fullName || 'Admin';
+    document.getElementById('adminEmail').textContent = admin.email || '';
+    loadUsers();
+    // Deep-link: if URL hash points to a user, open it right away
+    const m = location.hash.match(/^#\\/user\\/(\\d+)$/);
+    if (m) openUser(parseInt(m[1], 10));
+  }
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    // Single sign-out — clear the shared Bearer token and bounce to login.
+    // The /admin/api/logout endpoint on Railway just clears its own cookie,
+    // which we never set on joyride.cool, so we skip it.
+    JoyrideAPI.clearAuth();
+    window.location.replace('/login');
+  });
+
+  // ─── Nav ───────────────────────────────────────────────────────────────
+  document.querySelectorAll('.nav-item').forEach((el) => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach((x) => x.classList.remove('active'));
+      el.classList.add('active');
+      const view = el.dataset.view;
+      // Switching tabs always takes us back to the list for that tab
+      document.getElementById('userDetailView').style.display = 'none';
+      openUserId = null; currentUserDetail = null;
+      if (location.hash.startsWith('#/user/')) {
+        history.pushState({}, '', location.pathname + location.search);
+      }
+      document.getElementById('usersView').style.display = view === 'users' ? 'block' : 'none';
+      document.getElementById('applicationsView').style.display = view === 'applications' ? 'block' : 'none';
+      document.getElementById('taxesView').style.display = view === 'taxes' ? 'block' : 'none';
+      document.getElementById('rateSamplerView').style.display = view === 'rate-sampler' ? 'block' : 'none';
+      document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
+      if (view === 'applications') loadApplications();
+      if (view === 'taxes') loadTaxSettings();
+      if (view === 'rate-sampler') loadRateSampler();
+      if (view === 'settings') { loadSystemSettings(); loadSubscriptionPlans(); }
+    });
+  });
+
+  // ─── Users ─────────────────────────────────────────────────────────────
+  document.getElementById('userSearch').addEventListener('input', (e) => {
+    currentSearch = e.target.value; loadUsers();
+  });
+  document.querySelectorAll('#userChips .chip').forEach((c) => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#userChips .chip').forEach((x) => x.classList.remove('active'));
+      c.classList.add('active');
+      currentFilter = c.dataset.filter; loadUsers();
+    });
+  });
+
+  async function loadUsers() {
+    const params = new URLSearchParams();
+    if (currentSearch) params.set('search', currentSearch);
+    if (currentFilter !== 'all') params.set('filter', currentFilter);
+    try {
+      const { users } = await apiFetch('/api/users?' + params.toString());
+      currentUsers = users; renderUsers();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  function statusBadge(s) {
+    return '<span class="badge badge-' + s + '">' + s + '</span>';
+  }
+
+  function renderUsers() {
+    const tbody = document.getElementById('userTableBody');
+    const empty = document.getElementById('userEmpty');
+    if (!currentUsers.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    tbody.innerHTML = currentUsers.map((u) => {
+      const uname = u.username || (u.openId || '').replace('rider_', 'rider #') || '—';
+      const fullName = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '—';
+      const email = u.riderEmail || u.email || '—';
+      const adminTag = u.role === 'admin' ? '<span class="badge badge-admin">admin</span>' : '';
+      const riderSt = u.riderStatus ? statusBadge(u.riderStatus) : '<span style="color:var(--muted)">—</span>';
+      const appSt = u.applicationStatus ? statusBadge(u.applicationStatus) : '<span style="color:var(--muted)">—</span>';
+      const driverSt = u.driverAccountStatus ? statusBadge(u.driverAccountStatus) : '<span style="color:var(--muted)">—</span>';
+      return '<tr data-id="' + u.id + '">' +
+        '<td><strong>' + uname + '</strong>' + adminTag + '</td>' +
+        '<td>' + fullName + '</td>' +
+        '<td>' + email + '</td>' +
+        '<td>' + riderSt + '</td>' +
+        '<td>' + appSt + '</td>' +
+        '<td>' + driverSt + '</td>' +
+        '</tr>';
+    }).join('');
+    tbody.querySelectorAll('tr').forEach((row) => {
+      row.addEventListener('click', () => openUser(parseInt(row.dataset.id, 10)));
+    });
+  }
+
+  // ─── User Detail Page (replaces the old drawer) ────────────────────────
+  function showUserList() {
+    document.getElementById('userDetailView').style.display = 'none';
+    // Restore whichever list was active
+    const activeNav = document.querySelector('.nav-item.active');
+    const view = activeNav?.dataset?.view || 'users';
+    document.getElementById('usersView').style.display = view === 'users' ? 'block' : 'none';
+    document.getElementById('applicationsView').style.display = view === 'applications' ? 'block' : 'none';
+    document.getElementById('taxesView').style.display = view === 'taxes' ? 'block' : 'none';
+    document.getElementById('rateSamplerView').style.display = view === 'rate-sampler' ? 'block' : 'none';
+    document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
+  }
+  function showUserDetail() {
+    document.getElementById('usersView').style.display = 'none';
+    document.getElementById('applicationsView').style.display = 'none';
+    document.getElementById('taxesView').style.display = 'none';
+    document.getElementById('rateSamplerView').style.display = 'none';
+    document.getElementById('settingsView').style.display = 'none';
+    document.getElementById('userDetailView').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+  async function openUser(id) {
+    openUserId = id;
+    try {
+      const data = await apiFetch('/api/users/' + id);
+      currentUserDetail = data;
+      renderDrawer(data);
+      showUserDetail();
+      // Update URL hash so browser back works and the page is linkable
+      if (location.hash !== '#/user/' + id) {
+        history.pushState({ userId: id }, '', '#/user/' + id);
+      }
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  function closeDrawer() {
+    openUserId = null; currentUserDetail = null;
+    showUserList();
+    if (location.hash.startsWith('#/user/')) {
+      history.pushState({}, '', location.pathname + location.search);
+    }
+  }
+  document.getElementById('backToListBtn').addEventListener('click', closeDrawer);
+
+  // Hash-based routing: respond to browser back/forward
+  window.addEventListener('popstate', () => {
+    const m = location.hash.match(/^#\\/user\\/(\\d+)$/);
+    if (m) {
+      openUser(parseInt(m[1], 10));
+    } else {
+      openUserId = null; currentUserDetail = null;
+      showUserList();
+    }
+  });
+
+  // ─── Lightbox ──────────────────────────────────────────────────────────
+  function openLightbox(url, title) {
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('lightboxTitle').textContent = title || '';
+    document.getElementById('lightbox').classList.add('active');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.getElementById('lightboxImg').src = '';
+  }
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  function renderStatusGrid(containerId, statuses, currentStatus, onClick) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = statuses.map(s => {
+      const isActive = s === currentStatus;
+      const cls = isActive ? 'status-btn active-' + s : 'status-btn';
+      return '<button class="' + cls + '" data-s="' + s + '">' + s.replace('_', ' ') + '</button>';
+    }).join('');
+    el.querySelectorAll('.status-btn').forEach(btn => {
+      btn.addEventListener('click', () => onClick(btn.dataset.s));
+    });
+  }
+
+  // Variant that takes [{ value, label }] so we can show friendlier button
+  // text (e.g. "Verified") than the raw enum (e.g. "active"). Same server
+  // value is sent on click.
+  function renderLabeledStatusGrid(containerId, options, currentStatus, onClick) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = options.map(opt => {
+      const isActive = opt.value === currentStatus;
+      const cls = isActive ? 'status-btn active-' + opt.value : 'status-btn';
+      return '<button class="' + cls + '" data-s="' + opt.value + '">' + opt.label + '</button>';
+    }).join('');
+    el.querySelectorAll('.status-btn').forEach(btn => {
+      btn.addEventListener('click', () => onClick(btn.dataset.s));
+    });
+  }
+
+  function renderDrawer(data) {
+    const { user, rider, driverProfile, application } = data;
+    const name = rider ? rider.firstName + ' ' + rider.lastName : user.name || 'User';
+    document.getElementById('drawerName').textContent = name;
+    document.getElementById('drawerSub').textContent = (rider?.username ? '@' + rider.username + ' · ' : '') + (rider?.email || user.email || '');
+
+    const kv = document.getElementById('drawerKv');
+    const rows = [
+      ['User Type', user.userType],
+      ['Role', user.role],
+      ['Email', rider?.email || user.email || '—'],
+      ['Phone', rider?.mobile || user.phone || '—'],
+      ['Username', rider?.username || '—'],
+      ['Created', user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'],
+      ['Last Signed In', user.lastSignedIn ? new Date(user.lastSignedIn).toLocaleString() : '—'],
+    ];
+    if (application) {
+      rows.push(['Application Step', application.currentStep || '—']);
+      // Vehicle / VIN / License Plate always render with a "—" fallback
+      // when the field is NULL or empty — so missing data surfaces as
+      // "missing" rather than a silently hidden row (admins were losing
+      // sight of incomplete applications). VIN is sourced from
+      // driverApplications.vehicleVin (the source of truth; the
+      // vehicles table doesn't carry VIN today).
+      const vehicleStr = [application.vehicleYear, application.vehicleMake, application.vehicleModel, application.vehicleColor].filter(Boolean).join(' ');
+      rows.push(['Vehicle', vehicleStr || '—']);
+      rows.push(['VIN', application.vehicleVin || '—']);
+      rows.push(['License Plate', application.licensePlate || '—']);
+      if (application.selectedPlan) rows.push(['Selected Plan', application.selectedPlan]);
+    }
+    kv.innerHTML = rows.map(([k, v]) => '<dt>' + k + '</dt><dd>' + (v ?? '—') + '</dd>').join('');
+
+    // ─── Rider Account Status panel ──────────────────────────────────
+    const riderSection = document.getElementById('riderStatusSection');
+    if (rider) {
+      riderSection.style.display = 'block';
+      renderStatusGrid('riderStatusGrid',
+        ['pending', 'active', 'deactivated', 'deleted'],
+        rider.status || 'pending',
+        (status) => changeRiderStatus(rider.id, status)
+      );
+    } else {
+      riderSection.style.display = 'none';
+    }
+
+    // ─── Payment Method (Stripe) panel ───────────────────────────────
+    // MVP: this is a friendly view on the same rider.status field. Active
+    // == verified payment method; pending == not yet verified. When Stripe
+    // is wired, a webhook will flip this automatically.
+    const paymentSection = document.getElementById('riderPaymentSection');
+    if (rider && (rider.status === 'pending' || rider.status === 'active')) {
+      paymentSection.style.display = 'block';
+      renderLabeledStatusGrid('riderPaymentGrid',
+        [
+          { value: 'pending', label: 'Needs Verification' },
+          { value: 'active',  label: 'Verified' },
+        ],
+        rider.status || 'pending',
+        (status) => changeRiderStatus(rider.id, status)
+      );
+    } else {
+      // Hide when rider row is deactivated/deleted or missing — those are
+      // moderation states, and the payment concept doesn't apply.
+      paymentSection.style.display = 'none';
+    }
+
+    // ─── Driver Application Status panel ─────────────────────────────
+    const appSection = document.getElementById('appStatusSection');
+    if (application) {
+      appSection.style.display = 'block';
+      renderStatusGrid('appStatusGrid',
+        ['submitted', 'approved', 'rejected'],
+        application.status === 'in_progress' ? null : application.status,
+        (status) => changeAppStatus(application.id, status)
+      );
+      const hint = document.getElementById('appStatusHint');
+      if (application.status === 'in_progress') {
+        hint.textContent = 'Application is still in progress — applicant has not submitted yet.';
+      } else {
+        hint.textContent = application.reviewNotes ? 'Last note: ' + application.reviewNotes : '';
+      }
+    } else {
+      appSection.style.display = 'none';
+    }
+
+    // ─── Driver Application Documents panel ──────────────────────────
+    const docsSection = document.getElementById('appDocsSection');
+    const docsList = document.getElementById('appDocsList');
+    if (application) {
+      docsSection.style.display = 'block';
+      const docs = [
+        { label: "Driver's License", url: application.driversLicenseUrl, type: 'drivers_license' },
+        { label: 'Vehicle Registration', url: application.driverReportUrl, type: 'driver_report' },
+        { label: 'Insurance', url: application.insuranceUrl, type: 'insurance' },
+      ];
+      // Group history by type (newest-first already from server)
+      const history = (data.documentHistory || []);
+      const historyByType = {};
+      history.forEach((h) => {
+        if (!historyByType[h.documentType]) historyByType[h.documentType] = [];
+        historyByType[h.documentType].push(h);
+      });
+      // Store for lightbox click handlers below
+      window.__currentDocs = docs;
+      window.__currentDocHistory = historyByType;
+
+      docsList.innerHTML = docs.map((d, idx) => {
+        const priorVersions = historyByType[d.type] || [];
+        let historyHtml = '';
+        if (priorVersions.length > 0) {
+          historyHtml = '<div class="doc-history">' +
+            '<div class="doc-history-label">Previous Versions (' + priorVersions.length + ')</div>' +
+            priorVersions.map((h, hIdx) =>
+              '<div class="doc-history-item" data-history-type="' + d.type + '" data-history-idx="' + hIdx + '">' +
+                '<div class="doc-history-thumb"><img src="' + h.url + '" alt="Previous version" /></div>' +
+                '<div class="doc-history-meta">' +
+                  '<span class="doc-history-date">Replaced ' + new Date(h.replacedAt).toLocaleDateString() + '</span>' +
+                  '<span class="doc-history-sub">' + new Date(h.replacedAt).toLocaleTimeString() + '</span>' +
+                '</div>' +
+              '</div>'
+            ).join('') +
+            '</div>';
+        }
+
+        if (d.url) {
+          return '<div class="doc-card-wrapper">' +
+                   '<div class="doc-card" data-doc-idx="' + idx + '">' +
+                     '<div class="doc-thumb"><img src="' + d.url + '" alt="' + d.label + '" /></div>' +
+                     '<div class="doc-caption">' + d.label + '<span class="pill-ok">CURRENT</span></div>' +
+                   '</div>' +
+                   historyHtml +
+                 '</div>';
+        }
+        return '<div class="doc-card-wrapper">' +
+                 '<div class="doc-card empty">' +
+                   '<div class="doc-thumb">Not uploaded</div>' +
+                   '<div class="doc-caption">' + d.label + '<span class="pill-missing">MISSING</span></div>' +
+                 '</div>' +
+                 historyHtml +
+               '</div>';
+      }).join('');
+
+      // Wire current-version clicks → lightbox
+      docsList.querySelectorAll('.doc-card:not(.empty)').forEach((card) => {
+        card.addEventListener('click', () => {
+          const idx = parseInt(card.dataset.docIdx, 10);
+          const d = docs[idx];
+          if (d?.url) openLightbox(d.url, d.label + ' (current)');
+        });
+      });
+      // Wire history-row clicks → lightbox
+      docsList.querySelectorAll('.doc-history-item').forEach((item) => {
+        item.addEventListener('click', () => {
+          const type = item.dataset.historyType;
+          const hIdx = parseInt(item.dataset.historyIdx, 10);
+          const h = (historyByType[type] || [])[hIdx];
+          if (!h) return;
+          const doc = docs.find(d => d.type === type);
+          const label = (doc?.label || type) + ' — replaced ' + new Date(h.replacedAt).toLocaleString();
+          openLightbox(h.url, label);
+        });
+      });
+    } else {
+      docsSection.style.display = 'none';
+    }
+
+    // ─── Driver Account Status panel ─────────────────────────────────
+    const driverSection = document.getElementById('driverStatusSection');
+    if (driverProfile) {
+      driverSection.style.display = 'block';
+      renderStatusGrid('driverStatusGrid',
+        ['active', 'suspended', 'deactivated'],
+        driverProfile.accountStatus || 'active',
+        (status) => changeDriverAccountStatus(user.id, status)
+      );
+    } else {
+      driverSection.style.display = 'none';
+    }
+
+    // ─── Rider Feedback (every approved driver) ──────────────────────
+    // Renders the same shape the driver sees in their own app: overall
+    // average + per-category averages + per-ride list with comments.
+    // Anonymous (rater identity is dropped server-side). Shows for any
+    // user with a driver profile, with an empty state when there are
+    // no reviews yet so admins always know where to look.
+    const feedbackSection = document.getElementById('feedbackSection');
+    const breakdown = data.ratingsBreakdown;
+    if (driverProfile) {
+      feedbackSection.style.display = 'block';
+      const fmt1 = (n) => (Math.round(n * 10) / 10).toFixed(1);
+      // Comments are rider-supplied free text; escape before injecting
+      // into the drawer's innerHTML so a stray < or & can't break the
+      // markup or smuggle in script.
+      const escapeHtml = (s) => String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+      const summaryEl = document.getElementById('feedbackSummary');
+      const catsEl = document.getElementById('feedbackCategories');
+      const ridesEl = document.getElementById('feedbackRides');
+
+      if (!breakdown || breakdown.overall.count === 0) {
+        summaryEl.innerHTML = '<div style="color:var(--muted);font-size:13px">No reviews yet — riders haven\\'t left feedback for this driver.</div>';
+        catsEl.innerHTML = '';
+        ridesEl.innerHTML = '';
+      } else {
+        // Summary line — big avg + count.
+        summaryEl.innerHTML =
+          '<div style="display:flex;align-items:baseline;gap:10px">' +
+            '<span style="font-size:32px;font-weight:800;color:#FFEF00">' + fmt1(breakdown.overall.average) + '</span>' +
+            '<span style="color:var(--muted);font-size:13px">overall · ' + breakdown.overall.count + ' rating' + (breakdown.overall.count === 1 ? '' : 's') + '</span>' +
+          '</div>';
+        // Category averages — small bars.
+        const catEntries = Object.entries(breakdown.categories);
+        catsEl.innerHTML = catEntries.length === 0 ? '' :
+          '<div style="display:grid;grid-template-columns:1fr 60px 100px;gap:6px 12px;font-size:13px">' +
+            catEntries.map(([cat, v]) =>
+              '<div style="color:var(--muted)">' + cat + '</div>' +
+              '<div style="text-align:right;font-weight:600">' + fmt1(v.average) + ' / 5</div>' +
+              '<div style="background:#222;border-radius:6px;height:8px;align-self:center;overflow:hidden">' +
+                '<div style="width:' + Math.round((v.average / 5) * 100) + '%;height:100%;background:#FFEF00"></div>' +
+              '</div>'
+            ).join('') +
+          '</div>';
+        // Per-ride list.
+        ridesEl.innerHTML =
+          '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">Ride-by-ride</div>' +
+          breakdown.rides.map((r) => {
+            const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+            const stars = '★'.repeat(r.rating) + '☆'.repeat(Math.max(0, 5 - r.rating));
+            const cats = Object.entries(r.categories || {}).map(([k, v]) =>
+              '<span style="color:var(--muted)">' + k + '</span> <span style="font-weight:600">' + v + '</span>'
+            ).join(' · ');
+            const comment = r.comment ? '<div style="margin-top:6px;color:#ccc;font-style:italic">"' + escapeHtml(r.comment) + '"</div>' : '';
+            return '<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">' +
+              '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">' +
+                '<span style="color:#FFEF00;letter-spacing:1px">' + stars + '</span>' +
+                '<span style="font-size:12px;color:var(--muted)">Ryde #' + r.rydeId + ' · ' + date + '</span>' +
+              '</div>' +
+              (cats ? '<div style="font-size:12px">' + cats + '</div>' : '') +
+              comment +
+            '</div>';
+          }).join('');
+      }
+    } else {
+      feedbackSection.style.display = 'none';
+    }
+
+    // ─── Stripe (only if driver) ─────────────────────────────────────
+    const stripeSection = document.getElementById('stripeSection');
+    if (driverProfile) {
+      stripeSection.style.display = 'block';
+      const stripeEl = document.getElementById('drawerStripe');
+      const connectOk = !!driverProfile.stripeOnboardingComplete;
+      const pmOk = !!driverProfile.stripePaymentMethodId;
+      stripeEl.innerHTML =
+        '<div class="stripe-check ' + (connectOk ? 'ok' : 'missing') + '">' +
+          (connectOk ? '✅' : '❌') + ' Stripe Connect (receives payments)' +
+        '</div>' +
+        '<div class="stripe-check ' + (pmOk ? 'ok' : 'missing') + '">' +
+          (pmOk ? '✅' : '❌') + ' Payment Method on File (plan billing)' +
+        '</div>';
+    } else {
+      stripeSection.style.display = 'none';
+    }
+
+    // Notes
+    document.getElementById('drawerNotes').value = user.adminNotes || '';
+
+    // Role
+    const roleBtn = document.getElementById('roleToggleBtn');
+    if (user.role === 'admin') {
+      roleBtn.textContent = user.id === meId ? 'You are Admin (cannot remove self)' : 'Remove Admin Role';
+      roleBtn.disabled = user.id === meId;
+      roleBtn.onclick = () => changeRole('user');
+    } else {
+      roleBtn.textContent = 'Make Admin';
+      roleBtn.disabled = false;
+      roleBtn.onclick = () => changeRole('admin');
+    }
+  }
+
+  async function changeRiderStatus(riderId, status) {
+    try {
+      await apiFetch('/api/riders/' + riderId + '/status', {
+        method: 'PATCH', body: JSON.stringify({ status }),
+      });
+      toast('Rider status updated to ' + status);
+      if (openUserId) await openUser(openUserId);
+      loadUsers();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  async function changeAppStatus(appId, status) {
+    try {
+      const notes = status === 'rejected' ? prompt('Rejection reason (optional):') || '' : '';
+      await apiFetch('/api/applications/' + appId + '/status', {
+        method: 'PATCH', body: JSON.stringify({ status, notes }),
+      });
+      toast('Application status updated to ' + status);
+      if (openUserId) await openUser(openUserId);
+      loadUsers();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  async function changeDriverAccountStatus(userId, status) {
+    try {
+      await apiFetch('/api/driver-profiles/' + userId + '/account-status', {
+        method: 'PATCH', body: JSON.stringify({ status }),
+      });
+      toast('Driver account status updated to ' + status);
+      if (openUserId) await openUser(openUserId);
+      loadUsers();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  async function changeRole(role) {
+    if (!openUserId) return;
+    if (!confirm(role === 'admin' ? 'Grant admin access to this user?' : 'Remove admin access from this user?')) return;
+    try {
+      await apiFetch('/api/users/' + openUserId + '/role', {
+        method: 'PATCH', body: JSON.stringify({ role }),
+      });
+      toast('Role updated');
+      await openUser(openUserId);
+      loadUsers();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  document.getElementById('saveNotesBtn').addEventListener('click', async () => {
+    if (!openUserId) return;
+    const notes = document.getElementById('drawerNotes').value;
+    try {
+      await apiFetch('/api/users/' + openUserId + '/notes', {
+        method: 'PATCH', body: JSON.stringify({ notes }),
+      });
+      toast('Notes saved');
+    } catch (err) { toast(err.message, 'error'); }
+  });
+
+  // ─── Applications ──────────────────────────────────────────────────────
+  let currentAppFilter = 'all';
+  let currentApps = [];
+  document.querySelectorAll('#appChips .chip').forEach((c) => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#appChips .chip').forEach((x) => x.classList.remove('active'));
+      c.classList.add('active');
+      currentAppFilter = c.dataset.appFilter; renderApps();
+    });
+  });
+  async function loadApplications() {
+    try {
+      const apps = await apiFetch('/api/applications');
+      currentApps = apps; renderApps();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  function renderApps() {
+    const filtered = currentAppFilter === 'all' ? currentApps : currentApps.filter((a) => a.status === currentAppFilter);
+    const tbody = document.getElementById('appTableBody');
+    const empty = document.getElementById('appEmpty');
+    if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    tbody.innerHTML = filtered.map((a) => {
+      const vehicle = [a.vehicleYear, a.vehicleMake, a.vehicleModel, a.vehicleColor].filter(Boolean).join(' ') || '—';
+      const plan = a.selectedPlan ? a.selectedPlan.charAt(0).toUpperCase() + a.selectedPlan.slice(1) : '—';
+      const submitted = a.submittedAt ? new Date(a.submittedAt).toLocaleDateString() : '—';
+      return '<tr data-id="' + a.id + '">' +
+        '<td><strong>' + (a.userName || '—') + '</strong></td>' +
+        '<td>' + (a.userEmail || '—') + '</td>' +
+        '<td>' + vehicle + '</td>' +
+        '<td>' + plan + '</td>' +
+        '<td>' + statusBadge(a.status === 'submitted' ? 'pending' : a.status === 'rejected' ? 'denied' : a.status) + '</td>' +
+        '<td>' + submitted + '</td>' +
+        '</tr>';
+    }).join('');
+    tbody.querySelectorAll('tr').forEach((row) => {
+      row.addEventListener('click', async () => {
+        const id = parseInt(row.dataset.id, 10);
+        const app = currentApps.find((a) => a.id === id);
+        if (app) openUser(app.userId);
+      });
+    });
+  }
+
+  // ─── Taxes & Gov Fees ──────────────────────────────────────────────────
+  let currentTaxRows = [];
+  async function loadTaxSettings() {
+    try {
+      const { rows } = await apiFetch('/api/tax-settings');
+      currentTaxRows = rows || []; renderTaxRows();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  function renderTaxRows() {
+    const tbody = document.getElementById('taxTableBody');
+    const empty = document.getElementById('taxEmpty');
+    if (!currentTaxRows.length) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    tbody.innerHTML = currentTaxRows.map((r) => (
+      '<tr data-id="' + r.id + '">' +
+        '<td><input class="fancy-input" data-f="state" value="' + r.state + '" maxlength="2" style="text-transform:uppercase" /></td>' +
+        '<td><input class="fancy-input" data-f="city" value="' + r.city.replace(/"/g, '&quot;') + '" /></td>' +
+        '<td><input class="fancy-input" data-f="salesTaxPercent" inputmode="decimal" value="' + r.salesTaxPercent + '" /></td>' +
+        '<td><input class="fancy-input" data-f="govFeePercent" inputmode="decimal" value="' + r.govFeePercent + '" /></td>' +
+        '<td><input class="fancy-input" data-f="govFeeFlat" inputmode="decimal" value="' + r.govFeeFlat + '" /></td>' +
+        '<td><input class="fancy-input" data-f="airportTaxPercent" inputmode="decimal" value="' + (r.airportTaxPercent ?? "0.00") + '" /></td>' +
+        '<td><input class="fancy-input" data-f="airportTaxFlat" inputmode="decimal" value="' + (r.airportTaxFlat ?? "0.00") + '" /></td>' +
+        '<td>' +
+          '<button class="btn btn-primary" data-act="save">Save</button> ' +
+          '<button class="btn btn-ghost" data-act="delete">Delete</button>' +
+        '</td>' +
+      '</tr>'
+    )).join('');
+    tbody.querySelectorAll('tr').forEach((row) => {
+      row.querySelector('[data-act="save"]').addEventListener('click', () => saveTaxRow(row));
+      row.querySelector('[data-act="delete"]').addEventListener('click', () => deleteTaxRow(row));
+    });
+  }
+  async function saveTaxRow(row) {
+    const payload = {
+      state: row.querySelector('[data-f="state"]').value,
+      city: row.querySelector('[data-f="city"]').value,
+      salesTaxPercent: row.querySelector('[data-f="salesTaxPercent"]').value,
+      govFeePercent: row.querySelector('[data-f="govFeePercent"]').value,
+      govFeeFlat: row.querySelector('[data-f="govFeeFlat"]').value,
+      airportTaxPercent: row.querySelector('[data-f="airportTaxPercent"]').value,
+      airportTaxFlat: row.querySelector('[data-f="airportTaxFlat"]').value,
+    };
+    try {
+      await apiFetch('/api/tax-settings', { method: 'POST', body: JSON.stringify(payload) });
+      toast('Saved', 'success'); await loadTaxSettings();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  async function deleteTaxRow(row) {
+    const id = row.dataset.id;
+    if (!confirm('Delete this market?')) return;
+    try {
+      await apiFetch('/api/tax-settings/' + id, { method: 'DELETE' });
+      toast('Deleted', 'success'); await loadTaxSettings();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  document.getElementById('taxAddBtn').addEventListener('click', async () => {
+    const payload = {
+      state: document.getElementById('taxNewState').value,
+      city: document.getElementById('taxNewCity').value,
+      salesTaxPercent: document.getElementById('taxNewSales').value || '0',
+      govFeePercent: document.getElementById('taxNewGovPct').value || '0',
+      govFeeFlat: document.getElementById('taxNewGovFlat').value || '0',
+      airportTaxPercent: document.getElementById('taxNewAirport').value || '0',
+      airportTaxFlat: document.getElementById('taxNewAirportFlat').value || '0',
+    };
+    if (!payload.state || !payload.city) { toast('State and city are required', 'error'); return; }
+    try {
+      await apiFetch('/api/tax-settings', { method: 'POST', body: JSON.stringify(payload) });
+      ['taxNewState','taxNewCity','taxNewSales','taxNewGovPct','taxNewGovFlat','taxNewAirport','taxNewAirportFlat'].forEach((id) => { document.getElementById(id).value = ''; });
+      toast('Market added', 'success'); await loadTaxSettings();
+    } catch (err) { toast(err.message, 'error'); }
+  });
+
+  // ─── System Settings ───────────────────────────────────────────────────
+  async function loadSystemSettings() {
+    try {
+      const data = await apiFetch('/api/system-settings');
+      const grace = data?.settings?.grace_period_minutes;
+      document.getElementById('gracePeriodInput').value = grace ?? '2';
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  document.getElementById('graceSaveBtn').addEventListener('click', async () => {
+    const status = document.getElementById('graceSaveStatus');
+    const input = document.getElementById('gracePeriodInput');
+    const value = parseFloat(input.value);
+    if (!Number.isFinite(value) || value < 0) {
+      status.style.color = '#EF4444';
+      status.textContent = 'Enter a non-negative number';
+      return;
+    }
+    try {
+      await apiFetch('/api/system-settings', {
+        method: 'POST',
+        body: JSON.stringify({ key: 'grace_period_minutes', value: String(value) }),
+      });
+      status.style.color = '#22C55E';
+      status.textContent = 'Saved';
+      setTimeout(() => { status.textContent = ''; }, 2000);
+    } catch (err) {
+      status.style.color = '#EF4444';
+      status.textContent = err.message || 'Save failed';
+    }
+  });
+
+  // ─── Subscription Plans (admin pricing) ────────────────────────────────
+  // Display order matches the driver app's Subscription Plans screen
+  // (Basic → Growth → Pro). Server orders by monthlyPrice so the same
+  // order falls out naturally today; locking it here keeps the rows
+  // stable if a higher-tier plan ever lands above Pro.
+  const PLAN_SLUG_ORDER = ['basic', 'growth', 'pro'];
+
+  async function loadSubscriptionPlans() {
+    try {
+      const data = await apiFetch('/api/subscription-plans');
+      const plansBySlug = new Map();
+      for (const p of (data?.plans ?? [])) plansBySlug.set(p.slug, p);
+      const body = document.getElementById('plansEditBody');
+      body.innerHTML = '';
+      for (const slug of PLAN_SLUG_ORDER) {
+        const p = plansBySlug.get(slug);
+        if (!p) continue;
+        const price = parseFloat(p.monthlyPrice);
+        const pct = Math.round(parseFloat(p.commissionRate) * 10000) / 100; // 0.0700 → 7
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td style="padding:6px 8px;font-weight:600">' + (p.name || slug) + '</td>' +
+          '<td style="padding:6px 8px"><input class="fancy-input" data-plan-field="monthlyPrice" data-slug="' + slug + '" type="number" min="0" step="1" value="' + price.toFixed(2) + '" style="width:160px" /></td>' +
+          '<td style="padding:6px 8px"><input class="fancy-input" data-plan-field="commissionPercent" data-slug="' + slug + '" type="number" min="0" max="100" step="0.1" value="' + pct + '" style="width:140px" /></td>' +
+          '<td style="padding:6px 8px"><button class="btn btn-primary" data-save-plan="' + slug + '">Save</button></td>' +
+          '<td style="padding:6px 8px;color:#22C55E;font-size:13px" data-plan-status="' + slug + '"></td>';
+        body.appendChild(tr);
+      }
+      body.querySelectorAll('[data-save-plan]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const slug = btn.getAttribute('data-save-plan');
+          const status = document.querySelector('[data-plan-status="' + slug + '"]');
+          const monthly = document.querySelector('input[data-slug="' + slug + '"][data-plan-field="monthlyPrice"]').value;
+          const pct = document.querySelector('input[data-slug="' + slug + '"][data-plan-field="commissionPercent"]').value;
+          status.style.color = '#22C55E';
+          status.textContent = '';
+          try {
+            await apiFetch('/api/subscription-plans', {
+              method: 'POST',
+              body: JSON.stringify({ slug, monthlyPrice: monthly, commissionPercent: pct }),
+            });
+            status.textContent = 'Saved';
+            setTimeout(() => { status.textContent = ''; }, 2000);
+          } catch (err) {
+            status.style.color = '#EF4444';
+            status.textContent = (err && err.message) || 'Save failed';
+          }
+        });
+      });
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  // ─── Rate Sampler ──────────────────────────────────────────────────────
+  let currentRoutes = [];
+  let enterRatesRouteId = null;
+
+  function formatRelativeTime(iso) {
+    if (!iso) return 'never';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return 'never';
+    const diffMs = Date.now() - d.getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return days + 'd ago';
+    return d.toLocaleDateString();
+  }
+
+  function truncate(s, n) {
+    if (!s) return '';
+    return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  }
+
+  function loadRateSampler() {
+    loadCompetitorRoutes();
+    loadSuggestions();
+    loadRecentSamples();
+    loadBenchmarkGrid();
+  }
+
+  // Class order matches the admin "Enter Rates" modal so the visual
+  // grouping reads Uber-then-Lyft top to bottom.
+  const GRID_CLASSES = [
+    "UberX", "Uber Comfort", "Uber Premier",
+    "Lyft Standard", "Lyft Extra Comfort", "Lyft Black",
+  ];
+  const GRID_TAGS = [
+    { key: 'morning_peak',  label: 'Morning peak\\n7–9a' },
+    { key: 'midday',        label: 'Midday\\n10a–3p' },
+    { key: 'evening_peak',  label: 'Evening peak\\n4–7p' },
+    { key: 'late_night',    label: 'Late night\\n9p–1a' },
+    { key: 'weekend',       label: 'Weekend' },
+  ];
+
+  async function loadBenchmarkGrid() {
+    try {
+      const { grid } = await apiFetch('/api/competitor-rate-samples/grid');
+      const wrap = document.getElementById('benchGridWrap');
+      const empty = document.getElementById('benchGridEmpty');
+      if (!grid.length) { wrap.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+
+      // Index grid rows by (classKey, tag-or-__null__) for O(1) lookup
+      const lookup = new Map();
+      for (const r of grid) {
+        const tagKey = r.tag || '__null__';
+        lookup.set(r.classKey + '::' + tagKey, r);
+      }
+
+      const STALE_DAYS = 14;
+
+      let html = '<table class="bench-grid"><thead><tr><th class="bench-class-col">Class</th>';
+      for (const t of GRID_TAGS) {
+        html += '<th>' + t.label.split('\\n').map(escapeHtml).join('<br>') + '</th>';
+      }
+      html += '</tr></thead><tbody>';
+
+      for (const cls of GRID_CLASSES) {
+        html += '<tr><td class="bench-class-col">' + escapeHtml(cls) + '</td>';
+        for (const t of GRID_TAGS) {
+          const key = cls + '::' + t.key;
+          const row = lookup.get(key);
+          if (!row) {
+            html += '<td class="bench-cell-empty">—</td>';
+          } else {
+            const ageDays = (Date.now() - new Date(row.sampledAt).getTime()) / (24 * 60 * 60 * 1000);
+            const isStale = ageDays > STALE_DAYS;
+            const cellCls = isStale ? 'bench-cell-stale' : 'bench-cell-filled';
+            html += '<td class="' + cellCls + '">$' + row.pricePerMinute.toFixed(2) + '/min'
+              + '<span class="bench-age">' + formatRelativeTime(row.sampledAt) + '</span></td>';
+          }
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  async function loadCompetitorRoutes() {
+    try {
+      const { routes } = await apiFetch('/api/competitor-routes');
+      currentRoutes = routes;
+      const tbody = document.getElementById('routesTableBody');
+      const empty = document.getElementById('routesEmpty');
+      if (!routes.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      tbody.innerHTML = routes.map((r) => {
+        const label = r.label || ((r.pickupAddress || '').split(',')[0] + ' → ' + (r.dropoffAddress || '').split(',')[0]);
+        const sourceBadge = r.source === 'seed'
+          ? '<span class="badge" style="background:rgba(34,197,94,0.15);color:#22C55E">seed</span>'
+          : r.source === 'common-route'
+            ? '<span class="badge" style="background:rgba(59,130,246,0.15);color:#3B82F6">common</span>'
+            : '<span class="badge" style="background:rgba(148,163,184,0.15);color:var(--muted)">manual</span>';
+        return '<tr>' +
+          '<td><strong>' + escapeHtml(label) + '</strong></td>' +
+          '<td>' + escapeHtml(truncate(r.pickupAddress, 50)) + '</td>' +
+          '<td>' + escapeHtml(truncate(r.dropoffAddress, 50)) + '</td>' +
+          '<td>' + formatRelativeTime(r.lastSampledAt) + '</td>' +
+          '<td>' + sourceBadge + '</td>' +
+          '<td style="text-align:right">' +
+            '<button class="btn btn-primary" data-route-id="' + r.id + '" data-action="enter-rates">Enter Rates</button> ' +
+            '<button class="btn btn-ghost" data-route-id="' + r.id + '" data-action="archive">Archive</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+      tbody.querySelectorAll('button[data-action="enter-rates"]').forEach((b) => {
+        b.addEventListener('click', () => openEnterRates(parseInt(b.dataset.routeId, 10)));
+      });
+      tbody.querySelectorAll('button[data-action="archive"]').forEach((b) => {
+        b.addEventListener('click', async () => {
+          if (!confirm('Archive this route? Existing samples are preserved.')) return;
+          try {
+            await apiFetch('/api/competitor-routes/' + b.dataset.routeId + '/archive', { method: 'PATCH' });
+            toast('Route archived', 'success');
+            loadCompetitorRoutes();
+          } catch (err) { toast(err.message, 'error'); }
+        });
+      });
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  async function loadSuggestions() {
+    try {
+      const { suggestions } = await apiFetch('/api/competitor-routes/suggestions');
+      const tbody = document.getElementById('suggestionsTableBody');
+      const empty = document.getElementById('suggestionsEmpty');
+      if (!suggestions.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      tbody.innerHTML = suggestions.map((s, i) => {
+        return '<tr>' +
+          '<td>' + escapeHtml(truncate(s.pickupAddress, 60)) + '</td>' +
+          '<td>' + escapeHtml(truncate(s.dropoffAddress, 60)) + '</td>' +
+          '<td><strong>' + s.count + '</strong></td>' +
+          '<td style="text-align:right"><button class="btn btn-primary" data-i="' + i + '">+ Add to Sample Set</button></td>' +
+        '</tr>';
+      }).join('');
+      tbody.querySelectorAll('button[data-i]').forEach((b) => {
+        b.addEventListener('click', async () => {
+          const s = suggestions[parseInt(b.dataset.i, 10)];
+          if (!s) return;
+          try {
+            await apiFetch('/api/competitor-routes', {
+              method: 'POST',
+              body: JSON.stringify({
+                pickupAddress: s.pickupAddress,
+                pickupLat: s.pickupLat,
+                pickupLng: s.pickupLng,
+                dropoffAddress: s.dropoffAddress,
+                dropoffLat: s.dropoffLat,
+                dropoffLng: s.dropoffLng,
+                source: 'common-route',
+              }),
+            });
+            toast('Route added', 'success');
+            loadCompetitorRoutes(); loadSuggestions();
+          } catch (err) { toast(err.message, 'error'); }
+        });
+      });
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  async function loadRecentSamples() {
+    try {
+      const { samples } = await apiFetch('/api/competitor-rate-samples/recent');
+      const tbody = document.getElementById('samplesTableBody');
+      const empty = document.getElementById('samplesEmpty');
+      if (!samples.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      // Build a routeId -> label map from currentRoutes for display
+      const routeLabels = new Map();
+      currentRoutes.forEach((r) => {
+        const label = r.label || ((r.pickupAddress || '').split(',')[0] + ' → ' + (r.dropoffAddress || '').split(',')[0]);
+        routeLabels.set(r.id, label);
+      });
+      tbody.innerHTML = samples.map((s) => {
+        const routeLabel = routeLabels.get(s.routeId) || ('Route #' + s.routeId);
+        const providerBadge = s.provider === 'uber'
+          ? '<span class="badge" style="background:rgba(0,0,0,0.6);color:#FFF">Uber</span>'
+          : '<span class="badge" style="background:rgba(255,0,180,0.15);color:#FF00B5">Lyft</span>';
+        const surgeTag = s.surge ? ' <span style="color:#F97316">⚡</span>' : '';
+        return '<tr>' +
+          '<td>' + formatRelativeTime(s.sampledAt) + '</td>' +
+          '<td>' + escapeHtml(routeLabel) + '</td>' +
+          '<td>' + providerBadge + '</td>' +
+          '<td>' + escapeHtml(s.classKey) + surgeTag + '</td>' +
+          '<td>$' + parseFloat(s.priceUsd).toFixed(2) + '</td>' +
+          '<td>' + (s.pricePerMinute != null ? '$' + parseFloat(s.pricePerMinute).toFixed(2) : '—') + '</td>' +
+          '<td><span style="color:var(--muted);font-size:12px">' + (s.tag || '—') + '</span></td>' +
+        '</tr>';
+      }).join('');
+    } catch (err) { toast(err.message, 'error'); }
+  }
+
+  // Add Route modal
+  function openAddRoute() {
+    document.getElementById('addRoutePickup').value = '';
+    document.getElementById('addRouteDropoff').value = '';
+    document.getElementById('addRouteLabel').value = '';
+    document.getElementById('addRouteError').style.display = 'none';
+    document.getElementById('addRouteModal').style.display = 'flex';
+  }
+  function closeAddRoute() {
+    document.getElementById('addRouteModal').style.display = 'none';
+  }
+  document.getElementById('addRouteBtn').addEventListener('click', openAddRoute);
+  document.getElementById('addRouteCancelBtn').addEventListener('click', closeAddRoute);
+  document.getElementById('addRouteSaveBtn').addEventListener('click', async () => {
+    const pickup = document.getElementById('addRoutePickup').value.trim();
+    const dropoff = document.getElementById('addRouteDropoff').value.trim();
+    const label = document.getElementById('addRouteLabel').value.trim();
+    const err = document.getElementById('addRouteError');
+    if (!pickup || !dropoff) {
+      err.textContent = 'Both pickup and dropoff are required';
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    try {
+      await apiFetch('/api/competitor-routes', {
+        method: 'POST',
+        body: JSON.stringify({ pickupAddress: pickup, dropoffAddress: dropoff, label: label || undefined }),
+      });
+      closeAddRoute();
+      toast('Route added', 'success');
+      loadCompetitorRoutes();
+    } catch (e) {
+      err.textContent = e.message || 'Could not add route';
+      err.style.display = 'block';
+    }
+  });
+
+  // Enter Rates modal
+  function openEnterRates(routeId) {
+    const r = currentRoutes.find((x) => x.id === routeId);
+    if (!r) return;
+    enterRatesRouteId = routeId;
+    const label = r.label || ((r.pickupAddress || '').split(',')[0] + ' → ' + (r.dropoffAddress || '').split(',')[0]);
+    document.getElementById('enterRatesRouteLabel').textContent = label;
+    document.getElementById('enterRatesPickup').textContent = r.pickupAddress || '—';
+    document.getElementById('enterRatesDropoff').textContent = r.dropoffAddress || '—';
+    document.getElementById('enterRatesTag').value = '';
+    document.getElementById('enterRatesSurge').checked = false;
+    document.getElementById('enterRatesNotes').value = '';
+    document.getElementById('enterRatesError').style.display = 'none';
+    document.querySelectorAll('#enterRatesModal input[type="number"]').forEach((i) => { i.value = ''; });
+    document.getElementById('enterRatesModal').style.display = 'flex';
+  }
+  function closeEnterRates() {
+    enterRatesRouteId = null;
+    document.getElementById('enterRatesModal').style.display = 'none';
+  }
+  document.getElementById('enterRatesCancelBtn').addEventListener('click', closeEnterRates);
+  document.getElementById('enterRatesSaveBtn').addEventListener('click', async () => {
+    if (!enterRatesRouteId) return;
+    const entries = [];
+    document.querySelectorAll('#enterRatesModal input[type="number"]').forEach((i) => {
+      const v = parseFloat(i.value);
+      if (Number.isFinite(v) && v >= 0 && i.value !== '') {
+        entries.push({ provider: i.dataset.provider, classKey: i.dataset.class, priceUsd: v });
+      }
+    });
+    const err = document.getElementById('enterRatesError');
+    const selectedTag = document.getElementById('enterRatesTag').value;
+    if (!selectedTag) {
+      err.textContent = 'Pick a time of day before saving — it determines which bucket these rates fill.';
+      err.style.display = 'block';
+      return;
+    }
+    if (!entries.length) {
+      err.textContent = 'Enter at least one price';
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    try {
+      await apiFetch('/api/competitor-rate-samples', {
+        method: 'POST',
+        body: JSON.stringify({
+          routeId: enterRatesRouteId,
+          tag: selectedTag,
+          surge: document.getElementById('enterRatesSurge').checked,
+          notes: document.getElementById('enterRatesNotes').value || undefined,
+          entries,
+        }),
+      });
+      closeEnterRates();
+      toast('Samples saved (' + entries.length + ')', 'success');
+      loadCompetitorRoutes();
+      loadRecentSamples();
+      loadBenchmarkGrid();
+    } catch (e) {
+      err.textContent = e.message || 'Save failed';
+      err.style.display = 'block';
+    }
+  });
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => (
+      c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;'
+    ));
+  }
+
+  // ─── Theme toggle ──────────────────────────────────────────────────────
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('joiryde-admin-theme', theme); } catch {}
+  }
+  function initTheme() {
+    let theme = 'light';
+    try { theme = localStorage.getItem('joiryde-admin-theme') || 'light'; } catch {}
+    applyTheme(theme);
+  }
+  document.getElementById('themeToggleBtn').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'light' ? 'dark' : 'light');
+  });
+  initTheme();
+
+  // Boot
+  checkSession();
+</script>
+</body>
+</html>

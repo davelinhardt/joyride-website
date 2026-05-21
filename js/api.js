@@ -107,6 +107,34 @@
     return body;
   }
 
+  // PATCH + DELETE — admin endpoints rely on these (rider status,
+  // application status, role, account-status, tax settings, etc.).
+  // Same auth model as GET/POST: Bearer header, no cookies.
+  async function apiPatch(path, payload) {
+    var res = await fetch(API_BASE + path, {
+      method: "PATCH",
+      headers: authHeaders(),
+      credentials: "omit",
+      body: JSON.stringify(payload || {}),
+    });
+    var body = null;
+    try { body = await res.json(); } catch (e) { /* non-JSON */ }
+    if (!res.ok) throw ApiError((body && body.error) || res.statusText, res.status, body);
+    return body;
+  }
+
+  async function apiDelete(path) {
+    var res = await fetch(API_BASE + path, {
+      method: "DELETE",
+      headers: authHeaders(),
+      credentials: "omit",
+    });
+    var body = null;
+    try { body = await res.json(); } catch (e) { /* non-JSON */ }
+    if (!res.ok) throw ApiError((body && body.error) || res.statusText, res.status, body);
+    return body;
+  }
+
   /**
    * Resolve the current user from the server. Returns the rider row
    * with { id, userId, role, userType, firstName, ... } or null if
@@ -168,6 +196,8 @@
     clearAuth: clearAuth,
     apiGet: apiGet,
     apiPost: apiPost,
+    apiPatch: apiPatch,
+    apiDelete: apiDelete,
     loadCurrentUser: loadCurrentUser,
     routeAfterAuth: routeAfterAuth,
   };
