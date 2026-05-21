@@ -947,7 +947,7 @@
     document.getElementById('adminEmail').textContent = admin.email || '';
     loadUsers();
     // Deep-link: if URL hash points to a user, open it right away
-    const m = location.hash.match(/^#\\/user\\/(\\d+)$/);
+    const m = location.hash.match(/^#\/user\/(\d+)$/);
     if (m) openUser(parseInt(m[1], 10));
   }
   document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -1082,7 +1082,7 @@
 
   // Hash-based routing: respond to browser back/forward
   window.addEventListener('popstate', () => {
-    const m = location.hash.match(/^#\\/user\\/(\\d+)$/);
+    const m = location.hash.match(/^#\/user\/(\d+)$/);
     if (m) {
       openUser(parseInt(m[1], 10));
     } else {
@@ -1340,7 +1340,7 @@
       const ridesEl = document.getElementById('feedbackRides');
 
       if (!breakdown || breakdown.overall.count === 0) {
-        summaryEl.innerHTML = '<div style="color:var(--muted);font-size:13px">No reviews yet — riders haven\\'t left feedback for this driver.</div>';
+        summaryEl.innerHTML = '<div style="color:var(--muted);font-size:13px">No reviews yet — riders haven\'t left feedback for this driver.</div>';
         catsEl.innerHTML = '';
         ridesEl.innerHTML = '';
       } else {
@@ -1719,10 +1719,10 @@
     "Lyft Standard", "Lyft Extra Comfort", "Lyft Black",
   ];
   const GRID_TAGS = [
-    { key: 'morning_peak',  label: 'Morning peak\\n7–9a' },
-    { key: 'midday',        label: 'Midday\\n10a–3p' },
-    { key: 'evening_peak',  label: 'Evening peak\\n4–7p' },
-    { key: 'late_night',    label: 'Late night\\n9p–1a' },
+    { key: 'morning_peak',  label: 'Morning peak\n7–9a' },
+    { key: 'midday',        label: 'Midday\n10a–3p' },
+    { key: 'evening_peak',  label: 'Evening peak\n4–7p' },
+    { key: 'late_night',    label: 'Late night\n9p–1a' },
     { key: 'weekend',       label: 'Weekend' },
   ];
 
@@ -1745,7 +1745,7 @@
 
       let html = '<table class="bench-grid"><thead><tr><th class="bench-class-col">Class</th>';
       for (const t of GRID_TAGS) {
-        html += '<th>' + t.label.split('\\n').map(escapeHtml).join('<br>') + '</th>';
+        html += '<th>' + t.label.split('\n').map(escapeHtml).join('<br>') + '</th>';
       }
       html += '</tr></thead><tbody>';
 
