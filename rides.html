@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Joyride — Ride Activity</title>
+<title>Joyride — My rides &amp; receipts</title>
 <link rel="icon" href="/assets/mark-canary.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,15 +18,16 @@
     padding: clamp(24px, 4vw, 40px) clamp(16px, 4vw, 24px) 96px;
   }
 
-  /* Headline — mirrors the in-app `styles.headline` exactly: canary
-     yellow, centered, all-caps via letter-spacing + bold weight.
+  /* Headline — mirrors the in-app `styles.headline`: canary yellow,
+     centered, 22pt black weight, +1px letter-spacing. The app
+     renders the text as written (mixed case "Ride Activity"); we
+     deliberately do NOT uppercase via CSS so the casing matches.
      (joiryde-rider/app/(tabs)/activity.tsx → const styles.headline) */
   .rides-headline {
     color: var(--canary);
     font-weight: 800;
     font-size: 22px;
     letter-spacing: 1px;
-    text-transform: uppercase;
     text-align: center;
     margin-top: 16px;
     margin-bottom: 24px;
@@ -84,6 +85,12 @@
     transition: border-color .15s var(--ease), transform .15s var(--ease);
   }
   .mrc:hover { border-color: var(--canary); transform: translateY(-1px); }
+  /* Pending-with-bids highlight — mirrors MiniRydeCard highlight prop
+     in the app: yellow accent border so bids-in cards pop. */
+  .mrc--highlight {
+    border-color: var(--canary);
+    box-shadow: 0 0 0 1px var(--canary) inset;
+  }
 
   /* Row 1: Headline */
   .mrc-head {
@@ -111,6 +118,38 @@
     font-size: 18px; font-weight: 700; color: var(--fg);
     line-height: 1;
   }
+  /* "Waiting for driver…" — neutral white text, matches the address
+     weight so it reads as a status line, not a CTA. Mirrors the app's
+     styles.waitingDriverText (activity.tsx). */
+  .mrc-waiting {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fg);
+    line-height: 1.1;
+  }
+  /* "N offers" — canary + black weight, pairs with the highlight
+     border. Mirrors styles.offersCount in activity.tsx. */
+  .mrc-offers {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--canary);
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+  /* VIEW BIDS pill that replaces the price slot on bids-in cards.
+     Mirrors styles.viewBidsBtn in activity.tsx. */
+  .mrc-view-bids {
+    display: inline-block;
+    background: var(--canary);
+    color: #000;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+  }
+  .mrc-view-bids:hover { opacity: 0.85; }
 
   /* Row 2: Address block — two routeRows separated by a connector
      line. Filled (canary) dot for pickup, outlined dot for dropoff. */
@@ -232,6 +271,7 @@
 
 <script src="/js/api.js"></script>
 <script src="/site.js"></script>
+<script src="/js/ride-card-variant.js"></script>
 <script>
 (function () {
   "use strict";
@@ -250,6 +290,11 @@
     }
   })();
 
+  // Variant decision lives in /js/ride-card-variant.js — unit-tested
+  // under Node native (see ride-card-variant.test.cjs). Fail-soft if
+  // the module didn't load so the page isn't blanked by a 404.
+  var V = window.JoyrideRideCardVariant || null;
+
   var listEl    = document.getElementById("rides-list");
   var loadingEl = document.getElementById("rides-loading");
   var emptyEl   = document.getElementById("rides-empty");
@@ -257,7 +302,23 @@
   var moreBtn   = document.getElementById("load-more");
   var chipRow   = document.getElementById("chip-row");
 
-  var currentStatus = "all";
+  // Persist the chip selection across reloads. Same key the rider
+  // app uses (rider.activityChipFilter) so the mental model and the
+  // saved bucket stay aligned across surfaces.
+  var STORAGE_KEY_FILTER = "rider.activityChipFilter";
+  var VALID_FILTERS = ["all", "pending", "scheduled", "completed", "cancelled", "expired"];
+  var currentStatus = (function () {
+    try {
+      var saved = window.localStorage.getItem(STORAGE_KEY_FILTER);
+      if (saved && VALID_FILTERS.indexOf(saved) !== -1) return saved;
+    } catch (_) { /* private mode, ignore */ }
+    return "all";
+  })();
+  // Reflect persisted choice into the chip row UI on first paint.
+  chipRow.querySelectorAll("button").forEach(function (b) {
+    b.classList.toggle("is-active", b.dataset.status === currentStatus);
+  });
+
   var nextOffset    = null;
   var firstPageDone = false;
 
@@ -268,6 +329,7 @@
       chipRow.querySelectorAll("button").forEach(function (b) { b.classList.remove("is-active"); });
       btn.classList.add("is-active");
       currentStatus = status;
+      try { window.localStorage.setItem(STORAGE_KEY_FILTER, status); } catch (_) {}
       resetAndLoad();
     });
   });
@@ -275,6 +337,33 @@
   moreBtn.addEventListener("click", function () {
     if (nextOffset == null) return;
     loadPage(nextOffset);
+  });
+
+  // Auto-refresh every 15s — matches the rider app's
+  // trpc.ryde.listMyActivity refetchInterval (activity.tsx:87).
+  // Pause when the tab is hidden to avoid burning API quota on a
+  // backgrounded page; resume + refetch immediately on return.
+  var REFRESH_MS = 15000;
+  var refreshTimer = null;
+  function startRefresh() {
+    stopRefresh();
+    refreshTimer = setInterval(function () {
+      // Refresh-in-place: re-fetch only the first page so the rider
+      // sees status flips (pending → matched, bids arriving) without
+      // scrolling the list. Subsequent pages stay where they are.
+      refreshFirstPage();
+    }, REFRESH_MS);
+  }
+  function stopRefresh() {
+    if (refreshTimer != null) { clearInterval(refreshTimer); refreshTimer = null; }
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      stopRefresh();
+    } else {
+      refreshFirstPage();
+      startRefresh();
+    }
   });
 
   function setState(which) {
@@ -305,6 +394,7 @@
       if (!firstPageDone) {
         firstPageDone = true;
         setState(items.length === 0 ? "empty" : "none");
+        startRefresh(); // begin polling once the first page lands
       } else {
         setState("none");
       }
@@ -318,30 +408,72 @@
     }
   }
 
-  // Build a MiniRydeCard-style card. Three rows: status headline,
-  // address block, driver row. Hidden conditionally for status
-  // variants that don't have a driver attached.
-  function appendRideCard(r) {
-    var a = document.createElement("a");
-    a.className = "mrc";
-    a.href = "/receipt?id=" + encodeURIComponent(r.id);
+  // Re-fetch only the visible (first) page so status flips surface
+  // without scrolling the user back to the top or re-loading every
+  // already-paged-in row. Silent on failure — the next interval
+  // will retry. A real error would have surfaced on the initial
+  // load (which gets the proper error state).
+  async function refreshFirstPage() {
+    if (!firstPageDone) return;
+    try {
+      var qs = "?status=" + encodeURIComponent(currentStatus)
+             + "&offset=0&limit=25";
+      var data = await JoyrideAPI.apiGet("/api/rider/rides" + qs);
+      var items = (data && data.items) || [];
+      // Replace the first N cards with fresh ones. To keep it
+      // simple, we wipe + repaint the whole list (cheap since the
+      // server is paginated and we only fetch page one).
+      listEl.innerHTML = "";
+      items.forEach(appendRideCard);
+      nextOffset = data && data.nextOffset != null ? data.nextOffset : null;
+      moreBtn.hidden = nextOffset == null;
+      setState(items.length === 0 ? "empty" : "none");
+    } catch (err) {
+      // Silent — a transient 5xx during a Railway redeploy shouldn't
+      // turn the page red. The interval will try again.
+      if (err && err.status === 401) {
+        window.location.replace("/login");
+      }
+    }
+  }
 
-    var status = String(r.status || "").toLowerCase();
-    var headlineRight = formatFare(r);
+  // Build a MiniRydeCard-style card. Three rows: status headline,
+  // address block, driver row. Variant decisions (price vs VIEW BIDS
+  // pill vs "Waiting for driver…", highlight border, etc.) live in
+  // the pure /js/ride-card-variant.js module so they're unit-tested
+  // under Node native (see ride-card-variant.test.cjs).
+  function appendRideCard(r) {
+    var variant = V ? V.cardVariant(r) : null;
+    var destination = V ? V.tapDestination(r) : "/receipt?id=" + encodeURIComponent(r.id);
+    var displayStatus = variant ? variant.status : String(r.status || "").toLowerCase();
+    var fare = V ? V.displayFare(r) : null;
+
+    var a = document.createElement("a");
+    a.className = "mrc" + (variant && variant.highlight ? " mrc--highlight" : "");
+    if (destination) a.href = destination;
 
     // ── Row 1: headline ────────────────────────────────────────
+    // Badge on the left always; headline-right slot depends on
+    // variant: pending no-bids → "Waiting for driver…", pending
+    // with bids → "N offers", scheduled/completed/expired → price.
     var head = document.createElement("div");
     head.className = "mrc-head";
     var badge = document.createElement("span");
-    badge.className = "mrc-badge mrc-badge--" + status;
-    badge.textContent = (status || "—").replace(/_/g, " ");
+    badge.className = "mrc-badge mrc-badge--" + displayStatus;
+    badge.textContent = displayStatus.replace(/_/g, " ");
     head.appendChild(badge);
-    if (headlineRight) {
-      var hr = document.createElement("span");
-      hr.className = "mrc-headline-right";
-      hr.textContent = headlineRight;
-      head.appendChild(hr);
+
+    var headRight = null;
+    if (variant && variant.headlineRightText) {
+      headRight = document.createElement("span");
+      headRight.className = variant.hasBids ? "mrc-offers" : "mrc-waiting";
+      headRight.textContent = variant.headlineRightText;
+    } else if (fare) {
+      headRight = document.createElement("span");
+      headRight.className = "mrc-headline-right";
+      headRight.textContent = fare;
     }
+    if (headRight) head.appendChild(headRight);
     a.appendChild(head);
 
     // ── Row 2: address block ──────────────────────────────────
@@ -349,6 +481,12 @@
     var dropoffLabel = buildRouteLabel("DROPOFF", computeDropoffAt(r));
     var route = document.createElement("div");
     route.className = "mrc-route";
+    // Pending-with-bids cards put a VIEW BIDS pill in the trailing
+    // slot instead of a price — same convention as activity.tsx.
+    var trailingHtml = "";
+    if (variant && variant.hasBids) {
+      trailingHtml = '<span class="mrc-trailing"><span class="mrc-view-bids">VIEW BIDS</span></span>';
+    }
     route.innerHTML =
       '<div class="mrc-route-stack">' +
         '<div class="mrc-route-row">' +
@@ -366,7 +504,7 @@
             '<div class="mrc-route-addr">' + escapeHtml(shortAddress(r.dropoffAddress)) + '</div>' +
           '</div>' +
         '</div>' +
-      '</div>';
+      '</div>' + trailingHtml;
     a.appendChild(route);
 
     // ── Row 3: driver row (only when a driver is attached) ────
@@ -440,17 +578,6 @@
     if (!addr) return "—";
     var s = String(addr).replace(/, USA$/i, "");
     return s.length > 50 ? s.slice(0, 49) + "…" : s;
-  }
-
-  function formatFare(r) {
-    var candidates = [r.totalFare, r.completedAmount, r.estimatedFare, r.baseFare];
-    for (var i = 0; i < candidates.length; i++) {
-      var v = candidates[i];
-      if (v == null) continue;
-      var n = parseFloat(String(v));
-      if (Number.isFinite(n) && n > 0) return "$" + n.toFixed(2);
-    }
-    return "";
   }
 
   function escapeHtml(s) {
