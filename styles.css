@@ -462,3 +462,210 @@ form.contact-form, .app-btn,
 .card, .field input, .field textarea, .field select {
   transition: background .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
 }
+
+/* ───────── Legal / policy documents ─────────
+   Shared reading layout for terms.html, privacy.html, and the 9
+   referenced-policy pages. Goal: long-form prose that's actually
+   pleasant to read — generous line-height, capped measure, clear
+   section breaks, side TOC on desktop. Mirrors the dark theme
+   used elsewhere on the site. */
+
+.legal-hero {
+  padding-block: clamp(48px, 7vw, 96px) clamp(24px, 3vw, 40px);
+  border-bottom: 1px solid var(--rule);
+}
+.legal-hero .eyebrow { color: var(--canary); }
+.legal-hero h1 {
+  font-size: clamp(40px, 6vw, 84px);
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  margin-top: var(--s4);
+  max-width: 22ch;
+}
+.legal-hero .effective {
+  margin-top: var(--s5);
+  font-size: 14px; color: var(--fg-3);
+  letter-spacing: 0.04em;
+}
+.legal-hero .lede {
+  margin-top: var(--s5);
+  font-size: clamp(17px, 1.5vw, 20px);
+  color: var(--fg-2);
+  max-width: 64ch; line-height: 1.55;
+}
+
+.legal-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--s8);
+  padding-block: var(--s8) clamp(80px, 10vw, 144px);
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .legal-layout { grid-template-columns: 1fr; gap: var(--s6); }
+}
+
+.legal-toc {
+  position: sticky; top: calc(var(--s8) + 16px);
+  align-self: start;
+  font-size: 13px; line-height: 1.5;
+  padding: var(--s5) var(--s4);
+  border: 1px solid var(--rule); border-radius: var(--r-lg);
+  background: var(--surface);
+  max-height: calc(100vh - var(--s9));
+  overflow-y: auto;
+}
+.legal-toc h4 {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--fg-3);
+  margin-bottom: var(--s3);
+}
+.legal-toc ol {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; gap: 4px;
+  counter-reset: toc;
+}
+.legal-toc ol li { counter-increment: toc; }
+.legal-toc ol li a {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--fg-2);
+  opacity: 0.78;
+  transition: background .15s var(--ease), opacity .15s var(--ease), color .15s var(--ease);
+}
+.legal-toc ol li a::before {
+  content: counter(toc, decimal-leading-zero);
+  font-variant-numeric: tabular-nums;
+  color: var(--canary); font-weight: 700;
+  margin-right: 8px; font-size: 11px;
+}
+.legal-toc ol li a:hover { opacity: 1; background: var(--surface-2); color: var(--canary); }
+@media (max-width: 960px) {
+  .legal-toc {
+    position: static; max-height: none;
+    padding: var(--s4);
+  }
+}
+
+.legal-doc {
+  max-width: 72ch;
+  font-size: 16px; line-height: 1.7;
+  color: var(--fg);
+}
+.legal-doc > section { padding-block: var(--s6); border-bottom: 1px solid var(--rule); }
+.legal-doc > section:last-child { border-bottom: 0; }
+.legal-doc > section:first-child { padding-top: 0; }
+
+.legal-doc h2 {
+  font-size: clamp(24px, 2.8vw, 34px);
+  font-weight: 700; letter-spacing: -0.02em;
+  line-height: 1.1; margin-bottom: var(--s4);
+  scroll-margin-top: var(--s8);
+  display: flex; align-items: baseline; gap: 14px;
+}
+.legal-doc h2 .num {
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--canary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0; padding-top: 6px;
+}
+.legal-doc h3 {
+  font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
+  margin-top: var(--s5); margin-bottom: var(--s3);
+  color: var(--fg);
+  scroll-margin-top: var(--s8);
+}
+.legal-doc h4 {
+  font-size: 16px; font-weight: 700;
+  margin-top: var(--s4); margin-bottom: var(--s2);
+  color: var(--fg-2);
+}
+
+.legal-doc p { margin-bottom: var(--s4); color: var(--fg-2); max-width: 70ch; }
+.legal-doc p:last-child { margin-bottom: 0; }
+.legal-doc strong { color: var(--fg); font-weight: 700; }
+.legal-doc em { font-style: normal; color: var(--canary); font-weight: 600; }
+
+.legal-doc a {
+  color: var(--canary); text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 239, 0, 0.4);
+  transition: text-decoration-color .15s var(--ease);
+}
+.legal-doc a:hover { text-decoration-color: var(--canary); }
+
+.legal-doc ul, .legal-doc ol {
+  padding-left: var(--s5);
+  margin-bottom: var(--s4);
+  color: var(--fg-2);
+}
+.legal-doc ul li, .legal-doc ol li { margin-bottom: var(--s2); }
+.legal-doc ul li::marker { color: var(--canary); }
+.legal-doc ol li::marker { color: var(--canary); font-weight: 700; }
+
+.legal-doc dl { margin: 0 0 var(--s4); }
+.legal-doc dt {
+  font-weight: 700; color: var(--fg);
+  margin-top: var(--s4);
+}
+.legal-doc dd { margin: 0 0 var(--s2); color: var(--fg-2); }
+
+.legal-doc table {
+  width: 100%; margin: var(--s5) 0;
+  border-collapse: collapse;
+  font-size: 15px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.legal-doc table th, .legal-doc table td {
+  padding: 12px 16px; text-align: left;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.legal-doc table thead th {
+  background: var(--surface-2);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fg-3);
+}
+.legal-doc table tbody tr:last-child td { border-bottom: 0; }
+
+.legal-doc blockquote {
+  margin: var(--s5) 0;
+  padding: var(--s5);
+  background: var(--surface);
+  border-left: 3px solid var(--canary);
+  border-radius: 0 var(--r) var(--r) 0;
+  color: var(--fg-2);
+}
+.legal-doc blockquote p { margin-bottom: var(--s3); }
+.legal-doc blockquote p:last-child { margin-bottom: 0; }
+
+.legal-doc .callout {
+  margin: var(--s5) 0;
+  padding: var(--s5) var(--s6);
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+}
+.legal-doc .callout h4 { margin-top: 0; color: var(--canary); }
+
+.legal-doc .all-caps {
+  font-size: 14px; line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  background: var(--surface);
+  padding: var(--s4);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  margin-bottom: var(--s4);
+}
+
+/* Footer "Legal" column — wider than other footer columns because
+   the doc names get long ("Anti-Discrimination Policies"). Keep
+   the list compact so it still fits the existing four-column grid. */
+.site-footer .legal-col ul li a { font-size: 14px; }

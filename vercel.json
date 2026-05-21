@@ -15,6 +15,17 @@
     { "source": "/rides", "destination": "/rides.html" },
     { "source": "/receipt", "destination": "/receipt.html" },
     { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/community-guidelines", "destination": "/community-guidelines.html" },
+    { "source": "/driver-addendum", "destination": "/driver-addendum.html" },
+    { "source": "/anti-discrimination", "destination": "/anti-discrimination.html" },
+    { "source": "/service-animal-policy", "destination": "/service-animal-policy.html" },
+    { "source": "/accessibility", "destination": "/accessibility.html" },
+    { "source": "/cancellation-policy", "destination": "/cancellation-policy.html" },
+    { "source": "/harassment-policy", "destination": "/harassment-policy.html" },
+    { "source": "/copyright", "destination": "/copyright.html" },
+    { "source": "/cookies", "destination": "/cookies.html" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [

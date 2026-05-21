@@ -89,22 +89,29 @@ window.addEventListener('error', (e) => {
               <li><a href="#">Investors</a></li>
             </ul>
           </div>
-          <div>
-            <h4>Help</h4>
+          <div class="legal-col">
+            <h4>Legal</h4>
             <ul>
-              <li><a href="#">Driver support</a></li>
-              <li><a href="#">Rider support</a></li>
-              <li><a href="#">Safety</a></li>
-              <li><a href="#">Cities</a></li>
+              <li><a href="/terms">Terms of Service</a></li>
+              <li><a href="/privacy">Privacy Policy</a></li>
+              <li><a href="/driver-addendum">Driver Addendum</a></li>
+              <li><a href="/cancellation-policy">Cancellation Policy</a></li>
+              <li><a href="/community-guidelines">Community Guidelines</a></li>
+              <li><a href="/anti-discrimination">Anti-Discrimination</a></li>
+              <li><a href="/accessibility">Accessibility</a></li>
+              <li><a href="/service-animal-policy">Service Animals</a></li>
+              <li><a href="/harassment-policy">Safety & Harassment</a></li>
+              <li><a href="/copyright">Copyright (DMCA)</a></li>
+              <li><a href="/cookies">Cookie Policy</a></li>
             </ul>
           </div>
         </div>
         <div class="bottom">
           <span>© 2026 Joyride, Inc. All rights reserved.</span>
           <span>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Cookies</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/cookies">Cookies</a>
           </span>
         </div>
       </div>
