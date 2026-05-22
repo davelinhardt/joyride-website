@@ -41,15 +41,29 @@
   .calc-input input[type=range]::-moz-range-thumb {
     width: 28px; height: 28px; border-radius: 50%; background: var(--canary); border: 0; cursor: pointer;
   }
-  .calc-result { background: rgba(255,255,255,0.04); border-radius: var(--r-lg); padding: var(--s6); display: grid; gap: var(--s4); }
-  .calc-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--s3); border-bottom: 1px solid rgba(255,255,255,0.08); }
-  .calc-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .calc-result { background: rgba(255,255,255,0.04); border-radius: var(--r-lg); padding: var(--s6); display: grid; gap: var(--s5); }
+  .calc-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--s3); border-bottom: 1px solid rgba(255,255,255,0.15); }
   .calc-row .label { font-size: 14px; color: var(--fg); }
   /* Default amount color = white so unstyled rows are visible against
-     the dark .calc background. .win and the explicit canary inline
-     styles still override for the highlighted rows. */
-  .calc-row .amt { font-size: clamp(18px, 2vw, 26px); font-weight: 600; color: var(--fg); }
-  .calc-row.win .label, .calc-row.win .amt { color: var(--canary); }
+     the dark .calc background. */
+  .calc-row .amt { font-size: clamp(22px, 2.4vw, 30px); font-weight: 700; color: var(--fg); }
+
+  /* Mini comparison grid — Fees / Extra/mo / Per year across the
+     four plan columns. Mirrors the homepage compare-table layout
+     but lives inside the calculator result panel. */
+  .calc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .calc-table th, .calc-table td {
+    padding: 10px 6px; text-align: right; vertical-align: middle;
+    border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap;
+  }
+  .calc-table th { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); }
+  .calc-table th.us { color: var(--canary); }
+  .calc-table td { color: var(--fg); }
+  .calc-table td.yes { color: var(--canary); font-weight: 700; }
+  .calc-table tr td:first-child,
+  .calc-table tr th:first-child { text-align: left; font-weight: 500; }
+  .calc-table tbody tr:last-child td { border-bottom: 0; }
+
   .calc-assumption { font-size: 12px; color: #c8c8c0; margin-top: var(--s4); }
   @media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
 
@@ -133,30 +147,40 @@
             <span class="label">Monthly fares</span>
             <span class="amt" id="monthlyFares">$5,500</span>
           </div>
-          <div class="calc-row">
-            <span class="label">UberLyft net</span>
-            <span class="amt" id="uberLyftNet">$3,180</span>
-          </div>
-          <div class="calc-row">
-            <span class="label">Joyride Basic net</span>
-            <span class="amt" id="basicNet">$4,375</span>
-          </div>
-          <div class="calc-row">
-            <span class="label">Joyride Growth net</span>
-            <span class="amt" id="growthNet">$4,566</span>
-          </div>
-          <div class="calc-row win">
-            <span class="label">Joyride Pro net</span>
-            <span class="amt" id="proNet">$4,701</span>
-          </div>
-          <div class="calc-row">
-            <span class="label">Extra in your pocket / month</span>
-            <span class="amt" style="color: var(--canary);" id="diff">+$1,521</span>
-          </div>
-          <div class="calc-row">
-            <span class="label">Per year</span>
-            <span class="amt" style="color: var(--canary);" id="yearly">+$18,252</span>
-          </div>
+          <table class="calc-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>UberLyft</th>
+                <th class="us">Basic</th>
+                <th class="us">Growth</th>
+                <th class="us">Pro</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Fees</td>
+                <td id="ulFees">$2,200</td>
+                <td id="basicFees">$825</td>
+                <td id="growthFees">$634</td>
+                <td id="proFees">$499</td>
+              </tr>
+              <tr>
+                <td>Extra in your pocket / mo</td>
+                <td>—</td>
+                <td class="yes" id="basicExtra">+$1,195</td>
+                <td class="yes" id="growthExtra">+$1,386</td>
+                <td class="yes" id="proExtra">+$1,521</td>
+              </tr>
+              <tr>
+                <td>Per year</td>
+                <td>—</td>
+                <td class="yes" id="basicYear">+$14,340</td>
+                <td class="yes" id="growthYear">+$16,632</td>
+                <td class="yes" id="proYear">+$18,252</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -259,17 +283,22 @@
   const GROWTH_SUB    = 249;
   const PRO_SUB       = 499;
 
-  const ridesSlider   = document.getElementById('ridesSlider');
-  const daysSlider    = document.getElementById('daysSlider');
-  const ridesVal      = document.getElementById('ridesVal');
-  const daysVal       = document.getElementById('daysVal');
-  const monthlyFares  = document.getElementById('monthlyFares');
-  const uberLyftNet   = document.getElementById('uberLyftNet');
-  const basicNet      = document.getElementById('basicNet');
-  const growthNet     = document.getElementById('growthNet');
-  const proNet        = document.getElementById('proNet');
-  const diff          = document.getElementById('diff');
-  const yearly        = document.getElementById('yearly');
+  const $ = (id) => document.getElementById(id);
+  const ridesSlider  = $('ridesSlider');
+  const daysSlider   = $('daysSlider');
+  const ridesVal     = $('ridesVal');
+  const daysVal      = $('daysVal');
+  const monthlyFares = $('monthlyFares');
+  const ulFees       = $('ulFees');
+  const basicFees    = $('basicFees');
+  const growthFees   = $('growthFees');
+  const proFees      = $('proFees');
+  const basicExtra   = $('basicExtra');
+  const growthExtra  = $('growthExtra');
+  const proExtra     = $('proExtra');
+  const basicYear    = $('basicYear');
+  const growthYear   = $('growthYear');
+  const proYear      = $('proYear');
 
   const fmt = n => '$' + Math.round(n).toLocaleString();
   function update() {
@@ -278,21 +307,35 @@
     ridesVal.textContent = rides;
     daysVal.textContent  = days;
 
-    const fares  = rides * days * AVG_FARE;
-    const ul     = fares * 0.60 - UL_INSURANCE;
-    const basic  = fares * 0.85 - J_INSURANCE;
-    const growth = fares * 0.93 - J_INSURANCE - GROWTH_SUB;
-    const pro    = fares * 1.00 - J_INSURANCE - PRO_SUB;
+    const fares = rides * days * AVG_FARE;
+
+    // Platform fees per plan (transaction % + subscription)
+    const ulFee     = fares * 0.40;
+    const basicFee  = fares * 0.15;
+    const growthFee = fares * 0.07 + GROWTH_SUB;
+    const proFee    = PRO_SUB;
+
+    // Driver pay = fares - platform fees - insurance
+    const ulPay     = fares - ulFee     - UL_INSURANCE;
+    const basicPay  = fares - basicFee  - J_INSURANCE;
+    const growthPay = fares - growthFee - J_INSURANCE;
+    const proPay    = fares - proFee    - J_INSURANCE;
 
     monthlyFares.textContent = fmt(fares);
-    uberLyftNet.textContent  = fmt(ul);
-    basicNet.textContent     = fmt(basic);
-    growthNet.textContent    = fmt(growth);
-    proNet.textContent       = fmt(pro);
+    ulFees.textContent       = fmt(ulFee);
+    basicFees.textContent    = fmt(basicFee);
+    growthFees.textContent   = fmt(growthFee);
+    proFees.textContent      = fmt(proFee);
 
-    const d = pro - ul;
-    diff.textContent   = '+' + fmt(d);
-    yearly.textContent = '+' + fmt(d * 12);
+    const dBasic  = basicPay  - ulPay;
+    const dGrowth = growthPay - ulPay;
+    const dPro    = proPay    - ulPay;
+    basicExtra.textContent  = '+' + fmt(dBasic);
+    growthExtra.textContent = '+' + fmt(dGrowth);
+    proExtra.textContent    = '+' + fmt(dPro);
+    basicYear.textContent   = '+' + fmt(dBasic  * 12);
+    growthYear.textContent  = '+' + fmt(dGrowth * 12);
+    proYear.textContent     = '+' + fmt(dPro    * 12);
   }
   ridesSlider.addEventListener('input', update);
   daysSlider.addEventListener('input', update);
