@@ -41,12 +41,16 @@
   .calc-input input[type=range]::-moz-range-thumb {
     width: 28px; height: 28px; border-radius: 50%; background: var(--canary); border: 0; cursor: pointer;
   }
-  .calc-result { background: rgba(255,255,255,0.04); border-radius: var(--r-lg); padding: var(--s6); display: grid; gap: var(--s5); }
-  .calc-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--s4); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .calc-result { background: rgba(255,255,255,0.04); border-radius: var(--r-lg); padding: var(--s6); display: grid; gap: var(--s4); }
+  .calc-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--s3); border-bottom: 1px solid rgba(255,255,255,0.08); }
   .calc-row:last-child { border-bottom: 0; padding-bottom: 0; }
-  .calc-row .label { font-size: 14px; color: #c8c8c0; }
-  .calc-row .amt { font-size: clamp(20px, 2.4vw, 32px); font-weight: 600; }
-  .calc-row.win .amt { color: var(--canary); }
+  .calc-row .label { font-size: 14px; color: var(--fg); }
+  /* Default amount color = white so unstyled rows are visible against
+     the dark .calc background. .win and the explicit canary inline
+     styles still override for the highlighted rows. */
+  .calc-row .amt { font-size: clamp(18px, 2vw, 26px); font-weight: 600; color: var(--fg); }
+  .calc-row.win .label, .calc-row.win .amt { color: var(--canary); }
+  .calc-assumption { font-size: 12px; color: #c8c8c0; margin-top: var(--s4); }
   @media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
 
   /* Steps */
@@ -113,32 +117,45 @@
       <div class="calc-grid">
         <div class="stack-sm">
           <div class="calc-input">
-            <label>Monthly fares</label>
-            <div class="val" id="fareVal">$4,000</div>
-            <input type="range" id="fareSlider" min="500" max="12000" step="100" value="4000">
+            <label>Rides per day</label>
+            <div class="val" id="ridesVal">10</div>
+            <input type="range" id="ridesSlider" min="1" max="40" step="1" value="10">
           </div>
           <div class="calc-input mt-5">
-            <label>Compared to platform take rate</label>
-            <div class="val" id="rateVal">28%</div>
-            <input type="range" id="rateSlider" min="20" max="40" step="1" value="28">
+            <label>Driving days per month</label>
+            <div class="val" id="daysVal">22</div>
+            <input type="range" id="daysSlider" min="1" max="30" step="1" value="22">
           </div>
+          <p class="calc-assumption">Assumes an average fare of <strong style="color: var(--canary);">$25</strong> per ride.</p>
         </div>
         <div class="calc-result">
           <div class="calc-row">
-            <span class="label">Big rideshare net</span>
-            <span class="amt" id="bigNet">$2,880</span>
+            <span class="label">Monthly fares</span>
+            <span class="amt" id="monthlyFares">$5,500</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">UberLyft net</span>
+            <span class="amt" id="uberLyftNet">$3,180</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">Joyride Basic net</span>
+            <span class="amt" id="basicNet">$4,375</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">Joyride Growth net</span>
+            <span class="amt" id="growthNet">$4,566</span>
           </div>
           <div class="calc-row win">
-            <span class="label">Joyride net</span>
-            <span class="amt" id="joyNet">$3,951</span>
+            <span class="label">Joyride Pro net</span>
+            <span class="amt" id="proNet">$4,701</span>
           </div>
           <div class="calc-row">
             <span class="label">Extra in your pocket / month</span>
-            <span class="amt" style="color: var(--canary);" id="diff">+$1,071</span>
+            <span class="amt" style="color: var(--canary);" id="diff">+$1,521</span>
           </div>
           <div class="calc-row">
             <span class="label">Per year</span>
-            <span class="amt" style="color: var(--canary);" id="yearly">+$12,852</span>
+            <span class="amt" style="color: var(--canary);" id="yearly">+$18,252</span>
           </div>
         </div>
       </div>
@@ -226,30 +243,59 @@
 <script src="/js/api.js"></script>
 <script src="/site.js"></script>
 <script>
-  // Earnings calculator
-  const fareSlider = document.getElementById('fareSlider');
-  const rateSlider = document.getElementById('rateSlider');
-  const fareVal = document.getElementById('fareVal');
-  const rateVal = document.getElementById('rateVal');
-  const bigNet = document.getElementById('bigNet');
-  const joyNet = document.getElementById('joyNet');
-  const diff = document.getElementById('diff');
-  const yearly = document.getElementById('yearly');
+  // Earnings calculator — math mirrors the homepage compare table.
+  // Per-plan formula on monthly fares F:
+  //   UberLyft Pay = F * 0.60 (40% take rate) - $120 insurance
+  //   Basic Pay    = F * 0.85 (15% transaction fee) - $300 insurance
+  //   Growth Pay   = F * 0.93 (7% transaction fee)  - $300 insurance - $249 subscription
+  //   Pro Pay      = F * 1.00 (0% transaction fee)  - $300 insurance - $499 subscription
+  //
+  // Monthly fares F = rides_per_day * driving_days * avg_fare_per_ride.
+  // AVG_FARE is an assumption; surface it in the UI so drivers can
+  // sanity-check against their own market.
+  const AVG_FARE      = 25;   // average fare per ride ($)
+  const UL_INSURANCE  = 120;  // monthly driver insurance, UberLyft baseline
+  const J_INSURANCE   = 300;  // monthly driver insurance, Joyride
+  const GROWTH_SUB    = 249;
+  const PRO_SUB       = 499;
+
+  const ridesSlider   = document.getElementById('ridesSlider');
+  const daysSlider    = document.getElementById('daysSlider');
+  const ridesVal      = document.getElementById('ridesVal');
+  const daysVal       = document.getElementById('daysVal');
+  const monthlyFares  = document.getElementById('monthlyFares');
+  const uberLyftNet   = document.getElementById('uberLyftNet');
+  const basicNet      = document.getElementById('basicNet');
+  const growthNet     = document.getElementById('growthNet');
+  const proNet        = document.getElementById('proNet');
+  const diff          = document.getElementById('diff');
+  const yearly        = document.getElementById('yearly');
+
   const fmt = n => '$' + Math.round(n).toLocaleString();
   function update() {
-    const f = +fareSlider.value, r = +rateSlider.value;
-    fareVal.textContent = fmt(f);
-    rateVal.textContent = r + '%';
-    const big = f * (1 - r/100);
-    const joy = f - 49;
-    const d = joy - big;
-    bigNet.textContent = fmt(big);
-    joyNet.textContent = fmt(joy);
-    diff.textContent = '+' + fmt(d);
+    const rides = +ridesSlider.value;
+    const days  = +daysSlider.value;
+    ridesVal.textContent = rides;
+    daysVal.textContent  = days;
+
+    const fares  = rides * days * AVG_FARE;
+    const ul     = fares * 0.60 - UL_INSURANCE;
+    const basic  = fares * 0.85 - J_INSURANCE;
+    const growth = fares * 0.93 - J_INSURANCE - GROWTH_SUB;
+    const pro    = fares * 1.00 - J_INSURANCE - PRO_SUB;
+
+    monthlyFares.textContent = fmt(fares);
+    uberLyftNet.textContent  = fmt(ul);
+    basicNet.textContent     = fmt(basic);
+    growthNet.textContent    = fmt(growth);
+    proNet.textContent       = fmt(pro);
+
+    const d = pro - ul;
+    diff.textContent   = '+' + fmt(d);
     yearly.textContent = '+' + fmt(d * 12);
   }
-  fareSlider.addEventListener('input', update);
-  rateSlider.addEventListener('input', update);
+  ridesSlider.addEventListener('input', update);
+  daysSlider.addEventListener('input', update);
   update();
 </script>
 </body>
