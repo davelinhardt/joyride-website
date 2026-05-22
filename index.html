@@ -101,16 +101,18 @@
     padding: 18px 20px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);
     vertical-align: middle;
   }
-  /* Default value-cell color. Without this, unclassed tds inherit
-     .compare's color: var(--paper) which is #0A0A0A in dark mode —
-     i.e. black text on black background. .yes / .no / :first-child
-     still override per their higher specificity. */
-  .compare-table tbody td { color: #c8c8c0; }
-  .compare-table th { font-weight: 600; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
+  /* Per the design system: every cell is either white (--fg) or
+     canary (--canary). Default value cells need an explicit color
+     because .compare sets color: var(--paper) = #0A0A0A in dark
+     mode (black on black). .yes / :first-child still override per
+     higher specificity; .no is now redundant in color but kept as
+     a hook for the muted "bad-for-driver" cells. */
+  .compare-table tbody td { color: var(--fg); }
+  .compare-table th { font-weight: 600; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg); }
   .compare-table th.us { color: var(--canary); }
-  .compare-table tr td:first-child { font-weight: 500; color: #c8c8c0; width: 40%; }
+  .compare-table tr td:first-child { font-weight: 500; color: var(--fg); width: 40%; }
   .compare-table .yes { color: var(--canary); font-weight: 600; }
-  .compare-table .no { color: #777; }
+  .compare-table .no { color: var(--fg); }
 
   /* Mobile: convert 4-col table to stacked cards */
   @media (max-width: 720px) {
