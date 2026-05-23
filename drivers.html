@@ -88,10 +88,22 @@
   details > p { margin-top: var(--s4); color: var(--ink-2); max-width: 70ch; }
 
   /* Apply */
-  .apply { background: var(--canary); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 80px); }
-  .apply-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); }
-  .apply form { display: grid; gap: var(--s4); }
-  .apply form .field input, .apply form .field select { background: rgba(255,255,255,0.7); border-color: transparent; }
+  .apply { background: var(--canary); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 80px); color: var(--ink); }
+  .apply-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: start; }
+  .apply h2, .apply p, .apply .eyebrow { color: var(--ink); }
+  .apply .lead { color: var(--ink-2); }
+  .apply-steps { display: grid; gap: var(--s5); }
+  .apply-step { display: grid; grid-template-columns: 40px 1fr; gap: var(--s4); align-items: start; }
+  .apply-step .n {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--ink); color: var(--canary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px;
+    flex-shrink: 0;
+  }
+  .apply-step h3 { font-size: 18px; font-weight: 700; margin: 4px 0 4px; color: var(--ink); letter-spacing: -0.01em; }
+  .apply-step p { color: var(--ink-2); font-size: 15px; line-height: 1.5; }
+  .apply-followup { font-size: 14px; color: var(--ink-2); margin-top: var(--s4); }
   @media (max-width: 880px) { .apply-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -249,16 +261,38 @@
         <div>
           <span class="eyebrow">Apply to drive</span>
           <h2 class="mt-3" style="max-width: 14ch;">Ready to keep what you earn?</h2>
-          <p class="lead mt-5" style="color: var(--ink-2);">Fill this out and we'll be in touch within 48 hours about openings in your city.</p>
+          <p class="lead mt-5">The process is short. Create your account, install the Driver app, and upload your documents — we take it from there.</p>
+          <a href="/login?signup=1" class="btn btn--primary mt-7">Apply to drive <span class="arrow">→</span></a>
+          <p class="apply-followup">We will respond via email with the next steps in the interview process.</p>
         </div>
-        <form onsubmit="event.preventDefault(); this.innerHTML='<h3>Thanks — we\\'ll be in touch.</h3>'">
-          <div class="field"><label>Full name</label><input required placeholder="Your name"></div>
-          <div class="field"><label>Email</label><input required type="email" placeholder="you@example.com"></div>
-          <div class="field"><label>Phone</label><input required type="tel" placeholder="(555) 555-5555"></div>
-          <div class="field"><label>City</label><select required><option value="">Choose a city</option><option>Austin</option><option>Denver</option><option>Portland</option><option>Phoenix</option><option>Other</option></select></div>
-          <div class="field"><label>Vehicle year & model</label><input required placeholder="e.g. 2020 Toyota Camry"></div>
-          <button class="btn btn--primary" type="submit">Submit application <span class="arrow">→</span></button>
-        </form>
+        <ol class="apply-steps">
+          <li class="apply-step">
+            <div class="n">1</div>
+            <div>
+              <h3>Create a Joyride account</h3>
+              <p>Either sign up here or download the Joyride Rider app to create an account.</p>
+            </div>
+          </li>
+          <li class="apply-step">
+            <div class="n">2</div>
+            <div>
+              <h3>Download the Joyride Driver app</h3>
+            </div>
+          </li>
+          <li class="apply-step">
+            <div class="n">3</div>
+            <div>
+              <h3>Log into the Driver app</h3>
+              <p>Use the Joyride login credentials you just created.</p>
+            </div>
+          </li>
+          <li class="apply-step">
+            <div class="n">4</div>
+            <div>
+              <h3>Complete the forms and upload your documents</h3>
+            </div>
+          </li>
+        </ol>
       </div>
     </div>
   </section>
