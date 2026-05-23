@@ -27,6 +27,14 @@
   .phone-card .info .nm { font-weight: 600; font-size: 14px; }
   .phone-card .info .meta { font-size: 11px; color: var(--ink-3); }
   .phone-card .price { font-weight: 700; font-size: 16px; }
+  /* Image-based phone screen — drop a real screenshot in place of
+     the CSS-faked card stack. Fills the .phone-mock bezel; the
+     ::before notch overlay sits on top of the screenshot's status-
+     bar area which is the right behavior (mimics Dynamic Island). */
+  .phone-img {
+    width: 100%; height: 100%; display: block;
+    border-radius: 32px; object-fit: cover;
+  }
   @media (max-width: 880px) { .phone-hero { grid-template-columns: 1fr; } }
 
   .perks { grid-template-columns: repeat(3, 1fr); }
@@ -67,13 +75,7 @@
         </div>
       </div>
       <div class="phone-mock">
-        <div class="phone-screen">
-          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">Drivers near you</div>
-          <div class="phone-card"><div class="av"></div><div class="info"><div class="nm">Marcus T.</div><div class="meta">★ 4.97 · 3 min away</div></div><div class="price">$2.10/mi</div></div>
-          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#f0c,#a06)"></div><div class="info"><div class="nm">Priya S.</div><div class="meta">★ 5.00 · 4 min away · ♥ saved</div></div><div class="price">$2.40/mi</div></div>
-          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#3a8,#185)"></div><div class="info"><div class="nm">James K.</div><div class="meta">★ 4.92 · 6 min away</div></div><div class="price">$1.95/mi</div></div>
-          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#fa3,#d70)"></div><div class="info"><div class="nm">Sasha L.</div><div class="meta">★ 4.99 · 7 min away</div></div><div class="price">$2.20/mi</div></div>
-        </div>
+        <img src="/assets/rider-screens/confirm-ride.jpeg" class="phone-img" alt="Rider app — Match Found screen showing a driver match with photo, rating, vehicle, fare quote, and a Confirm Ride button">
       </div>
     </div>
   </section>
@@ -127,11 +129,7 @@
         </div>
       </div>
       <div class="phone-mock" style="max-width: 240px;">
-        <div class="phone-screen" style="padding: 60px 18px 18px;">
-          <div style="font-weight:700;font-size:12px;margin-bottom:4px;">Your saved drivers</div>
-          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#f0c,#a06)"></div><div class="info"><div class="nm">Priya S.</div><div class="meta">★ 5.00 · ♥</div></div></div>
-          <div class="phone-card"><div class="av" style="background:linear-gradient(135deg,#3a8,#185)"></div><div class="info"><div class="nm">James K.</div><div class="meta">★ 4.92</div></div></div>
-        </div>
+        <img src="/assets/rider-screens/en-route.jpeg" class="phone-img" alt="Rider app — Ride Status screen showing the driver en route to the pickup with map, ETA, and driver details">
       </div>
     </div>
   </section>
