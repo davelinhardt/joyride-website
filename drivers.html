@@ -51,12 +51,12 @@
   /* Mini comparison grid — Fees / Extra/mo / Per year across the
      four plan columns. Mirrors the homepage compare-table layout
      but lives inside the calculator result panel. */
-  .calc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .calc-table { width: 100%; border-collapse: collapse; font-size: clamp(15px, 1.4vw, 18px); }
   .calc-table th, .calc-table td {
-    padding: 10px 6px; text-align: right; vertical-align: middle;
+    padding: 14px 10px; text-align: right; vertical-align: middle;
     border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap;
   }
-  .calc-table th { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); }
+  .calc-table th { font-size: clamp(12px, 1vw, 14px); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); }
   .calc-table th.us { color: var(--canary); }
   .calc-table td { color: var(--fg); }
   .calc-table td.yes { color: var(--canary); font-weight: 700; }
@@ -132,20 +132,20 @@
         <div class="stack-sm">
           <div class="calc-input">
             <label>Rides per day</label>
-            <div class="val" id="ridesVal">10</div>
-            <input type="range" id="ridesSlider" min="1" max="40" step="1" value="10">
+            <div class="val" id="ridesVal">21</div>
+            <input type="range" id="ridesSlider" min="1" max="40" step="1" value="21">
           </div>
           <div class="calc-input mt-5">
             <label>Driving days per month</label>
-            <div class="val" id="daysVal">22</div>
-            <input type="range" id="daysSlider" min="1" max="30" step="1" value="22">
+            <div class="val" id="daysVal">20</div>
+            <input type="range" id="daysSlider" min="1" max="30" step="1" value="20">
           </div>
           <p class="calc-assumption">Assumes an average fare of <strong style="color: var(--canary);">$23.66</strong> per ride.</p>
         </div>
         <div class="calc-result">
           <div class="calc-row">
             <span class="label">Monthly fares</span>
-            <span class="amt" id="monthlyFares">$5,500</span>
+            <span class="amt" id="monthlyFares">$9,937</span>
           </div>
           <table class="calc-table">
             <thead>
@@ -160,24 +160,24 @@
             <tbody>
               <tr>
                 <td>Fees</td>
-                <td id="ulFees">$2,200</td>
-                <td id="basicFees">$825</td>
-                <td id="growthFees">$634</td>
+                <td id="ulFees">$3,975</td>
+                <td id="basicFees">$1,491</td>
+                <td id="growthFees">$945</td>
                 <td id="proFees">$499</td>
               </tr>
               <tr>
                 <td>Extra in your pocket / mo</td>
                 <td>—</td>
-                <td class="yes" id="basicExtra">+$1,195</td>
-                <td class="yes" id="growthExtra">+$1,386</td>
-                <td class="yes" id="proExtra">+$1,521</td>
+                <td class="yes" id="basicExtra">+$2,304</td>
+                <td class="yes" id="growthExtra">+$2,850</td>
+                <td class="yes" id="proExtra">+$3,296</td>
               </tr>
               <tr>
                 <td>Per year</td>
                 <td>—</td>
-                <td class="yes" id="basicYear">+$14,340</td>
-                <td class="yes" id="growthYear">+$16,632</td>
-                <td class="yes" id="proYear">+$18,252</td>
+                <td class="yes" id="basicYear">+$27,652</td>
+                <td class="yes" id="growthYear">+$34,203</td>
+                <td class="yes" id="proYear">+$39,551</td>
               </tr>
             </tbody>
           </table>
