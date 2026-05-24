@@ -21,12 +21,23 @@ export const config = {
 // Add entries here whenever a specific page needs to be shared with
 // people who don't have the site password (investor landing pages,
 // press one-pagers, etc.).
+//
+// The shared design-system files (styles.css / site.js / api.js) and
+// /assets/ are ALSO public, because every public page needs to load
+// them. If we didn't allow those, the page HTML would 401 its
+// subresources and the browser would cascade the basic-auth prompt
+// over the parent page (the 2026-05-24 /raise1 password-prompt bug).
+// Branding + screenshots in /assets/ aren't sensitive on their own —
+// the gate exists for unreleased HTML pages.
 const PUBLIC_PATHS = [
-  '/raise1',           // investor landing (added 2026-05-24)
+  '/raise1',                  // investor landing (added 2026-05-24)
   '/raise1.html',
+  '/styles.css',              // design system stylesheet
+  '/site.js',                 // header/footer injector
 ];
 const PUBLIC_PREFIXES = [
-  '/assets/raise1/',   // any investor-deck-specific images live here
+  '/assets/',                 // logos, brand marks, page screenshots
+  '/js/',                     // /js/api.js etc.
 ];
 
 export default function middleware(request) {
