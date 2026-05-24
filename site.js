@@ -107,7 +107,7 @@ window.addEventListener('error', (e) => {
           </div>
         </div>
         <div class="bottom">
-          <span>© 2026 Joyride, Inc. All rights reserved.</span>
+          <span>© 2026 Joyride, Inc. All rights reserved. · Joyride, Inc. is an <a href="https://i12s.com/" target="_blank" rel="noopener" style="color:var(--canary);">InsightStudios</a> company.</span>
           <span>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
