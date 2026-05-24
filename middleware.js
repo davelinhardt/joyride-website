@@ -17,7 +17,27 @@ export const config = {
   matcher: '/(.*)',
 };
 
+// Paths that are publicly accessible — bypassed by the password gate.
+// Add entries here whenever a specific page needs to be shared with
+// people who don't have the site password (investor landing pages,
+// press one-pagers, etc.).
+const PUBLIC_PATHS = [
+  '/raise1',           // investor landing (added 2026-05-24)
+  '/raise1.html',
+];
+const PUBLIC_PREFIXES = [
+  '/assets/raise1/',   // any investor-deck-specific images live here
+];
+
 export default function middleware(request) {
+  const url = new URL(request.url);
+  if (
+    PUBLIC_PATHS.includes(url.pathname) ||
+    PUBLIC_PREFIXES.some((p) => url.pathname.startsWith(p))
+  ) {
+    return;
+  }
+
   const auth = request.headers.get('authorization');
   const expected = process.env.SITE_PASSWORD || '';
 

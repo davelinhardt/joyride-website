@@ -26,6 +26,7 @@
     { "source": "/harassment-policy", "destination": "/harassment-policy.html" },
     { "source": "/copyright", "destination": "/copyright.html" },
     { "source": "/cookies", "destination": "/cookies.html" },
+    { "source": "/raise1", "destination": "/raise1.html" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [
