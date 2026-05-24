@@ -3,45 +3,368 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Joyride — Investor materials</title>
-<meta name="robots" content="noindex, nofollow">
+<title>Joyride — $500K Angel Round</title>
+<meta name="description" content="Joyride is raising $500K to launch a new kind of rideshare marketplace where drivers keep 100% of the fare.">
 <link rel="icon" href="/assets/mark-canary.svg">
+<link rel="stylesheet" href="/styles.css">
 <style>
-  :root {
-    --canary: #FFEF00;
-    --ink: #0A0A0A;
-    --fg: #FFFFFF;
-    --fg-dim: rgba(255, 255, 255, 0.62);
+  /* ─── /raise1 specific ─── */
+  .raise-hero { padding-block: clamp(56px, 7vw, 96px) clamp(40px, 5vw, 64px); }
+  .raise-eyebrow-row { display: flex; gap: var(--s3); align-items: center; flex-wrap: wrap; margin-bottom: var(--s5); }
+  .raise-eyebrow-row .pill {
+    background: var(--canary); color: var(--ink);
+    font-weight: 700;
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; height: 100%; }
-  body {
-    background: var(--ink);
-    color: var(--fg);
-    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    display: grid;
-    place-items: center;
-    min-height: 100vh;
-    padding: 24px;
+  .raise-eyebrow-row .pill--ghost { background: transparent; }
+
+  .raise-hero h1 {
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 700; letter-spacing: -0.04em; line-height: 0.95;
+    max-width: 18ch;
+  }
+  .raise-hero h1 em { font-style: normal; color: var(--canary); }
+  .raise-hero .lead {
+    margin-top: var(--s6);
+    font-size: clamp(18px, 1.7vw, 22px);
+    max-width: 56ch;
+  }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s4);
+    margin-top: var(--s8);
+  }
+  .hero-stat {
+    padding: var(--s5);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+  }
+  .hero-stat .num {
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+    color: var(--canary);
+  }
+  .hero-stat .lbl {
+    margin-top: var(--s3); font-size: 14px;
+    color: #FFFFFF; line-height: 1.4;
+  }
+  @media (max-width: 880px) { .hero-stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr; } }
+
+  /* Media (video) blocks */
+  .media-block { padding-block: clamp(56px, 6vw, 96px); border-top: 1px solid var(--border); }
+  .media-header { display: flex; justify-content: space-between; align-items: end; gap: var(--s5); flex-wrap: wrap; margin-bottom: var(--s7); }
+  .media-header h2 { font-size: clamp(32px, 4vw, 56px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; }
+  .media-header p.lead { margin-top: var(--s4); max-width: 52ch; }
+
+  .video-frame {
+    aspect-ratio: 16 / 9;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    position: relative;
+  }
+  .video-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  /* Deck preview */
+  .deck-block .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); align-items: stretch; }
+  @media (max-width: 880px) { .deck-block .row-2 { grid-template-columns: 1fr; } }
+  .deck-frame {
+    aspect-ratio: 16 / 10;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    position: relative;
+    align-self: start;
+  }
+  .deck-frame embed, .deck-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .deck-frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  a.deck-frame { cursor: zoom-in; transition: transform .2s var(--ease); }
+  a.deck-frame:hover { transform: translateY(-2px); }
+  .deck-cta {
+    background: var(--canary); color: var(--ink);
+    border-radius: var(--r-xl);
+    padding: clamp(28px, 3vw, 48px);
+    display: flex; flex-direction: column; justify-content: space-between;
+    gap: var(--s5);
+  }
+  .deck-cta h3 { font-size: clamp(24px, 2.2vw, 32px); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); line-height: 1.15; }
+  .deck-cta p { color: var(--ink); font-size: 16px; line-height: 1.5; }
+  .deck-cta ul { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s2); color: var(--ink); }
+  .deck-cta ul li { font-size: 16px; padding-left: 24px; position: relative; }
+  .deck-cta ul li::before { content: "→"; position: absolute; left: 0; font-weight: 700; }
+  .deck-cta .btn { align-self: flex-start; background: var(--ink); color: var(--canary); }
+  .deck-cta .btn:hover { background: #1a1a1a; }
+
+  /* Ask / Terms */
+  .ask-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: clamp(40px, 5vw, 72px); }
+  .ask-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s8); align-items: start; }
+  @media (max-width: 880px) { .ask-grid { grid-template-columns: 1fr; gap: var(--s6); } }
+  .ask-headline { font-size: clamp(40px, 5vw, 72px); font-weight: 700; letter-spacing: -0.035em; line-height: 0.95; }
+  .ask-headline em { font-style: normal; color: var(--canary); }
+  .ask-terms { display: grid; gap: var(--s4); margin-top: var(--s5); }
+  .ask-row { display: grid; grid-template-columns: 180px 1fr; gap: var(--s5); padding-block: var(--s4); border-bottom: 1px solid var(--border); }
+  .ask-row:last-child { border-bottom: 0; }
+  .ask-row .k { color: #BFBFBF; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+  .ask-row .v { color: #FFFFFF; font-size: 18px; line-height: 1.45; }
+  .ask-row .v strong { color: var(--canary); font-weight: 700; }
+  @media (max-width: 540px) { .ask-row { grid-template-columns: 1fr; gap: 4px; } }
+
+  .use-of-funds { display: grid; gap: var(--s3); }
+  .use-of-funds .uof {
+    display: grid; grid-template-columns: 140px 1fr; gap: var(--s4); align-items: baseline;
+    padding-block: var(--s4); border-bottom: 1px solid var(--border);
+  }
+  .use-of-funds .uof:last-child { border-bottom: 0; }
+  .use-of-funds .uof .label { font-size: 22px; font-weight: 700; color: var(--canary); letter-spacing: -0.01em; }
+  .use-of-funds .uof .desc { color: #FFFFFF; font-size: 17px; line-height: 1.45; }
+
+  /* CTA contact */
+  .contact-block {
+    background: var(--canary);
+    border-radius: var(--r-xl);
+    padding: clamp(48px, 6vw, 88px);
     text-align: center;
   }
-  .mark { width: 84px; height: 84px; margin-bottom: 32px; }
-  h1 {
-    font-size: clamp(32px, 5vw, 56px);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0 0 16px;
-    line-height: 1.05;
+  .contact-block, .contact-block * { color: var(--ink) !important; }
+  .contact-block h2 { font-size: clamp(40px, 6vw, 80px); font-weight: 700; letter-spacing: -0.04em; line-height: 0.95; margin-bottom: var(--s5); }
+  .contact-block p { font-size: clamp(18px, 1.6vw, 22px); max-width: 56ch; margin: 0 auto var(--s7); }
+  .contact-block .btns { display: inline-flex; gap: var(--s4); flex-wrap: wrap; justify-content: center; }
+  .contact-block .btn--primary { background: var(--ink) !important; color: var(--canary) !important; }
+  .contact-block .btn--primary:hover { background: #1a1a1a !important; }
+  .contact-block .btn--ghost { background: transparent !important; color: var(--ink) !important; border: 1.5px solid var(--ink); }
+  .contact-block .btn--ghost:hover { background: var(--ink) !important; color: var(--canary) !important; }
+  .contact-block .small {
+    margin-top: var(--s7);
+    font-size: 14px;
+    opacity: 0.7;
   }
-  h1 em { font-style: normal; color: var(--canary); }
-  p { font-size: 17px; color: var(--fg-dim); max-width: 48ch; margin: 0; line-height: 1.5; }
+
+  /* Investor section section divider */
+  .raise-investor-only {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 32px; padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 239, 0, 0.12);
+    color: var(--canary);
+    border: 1px solid var(--canary);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
 </style>
 </head>
-<body>
-  <main>
-    <img class="mark" src="/assets/mark-canary.svg" alt="Joyride">
-    <h1>Investor materials <em>coming soon.</em></h1>
-    <p>This page is reserved. The full deck and supporting materials will live here shortly. If you're expecting it now, drop a line to <a href="mailto:legal@joyride.cool" style="color: var(--canary); text-decoration: none;">legal@joyride.cool</a>.</p>
-  </main>
+<body data-page="raise1">
+
+<main>
+
+  <!-- ─── HERO ─── -->
+  <section class="raise-hero wrap">
+    <div class="raise-eyebrow-row">
+      <span class="raise-investor-only">For Investors</span>
+      <span class="pill"><span class="dot"></span> $500K angel round · Open</span>
+    </div>
+
+    <h1>The <em>Amazon</em> of ground transportation.</h1>
+
+    <p class="lead">
+      Joyride is a new rideshare marketplace where drivers keep 100% of the fare and riders get a dramatically better ride. We're raising <strong style="color:var(--canary)">$500K</strong> to launch our first market and reach 400 drivers / $2M ARR.
+    </p>
+
+    <div class="cluster mt-7">
+      <a href="#ask" class="btn btn--primary">See the ask <span class="arrow">→</span></a>
+      <a href="mailto:dave@joyride.cool?subject=Joyride%20angel%20round" class="btn btn--ghost">Get in touch</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">$500K</div>
+        <div class="lbl">Equity round we're raising now</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">$2M ARR</div>
+        <div class="lbl">First milestone — 400 drivers</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">$43M ARR</div>
+        <div class="lbl">Year 3 projection · 36% EBITDA</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">117</div>
+        <div class="lbl">Direct customers from 1-car test</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PITCH VIDEO ─── -->
+  <section class="media-block wrap">
+    <div class="media-header">
+      <div>
+        <span class="eyebrow">Watch · 3 min</span>
+        <h2 class="mt-3">The pitch.</h2>
+      </div>
+      <p class="lead">
+        A short overview of the problem, the marketplace model, and why the timing is now. Dave walks through Joyride end-to-end.
+      </p>
+    </div>
+    <div class="video-frame">
+      <iframe
+        src="https://www.loom.com/embed/741a19c846f14e2c8c8e2bb2a5ed50c5"
+        allow="fullscreen"
+        allowfullscreen
+        title="Joyride investor pitch video"></iframe>
+    </div>
+  </section>
+
+  <!-- ─── PITCH DECK ─── -->
+  <section class="media-block deck-block wrap">
+    <div class="media-header">
+      <div>
+        <span class="eyebrow">Read · 19 slides</span>
+        <h2 class="mt-3">The deck.</h2>
+      </div>
+      <p class="lead">
+        Full pitch deck with the market, model, flywheel, business plan, GTM, competitive analysis, financials and use of funds.
+      </p>
+    </div>
+
+    <div class="row-2">
+      <a href="/assets/raise1/joyride-pitch-deck.pdf" target="_blank" rel="noopener" class="deck-frame" style="display:block;">
+        <img src="/assets/raise1/deck-cover.png" alt="Joyride pitch deck cover" style="width:100%;height:100%;object-fit:cover;display:block;">
+      </a>
+
+      <div class="deck-cta">
+        <div>
+          <h3>What's inside</h3>
+          <ul class="mt-4">
+            <li>The opportunity &amp; why now</li>
+            <li>The Joyride marketplace model</li>
+            <li>Flywheel &amp; underlying magic</li>
+            <li>Subscription pricing tiers</li>
+            <li>Go-to-market &amp; affiliate engine</li>
+            <li>Competitive analysis</li>
+            <li>3-year financial projections</li>
+            <li>Founder bio</li>
+          </ul>
+        </div>
+        <a href="/assets/raise1/joyride-pitch-deck.pdf" download class="btn">Download the PDF <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── WALK-THROUGH DEMO ─── -->
+  <section class="media-block wrap">
+    <div class="media-header">
+      <div>
+        <span class="eyebrow">Demo · Loom</span>
+        <h2 class="mt-3">Product walk-through.</h2>
+      </div>
+      <p class="lead">
+        See the rider app, driver app, marketplace and admin tools. The product is complete and in testing today.
+      </p>
+    </div>
+    <div class="video-frame">
+      <iframe
+        src="https://player.vimeo.com/video/1193637078?h=d751d2e66f&title=0&byline=0&portrait=0"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+        title="Joyride product walk-through"></iframe>
+    </div>
+  </section>
+
+  <!-- ─── ASK / RAISE ─── -->
+  <section class="media-block wrap" id="ask">
+    <div class="media-header">
+      <div>
+        <span class="eyebrow">The ask</span>
+        <h2 class="mt-3">$500K to launch our first market.</h2>
+      </div>
+    </div>
+
+    <div class="ask-block">
+      <div class="ask-grid">
+        <div>
+          <div class="ask-headline">
+            <em>$500K</em> equity round.<br>
+            One milestone: <em>$2M ARR.</em>
+          </div>
+          <p class="lead mt-5">
+            Capital-efficient, milestone-driven. Funds launch one city, prove the marketplace at scale, and set up the next round from strength.
+          </p>
+
+          <div class="ask-terms">
+            <div class="ask-row">
+              <span class="k">Round</span>
+              <span class="v"><strong>$500K</strong> equity</span>
+            </div>
+            <div class="ask-row">
+              <span class="k">Instrument</span>
+              <span class="v">SAFE — terms on request</span>
+            </div>
+            <div class="ask-row">
+              <span class="k">Min check</span>
+              <span class="v">$25K · larger welcome</span>
+            </div>
+            <div class="ask-row">
+              <span class="k">Next milestone</span>
+              <span class="v">400 drivers · <strong>$2M ARR</strong></span>
+            </div>
+            <div class="ask-row">
+              <span class="k">Use of capital</span>
+              <span class="v">Market launch, fleet expansion, growth</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <span class="eyebrow">Use of funds</span>
+          <div class="use-of-funds mt-5">
+            <div class="uof">
+              <span class="label">App</span>
+              <span class="desc">Launch on-demand rider &amp; driver apps in our first market.</span>
+            </div>
+            <div class="uof">
+              <span class="label">Fleet</span>
+              <span class="desc">Expand to 400 drivers on the marketplace via affiliate engine + content.</span>
+            </div>
+            <div class="uof">
+              <span class="label">Grow</span>
+              <span class="desc">Hit $2M ARR — proof point for Series A from strength.</span>
+            </div>
+          </div>
+
+          <div class="card mt-7" style="background: var(--surface-2); border-color: var(--border); padding: var(--s5);">
+            <div class="eyebrow" style="color: #BFBFBF;">Where we are today</div>
+            <ul class="stack-sm mt-4" style="list-style: none; padding: 0; font-size: 16px; color: #FFFFFF; line-height: 1.5;">
+              <li>✓ Product MVP complete &amp; in testing</li>
+              <li>✓ First Tesla running on both Uber/Lyft and Joyride</li>
+              <li>✓ 1-car conversion test: <strong style="color: var(--canary)">117 direct customers (23%)</strong> &amp; 314 scheduled rides</li>
+              <li>✓ Rider app, driver app, web app, joyride.cool — all shipped</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CONTACT CTA ─── -->
+  <section class="media-block wrap">
+    <div class="contact-block">
+      <span class="eyebrow" style="color: var(--ink) !important; opacity: 0.7;">Get in touch</span>
+      <h2 class="mt-4">Let's grab 30 minutes.</h2>
+      <p>
+        If the model resonates and you'd like to dig in, send me a note. I'll send terms, the data room, and a calendar link.
+      </p>
+      <div class="btns">
+        <a href="mailto:dave@joyride.cool?subject=Joyride%20angel%20round%20%E2%80%94%20chat%3F" class="btn btn--primary">Email Dave <span class="arrow">→</span></a>
+        <a href="https://www.linkedin.com/in/davidlinhardt" target="_blank" rel="noopener" class="btn btn--ghost">LinkedIn</a>
+      </div>
+      <p class="small">David Linhardt · Founder &amp; CEO · dave@joyride.cool</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="/site.js"></script>
 </body>
 </html>
