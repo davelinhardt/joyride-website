@@ -133,6 +133,11 @@
   .contact-block p { font-size: clamp(18px, 1.6vw, 22px); max-width: 56ch; margin: 0 auto var(--s7); }
   .contact-block .btns { display: inline-flex; gap: var(--s4); flex-wrap: wrap; justify-content: center; }
   .contact-block .btn--primary { background: var(--ink) !important; color: var(--canary) !important; }
+  /* Bump specificity on the button's children so the `<span class="arrow">`
+     inside isn't caught by the contact-block universal ink rule above,
+     which would paint the arrow black-on-black and make it invisible.
+     Same gotcha as .driver-final-cta on driver.html. */
+  .contact-block .btn--primary > * { color: var(--canary) !important; }
   .contact-block .btn--primary:hover { background: #1a1a1a !important; }
   .contact-block .btn--ghost { background: transparent !important; color: var(--ink) !important; border: 1.5px solid var(--ink); }
   .contact-block .btn--ghost:hover { background: var(--ink) !important; color: var(--canary) !important; }
