@@ -83,15 +83,25 @@
   .driver-hero .sub strong.fn { color: var(--canary); font-weight: 700; }
   .driver-hero .sub strong.brand { color: var(--fg); font-weight: 700; }
 
-  /* Rating cluster pill in hero */
+  /* Rating cluster pill in hero — sits inline with the primary CTA
+     inside the .hero-rating-cta row, so spacing lives on the parent. */
   .rating-cluster {
     display: flex; align-items: center; gap: var(--s5);
-    margin-top: var(--s7);
     padding: var(--s4) var(--s5);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 999px;
     width: fit-content;
+  }
+
+  /* Hero rating + Sign-Up CTA share one horizontal line. Wraps on
+     narrow viewports rather than forcing a full-width stack so the
+     pill keeps its natural width. */
+  .hero-rating-cta {
+    display: flex; align-items: center;
+    gap: var(--s5);
+    margin-top: var(--s7);
+    flex-wrap: wrap;
   }
   .rating-cluster .stars {
     display: inline-flex; gap: 2px;
@@ -391,12 +401,11 @@
             <span id="dp-city-pill" class="city-pill" hidden></span>
           </div>
 
-          <h1>Cleaner cars. Friendlier drivers. <em>Fairer for everyone.</em></h1>
+          <h1>Drivers keep <em>more of the fare.</em> Riders get a better ride.</h1>
           <p id="dp-hero-sub" class="sub"></p>
 
-          <div id="dp-rating-cluster" class="rating-cluster"></div>
-
-          <div class="cta-row">
+          <div class="hero-rating-cta">
+            <div id="dp-rating-cluster" class="rating-cluster"></div>
             <a href="/login?signup=1" class="btn btn--canary">Sign up to book a ride <span class="arrow">→</span></a>
           </div>
         </div>
@@ -484,7 +493,7 @@
       <div class="driver-final-cta">
         <span class="eyebrow" style="opacity: 0.7;">Ready to ride?</span>
         <h2>Book me. Skip the surge.</h2>
-        <p>Sign up in 30 seconds. I'll let you know when I'm 5 minutes out — and pick you up in a clean, quiet car.</p>
+        <p>Sign up now. Request a ride now or schedule for later.</p>
         <div class="cluster cta-row" style="justify-content: center;">
           <a href="/login?signup=1" class="btn btn--primary">Sign up to book a ride <span class="arrow">→</span></a>
         </div>
@@ -521,7 +530,7 @@
   // us tell from a remote browser whether a stale cached copy is being
   // served — bump on any meaningful edit to driver.html.
   var debug = {
-    pageVersion: "2026-05-25#12 (new marketing-page design — Dave's redesign call)",
+    pageVersion: "2026-05-25#13 (hero headline + inline rating/CTA + final-CTA copy)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
