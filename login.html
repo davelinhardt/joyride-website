@@ -269,6 +269,14 @@
     });
   }
 
+  // Affiliate-style auto-favorite — driver public profile pages link
+  // here with ?affid={driverUsername}. We stash the value in a module-
+  // local so doSignup() can POST it along with the rider's other
+  // fields. Tab switches / failed validations don't clear it; only a
+  // full page reload (without affid in the new URL) does. No UI
+  // surface — silent pass-through.
+  var affid = (new URLSearchParams(window.location.search).get("affid") || "").trim();
+
   tabs.forEach(function (btn) {
     btn.addEventListener("click", function () {
       tabs.forEach(function (b) { b.classList.remove("is-active"); });
@@ -366,6 +374,10 @@
       mobile:    mobile,
       username:  username,
       password:  password,
+      // Optional: driver-public-profile referral. Server resolves
+      // affid → driver and adds them to the new rider's favorites
+      // (best-effort; bad affid silently skips).
+      affid:     affid || undefined,
     });
     if (!result || !result.sessionToken || !result.rider) {
       showError("Signup failed. Please try again.");

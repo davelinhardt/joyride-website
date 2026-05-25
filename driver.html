@@ -406,7 +406,7 @@
 
           <div class="hero-rating-cta">
             <div id="dp-rating-cluster" class="rating-cluster"></div>
-            <a href="/login?signup=1" class="btn btn--canary">Sign up to book a ride <span class="arrow">→</span></a>
+            <a href="/login?signup=1" class="btn btn--canary" data-signup-cta>Sign up to book a ride <span class="arrow">→</span></a>
           </div>
         </div>
 
@@ -495,7 +495,7 @@
         <h2>Book me. Skip the surge.</h2>
         <p>Sign up now. Request a ride now or schedule for later.</p>
         <div class="cluster cta-row" style="justify-content: center;">
-          <a href="/login?signup=1" class="btn btn--primary">Sign up to book a ride <span class="arrow">→</span></a>
+          <a href="/login?signup=1" class="btn btn--primary" data-signup-cta>Sign up to book a ride <span class="arrow">→</span></a>
         </div>
       </div>
     </section>
@@ -505,7 +505,7 @@
 
 <!-- Mobile sticky book bar — visible at ≤720px only. -->
 <div class="mobile-book-bar">
-  <a href="/login?signup=1" class="btn btn--canary">Sign up to book a ride <span class="arrow">→</span></a>
+  <a href="/login?signup=1" class="btn btn--canary" data-signup-cta>Sign up to book a ride <span class="arrow">→</span></a>
 </div>
 
 <script src="/js/api.js"></script>
@@ -530,7 +530,7 @@
   // us tell from a remote browser whether a stale cached copy is being
   // served — bump on any meaningful edit to driver.html.
   var debug = {
-    pageVersion: "2026-05-25#15 (both 'more of the fare' and 'better ride' canary)",
+    pageVersion: "2026-05-25#16 (affid={username} encoded into Sign-Up CTAs)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
@@ -619,6 +619,19 @@
 
   function renderDriver(d) {
     document.title = d.name + " — Joyride driver";
+
+    // Affiliate link — append ?affid={username} to every Sign-Up CTA on
+    // the page so /api/rider/signup can auto-favorite this driver for
+    // the new rider. Done before any other DOM work so a tap that
+    // races the rest of the render still carries the affid.
+    var affid = (d.username || "").trim();
+    if (affid) {
+      document.querySelectorAll("a[data-signup-cta]").forEach(function (a) {
+        var href = a.getAttribute("href") || "/login?signup=1";
+        var sep = href.indexOf("?") === -1 ? "?" : "&";
+        a.setAttribute("href", href + sep + "affid=" + encodeURIComponent(affid));
+      });
+    }
 
     // Hero — name + photo/initials, sub paragraph, rating cluster.
     document.getElementById("dp-name").textContent = d.name;
