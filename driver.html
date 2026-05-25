@@ -12,230 +12,492 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Joyride driver</title>
+<meta name="description" content="Book this driver directly on Joyride — a better rideshare where drivers keep more of the fare. Clean cars, friendly drivers, fair prices.">
 <link rel="icon" href="/assets/mark-canary.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 <style>
-  .dp-wrap {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px) 120px;
-  }
+  /* ───────────────────────────────────────────────────────────────────────
+     Public driver page — per-driver marketing landing.
+     Sections:
+       1. Hero  · 2. Stats  · 3. Why book  · 4. About + Vehicle (gated)
+       5. Reviews (gated)   · 6. Final CTA · 7. Mobile sticky book bar
+     Sections 4 & 5 are toggled per-driver on the server. The client
+     simply hides the matching block when its payload is null/empty —
+     no half-built empty states.
+     ─────────────────────────────────────────────────────────────────── */
 
-  /* Loading / empty / not-found states share one layout so transitions
-     between them don't reflow the page jarringly. */
+  /* Shared state container — loading + private states reuse the same
+     layout so transitions don't reflow the page jarringly. */
   .dp-state {
     text-align: center;
     padding: 80px 20px;
     color: var(--fg-3);
+    max-width: 880px;
+    margin: 0 auto;
   }
   .dp-state h2 { font-size: 28px; font-weight: 700; color: var(--fg); margin-bottom: 12px; }
   .dp-state p { max-width: 48ch; margin: 0 auto; font-size: 16px; line-height: 1.5; }
-  .dp-state a.btn { margin-top: 24px; }
 
-  /* Profile hero — photo + name + rating row, mirrors the in-app
-     driver-profile card the rider sees when matching. */
-  .dp-card {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: var(--r-xl);
-    padding: clamp(28px, 4vw, 48px);
-    margin-bottom: var(--s6);
-  }
-  .dp-head {
+  /* ─── Hero ────────────────────────────────────────────────────────── */
+  .driver-hero { padding-block: clamp(40px, 5vw, 72px) clamp(48px, 6vw, 80px); }
+  .driver-hero-grid {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: clamp(20px, 3vw, 40px);
+    grid-template-columns: 1fr 480px;
+    gap: var(--s8);
     align-items: center;
+  }
+  @media (max-width: 880px) {
+    .driver-hero-grid { grid-template-columns: 1fr; gap: var(--s7); }
+  }
+
+  .driver-hero .eyebrow-row {
+    display: flex; gap: var(--s3); align-items: center; flex-wrap: wrap;
     margin-bottom: var(--s5);
   }
-  @media (max-width: 540px) {
-    .dp-head { grid-template-columns: 1fr; text-align: center; }
+  .driver-hero .city-pill {
+    background: rgba(255, 239, 0, 0.12);
+    color: var(--canary);
+    border: 1px solid var(--canary);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
   }
-  .dp-photo {
-    width: clamp(96px, 14vw, 144px);
-    height: clamp(96px, 14vw, 144px);
-    border-radius: 50%;
+
+  .driver-hero h1 {
+    font-size: clamp(40px, 6vw, 80px);
+    font-weight: 700; letter-spacing: -0.04em; line-height: 0.96;
+    max-width: 16ch;
+  }
+  .driver-hero h1 em { font-style: normal; color: var(--canary); }
+  .driver-hero .sub {
+    margin-top: var(--s6);
+    font-size: clamp(18px, 1.7vw, 22px);
+    color: var(--fg);
+    max-width: 50ch;
+    line-height: 1.5;
+  }
+  .driver-hero .sub strong.fn { color: var(--canary); font-weight: 700; }
+  .driver-hero .sub strong.brand { color: var(--fg); font-weight: 700; }
+
+  /* Rating cluster pill in hero */
+  .rating-cluster {
+    display: flex; align-items: center; gap: var(--s5);
+    margin-top: var(--s7);
+    padding: var(--s4) var(--s5);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .rating-cluster .stars {
+    display: inline-flex; gap: 2px;
+    color: var(--canary);
+    font-size: 20px;
+  }
+  .rating-cluster .rt-num {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--canary);
+    line-height: 1;
+  }
+  .rating-cluster .rt-meta {
+    font-size: 14px; color: var(--fg-3); line-height: 1.3;
+  }
+  .rating-cluster.new-driver .rt-num { font-size: 22px; }
+
+  /* Driver portrait card */
+  .driver-portrait {
+    position: relative;
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: linear-gradient(160deg, #2a2a28 0%, var(--surface) 100%);
+    aspect-ratio: 4 / 5;
+    display: flex; align-items: flex-end;
+    border: 1px solid var(--border);
+  }
+  .driver-portrait .photo {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
     object-fit: cover;
-    background: var(--surface-2);
-    border: 2px solid var(--rule);
-    justify-self: center;
   }
-  .dp-photo--initials {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(36px, 5vw, 56px);
+  .driver-portrait .initials {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(180px, 22vw, 280px);
     font-weight: 700;
     color: var(--canary);
-    background: var(--ink);
-  }
-  .dp-name {
-    font-size: clamp(32px, 4vw, 48px);
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.05em;
     line-height: 1;
-    margin-bottom: 8px;
   }
-  .dp-handle {
-    color: var(--fg-3);
-    font-size: 16px;
-    margin-bottom: 12px;
-  }
-  .dp-rating-row {
-    display: flex; gap: 14px; align-items: center;
+  .driver-portrait .overlay {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 70%);
+    padding: var(--s6) var(--s5) var(--s5);
     color: var(--fg);
-    font-size: 15px;
-    flex-wrap: wrap;
   }
-  .dp-stars { color: var(--canary); font-weight: 700; }
-  .dp-rating-row .sep { color: var(--fg-3); }
+  .driver-portrait .nm {
+    font-size: clamp(28px, 2.8vw, 36px);
+    font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
 
-  /* Stats row — totalRydes, hourly rate, vehicle summary */
-  .dp-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: var(--s3);
-    margin-bottom: var(--s5);
-  }
-  /* Rounded-rectangle tile, matching the design system's stat /
-     component-tile treatment (see drivers.html .stat and
-     design-system.html .component-tile — both use --r-lg radius +
-     --s5/s6 padding + 1px rule border). The earlier var(--r-md)
-     token doesn't exist (the scale is --r-sm / --r / --r-lg /
-     --r-xl), so the property silently fell back to 0 and the tiles
-     read as squares. */
-  .dp-stat {
-    background: var(--surface-2);
-    padding: var(--s5) var(--s4);
-    border-radius: var(--r-lg);
-    border: 1px solid var(--rule);
-    text-align: center;
-  }
-  .dp-stat .label {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--fg-3);
-  }
-  .dp-stat .value {
-    font-size: 22px; font-weight: 700; color: var(--fg);
-    margin-top: 4px;
-  }
-  .dp-stat .sub { font-size: 13px; color: var(--fg-3); margin-top: 2px; }
-
-  /* Action row — two equal-width CTAs (Download App + Book A Ride),
-     sit between the photo/name header and the stats grid. Stack on
-     small screens. Mirrors the in-app driver-profile layout where
-     Make Favorite + Book A Ride share a row at the same spot. */
-  .dp-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--s3);
-    margin-bottom: var(--s5);
+  /* CTA row inside the hero left column */
+  .cta-row {
+    display: flex; gap: var(--s4); flex-wrap: wrap;
+    margin-top: var(--s7);
   }
   @media (max-width: 540px) {
-    .dp-actions { grid-template-columns: 1fr; }
-  }
-  .dp-actions .btn {
-    /* Inherit the design system's pill shape + sizing — overriding
-       border-radius/height here was producing square-cornered
-       buttons that didn't match the header CTAs. */
-    width: 100%;
-    justify-content: center;
+    .cta-row { flex-direction: column; }
+    .cta-row .btn { width: 100%; justify-content: center; }
   }
 
-  .dp-bio {
-    padding: 18px 0 8px;
+  /* ─── Stats row (3 boxes — repeatPct removed per design call) ────── */
+  .driver-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s4);
+    margin-top: var(--s8);
+  }
+  @media (max-width: 720px) {
+    .driver-stats { grid-template-columns: repeat(2, 1fr); }
+    .driver-stats .driver-stat:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+  .driver-stat {
+    padding: var(--s5);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+  .driver-stat .num {
+    font-size: clamp(32px, 3.5vw, 56px);
+    font-weight: 700; letter-spacing: -0.03em; line-height: 0.95;
+    color: var(--canary);
+  }
+  .driver-stat .lbl {
+    margin-top: var(--s3);
+    font-size: 14px; color: var(--fg-3); line-height: 1.4;
+  }
+
+  /* ─── Why book section ─────────────────────────────────────────── */
+  .why-section { padding-block: clamp(56px, 7vw, 96px); }
+  .section-h2 {
+    font-size: clamp(32px, 4.5vw, 56px); font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1.05;
+    margin-top: var(--s3);
+  }
+  .section-h2 em { font-style: normal; color: var(--canary); }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s5);
+    margin-top: var(--s7);
+  }
+  @media (max-width: 880px) { .why-grid { grid-template-columns: 1fr; } }
+  .why-card {
+    padding: var(--s6);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+  .why-card .icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--canary); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700;
+    margin-bottom: var(--s5);
+  }
+  .why-card h3 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.015em;
+    margin-bottom: var(--s3);
+  }
+  .why-card p { color: var(--fg-3); line-height: 1.5; font-size: 16px; }
+
+  /* ─── About the driver + Vehicle card ──────────────────────────── */
+  .about-section { padding-block: clamp(56px, 7vw, 96px); }
+  .about-grid {
+    display: grid; grid-template-columns: 1.2fr 1fr;
+    gap: var(--s8);
+    align-items: start;
+  }
+  @media (max-width: 880px) { .about-grid { grid-template-columns: 1fr; } }
+
+  .about-grid .lead {
+    color: var(--fg); font-size: 18px; line-height: 1.55;
+    margin-top: var(--s5);
+  }
+  .about-grid ul.credentials {
+    list-style: none; padding: 0; margin: var(--s6) 0 0;
+    display: grid; gap: var(--s3); font-size: 17px;
+  }
+  .about-grid ul.credentials li {
+    display: flex; gap: var(--s3); align-items: flex-start;
+  }
+  .about-grid ul.credentials li .tick {
+    color: var(--canary); font-weight: 700; flex-shrink: 0;
+  }
+
+  .about-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s6);
+    display: grid; gap: var(--s4);
+  }
+  .about-card h3 {
+    font-size: 22px; font-weight: 700;
+    margin-bottom: var(--s3);
+  }
+  .about-card .car-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-block: var(--s3);
+    border-bottom: 1px solid var(--border);
+    gap: var(--s4);
+  }
+  .about-card .car-row:last-child { border-bottom: 0; }
+  .about-card .car-row .k {
+    font-size: 13px; color: var(--fg-3);
+    letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .about-card .car-row .v {
+    font-size: 17px; color: var(--fg); font-weight: 500;
+    text-align: right;
+  }
+
+  /* ─── Testimonials ────────────────────────────────────────────── */
+  .reviews-section { padding-block: clamp(56px, 7vw, 96px); }
+  .reviews-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: var(--s5); margin-top: var(--s7);
+  }
+  @media (max-width: 880px) { .reviews-grid { grid-template-columns: 1fr; } }
+  .review {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s6);
+    display: flex; flex-direction: column;
+    gap: var(--s5);
+  }
+  .review .stars {
+    color: var(--canary); font-size: 16px;
+    letter-spacing: 2px;
+  }
+  .review .quote {
+    font-size: 17px; line-height: 1.55;
     color: var(--fg);
-    line-height: 1.6;
-    font-size: 16px;
-    border-top: 1px solid var(--rule);
-    margin-top: var(--s4);
+    font-weight: 400;
   }
-  .dp-bio h3 {
-    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--fg-3);
-    margin-bottom: 8px;
+  .review .author {
+    display: flex; align-items: center; gap: var(--s3);
+    margin-top: auto;
+  }
+  .review .author .av {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--canary); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .review .author .who { font-size: 14px; color: var(--fg); font-weight: 500; }
+  .review .author .when { font-size: 12px; color: var(--fg-3); }
+
+  /* ─── Final canary CTA ─────────────────────────────────────────── */
+  .driver-final-cta {
+    background: var(--canary);
+    border-radius: var(--r-xl);
+    padding: clamp(48px, 6vw, 88px) clamp(32px, 5vw, 64px);
+    text-align: center;
+  }
+  .driver-final-cta, .driver-final-cta * { color: var(--ink) !important; }
+  .driver-final-cta h2 {
+    font-size: clamp(40px, 6vw, 80px);
+    font-weight: 700; letter-spacing: -0.04em; line-height: 0.95;
+    margin-bottom: var(--s4);
+  }
+  .driver-final-cta p {
+    font-size: clamp(18px, 1.6vw, 22px);
+    max-width: 50ch; margin: 0 auto var(--s7);
+    line-height: 1.5;
+  }
+  .driver-final-cta .cluster { justify-content: center; gap: var(--s4); }
+  .driver-final-cta .btn--primary {
+    background: var(--ink) !important; color: var(--canary) !important;
+  }
+  .driver-final-cta .btn--primary:hover {
+    background: #1a1a1a !important;
   }
 
-  /* (.dp-book block removed 2026-05-19 — the bottom Book CTA + helper
-     line were superseded by the .dp-actions row above the stats.
-     Leaving this note here in case search-and-replace lands a future
-     dev back on this position.) */
+  /* ─── Mobile sticky book bar ───────────────────────────────────── */
+  .mobile-book-bar {
+    display: none;
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 10, 10, 0.92);
+    border-top: 1px solid var(--border);
+    padding: 14px 16px env(safe-area-inset-bottom);
+    z-index: 100;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .mobile-book-bar .btn {
+    width: 100%; justify-content: center; height: 52px;
+  }
+  @media (max-width: 720px) {
+    .mobile-book-bar { display: block; }
+    main { padding-bottom: 80px; }
+  }
 </style>
 </head>
 <body data-page="driver">
 
 <main>
-  <section class="dp-wrap">
-    <!-- Loading state. Replaced by either #dp-content or #dp-notfound
-         once the fetch resolves. The optional #dp-loading-debug block
-         renders below the spinner-style text when ?debug=1 is on the
-         URL so we can tell what's happening even before the fetch
-         settles (or if it hangs forever). -->
-    <div id="dp-loading" class="dp-state">
-      <p>Loading driver…</p>
-      <pre id="dp-loading-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
-    </div>
 
-    <!-- "Private" state — shown for any username that isnt an active
-         driver: doesnt exist, exists but isnt a driver, or driver
-         account is suspended/deactivated. Per Daves spec, all three
-         collapse to the same message: "This account is private." The
-         server returns 404 for all three so we cant tell them apart
-         (and shouldnt — keeping the surface uniform prevents
-         enumeration of who has a rider account vs. nothing). -->
-    <div id="dp-notfound" class="dp-state" hidden>
-      <h2>This account is private.</h2>
-      <p>Only Joyride drivers have public profiles. If you were expecting a driver page here, double-check the username — or contact the driver directly for an updated link.</p>
-      <!-- Diagnostic block — only renders when ?debug=1 is on the
-           URL. Mirrors the same block in the loading state so we can
-           see what the page knows regardless of which state we
-           ended up in. -->
-      <pre id="dp-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
-    </div>
+  <!-- Loading state. Replaced by either #dp-content or #dp-notfound
+       once the fetch resolves. The optional #dp-loading-debug block
+       renders below the spinner-style text when ?debug=1 is on the
+       URL so we can tell what's happening even before the fetch
+       settles (or if it hangs forever). -->
+  <div id="dp-loading" class="dp-state">
+    <p>Loading driver…</p>
+    <pre id="dp-loading-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
+  </div>
 
-    <div id="dp-content" hidden>
-      <article class="dp-card">
-        <header class="dp-head">
-          <img id="dp-photo" class="dp-photo" alt="">
-          <div>
-            <h1 id="dp-name" class="dp-name"></h1>
-            <p id="dp-handle" class="dp-handle"></p>
-            <div id="dp-rating-row" class="dp-rating-row"></div>
+  <!-- "Private" state — shown for any username that isn't an active
+       driver: doesn't exist, exists but isn't a driver, or driver
+       account is suspended/deactivated. Per Dave's spec, all three
+       collapse to the same message: "This account is private." The
+       server returns 404 for all three so we can't tell them apart
+       (and shouldn't — keeping the surface uniform prevents
+       enumeration of who has a rider account vs. nothing). -->
+  <div id="dp-notfound" class="dp-state" hidden>
+    <h2>This account is private.</h2>
+    <p>Only Joyride drivers have public profiles. If you were expecting a driver page here, double-check the username — or contact the driver directly for an updated link.</p>
+    <pre id="dp-debug" style="margin-top: 28px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; text-align: left; font-size: 12px; color: var(--fg-3); white-space: pre-wrap; word-break: break-word; max-width: 60ch; margin-inline: auto;" hidden></pre>
+  </div>
+
+  <div id="dp-content" hidden>
+
+    <!-- ─── HERO ─── -->
+    <section class="driver-hero wrap">
+      <div class="driver-hero-grid">
+        <div>
+          <div id="dp-eyebrow" class="eyebrow-row" hidden>
+            <span id="dp-city-pill" class="city-pill" hidden></span>
           </div>
-        </header>
 
-        <!-- Action CTAs — sit between the header and the stats. Two
-             equal-width buttons: Download App (outlined, points at the
-             iOS app store placeholder) and Book A Ride (yellow,
-             attempts a joyride://driver/{username} deep link and
-             falls back to the app store if the app isn't installed).
-             See the inline JS below for the deep-link + fallback
-             handler. -->
-        <div class="dp-actions">
-          <a id="dp-download-cta" class="btn btn--ghost"
-             href="https://apps.apple.com/app/joyride/id000000000"
-             target="_blank" rel="noopener">
-            Download App
-          </a>
-          <a id="dp-book-cta" class="btn btn--primary" href="#book"
-             role="button">
-            Book A Ride
-          </a>
+          <h1>Cleaner cars. Friendlier drivers. <em>Fairer for everyone.</em></h1>
+          <p id="dp-hero-sub" class="sub"></p>
+
+          <div id="dp-rating-cluster" class="rating-cluster"></div>
+
+          <div class="cta-row">
+            <a href="/login?signup=1" class="btn btn--canary">Sign up to book a ride <span class="arrow">→</span></a>
+          </div>
         </div>
 
-        <div id="dp-stats" class="dp-stats"></div>
-
-        <div id="dp-bio" class="dp-bio" hidden>
-          <h3>About</h3>
-          <p id="dp-bio-body"></p>
+        <div class="driver-portrait">
+          <img id="dp-photo" class="photo" alt="" hidden>
+          <div id="dp-initials" class="initials" hidden></div>
+          <div class="overlay">
+            <div id="dp-name" class="nm"></div>
+          </div>
         </div>
-      </article>
-    </div>
-  </section>
+      </div>
+
+      <!-- Stats row — always shown; 3 boxes (per Dave 2026-05-25:
+           repeatPct removed, fourth "100% / Fare goes to me" stays
+           because it's the brand-level claim). -->
+      <div class="driver-stats">
+        <div class="driver-stat">
+          <div id="dp-stat-rydes" class="num">0</div>
+          <div class="lbl">Joyride trips completed</div>
+        </div>
+        <div class="driver-stat">
+          <div id="dp-stat-rating" class="num">5.00</div>
+          <div id="dp-stat-rating-lbl" class="lbl">Average rating</div>
+        </div>
+        <div class="driver-stat">
+          <div class="num">100%</div>
+          <div class="lbl">Fare goes straight to me</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── WHY BOOK ─── -->
+    <section class="why-section wrap">
+      <span class="eyebrow">Why book directly</span>
+      <h2 class="section-h2" style="max-width: 18ch;">
+        Better rides happen<br>when drivers <em>aren't squeezed.</em>
+      </h2>
+
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="icon">★</div>
+          <h3>A quality ride, every time.</h3>
+          <p>Clean car, phone chargers, cold water. I drive the way I'd want to ride — quiet when you want, friendly when you want.</p>
+        </div>
+        <div class="why-card">
+          <div class="icon">$</div>
+          <h3>Honest pricing, no surge.</h3>
+          <p>I set my own rates and you see them upfront. No 3× pricing at the airport. No mystery fees.</p>
+        </div>
+        <div class="why-card">
+          <div class="icon">♥</div>
+          <h3>Support drivers, not platforms.</h3>
+          <p>Uber and Lyft take 40-75% of every fare. On Joyride, drivers can keep 100%. You ride well; I earn fairly.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ABOUT THE DRIVER + VEHICLE (gated by driver toggle) ─── -->
+    <section id="dp-about-section" class="about-section wrap" hidden>
+      <div class="about-grid">
+        <div>
+          <span class="eyebrow">About your driver</span>
+          <h2 id="dp-about-headline" class="section-h2" style="margin-bottom: var(--s5);"></h2>
+          <p id="dp-about-paragraph" class="lead" hidden></p>
+          <ul id="dp-about-credentials" class="credentials" hidden></ul>
+        </div>
+
+        <div id="dp-vehicle-card" class="about-card">
+          <h3>The car</h3>
+          <div id="dp-vehicle-rows"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── TESTIMONIALS (gated by driver toggle + non-empty list) ─── -->
+    <section id="dp-reviews-section" class="reviews-section wrap" hidden>
+      <span class="eyebrow">From recent riders</span>
+      <h2 class="section-h2" style="max-width: 22ch;">What riders say.</h2>
+      <div id="dp-reviews-grid" class="reviews-grid"></div>
+    </section>
+
+    <!-- ─── FINAL CTA ─── -->
+    <section class="why-section wrap">
+      <div class="driver-final-cta">
+        <span class="eyebrow" style="opacity: 0.7;">Ready to ride?</span>
+        <h2>Book me. Skip the surge.</h2>
+        <p>Sign up in 30 seconds. I'll let you know when I'm 5 minutes out — and pick you up in a clean, quiet car.</p>
+        <div class="cluster cta-row" style="justify-content: center;">
+          <a href="/login?signup=1" class="btn btn--primary">Sign up to book a ride <span class="arrow">→</span></a>
+        </div>
+      </div>
+    </section>
+
+  </div>
 </main>
+
+<!-- Mobile sticky book bar — visible at ≤720px only. -->
+<div class="mobile-book-bar">
+  <a href="/login?signup=1" class="btn btn--canary">Sign up to book a ride <span class="arrow">→</span></a>
+</div>
 
 <script src="/js/api.js"></script>
 <script src="/site.js"></script>
@@ -244,35 +506,22 @@
   "use strict";
 
   // The /:username Vercel rewrite serves this file at the
-  // joyride.cool/{username} URL. The destinations ?u=:slug query is
+  // joyride.cool/{username} URL. The destination's ?u=:slug query is
   // *internal* — it gets applied to the served file but isn't
-  // reflected back into the browsers URL bar, so client JS cant see
+  // reflected back into the browser's URL bar, so client JS can't see
   // it via window.location.search. Read the slug from pathname
-  // instead (its the visible URL the user requested).
-  //
-  // Two fall-back paths kept for resilience:
-  //   1. ?u=<username> query param — for direct hits to /driver.html
-  //      (debug use, and the friendlier "open in new tab"-style
-  //      flow from the account page that links to /:username).
-  //   2. pathname segment — the actual production path.
+  // instead (it's the visible URL the user requested).
   var qp = new URLSearchParams(window.location.search).get("u");
   var pathSlug = window.location.pathname.replace(/^\/+/, "").split("/")[0] || "";
-  // Ignore "driver" / "driver.html" as a slug — that means we landed
-  // here directly without a username, not as a redirect from
-  // /{username}, and we should show the not-found state.
   if (pathSlug === "driver" || pathSlug === "driver.html") pathSlug = "";
   var username = ((qp || pathSlug) || "").trim();
 
-  // Diagnostic state — populated as the page progresses through
-  // pathname parse → fetch URL build → fetch → response. Visible to
-  // the user when ?debug=1 is on the URL, in both the loading state
-  // (so a hung fetch surfaces what its trying to do) and the
-  // not-found state (so a 404 / network error surfaces the cause).
-  // The page version stamp lets us tell from a remote browser whether
-  // a stale cached copy is being served — bump on any meaningful
-  // edit to driver.htmls auth/fetch logic.
+  // Diagnostic state — populated as the page progresses. Visible to
+  // the user when ?debug=1 is on the URL. The page version stamp lets
+  // us tell from a remote browser whether a stale cached copy is being
+  // served — bump on any meaningful edit to driver.html.
   var debug = {
-    pageVersion: "2026-05-19#11 (rounded tiles + pill buttons; fixed bad --r-md token)",
+    pageVersion: "2026-05-25#12 (new marketing-page design — Dave's redesign call)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
@@ -287,35 +536,22 @@
     return /(?:^|[?&])debug=1(?:&|$)/.test(window.location.search);
   }
   function renderDebug(el) {
-    if (!el) return;
-    if (!debugVisible()) return;
+    if (!el || !debugVisible()) return;
     el.hidden = false;
     el.textContent = JSON.stringify(debug, null, 2);
   }
-  // Surface diagnostic in the loading state too — if were stuck here
-  // it means the fetch hasnt settled yet (or wont), and the user
-  // staring at "Loading driver…" deserves to see what the page knows
-  // about its own state. Updates whenever `debug` mutates.
   function refreshLoadingDebug() {
     renderDebug(document.getElementById("dp-loading-debug"));
   }
   refreshLoadingDebug();
-  // Renamed from showNotFound to showPrivate now that the only
-  // non-driver state surfaces as "This account is private." regardless
-  // of underlying cause (no such user, not a driver, suspended).
+
   function showPrivate() {
     renderDebug(document.getElementById("dp-debug"));
     show("notfound");
   }
 
-  if (!username) {
-    showPrivate();
-    return;
-  }
+  if (!username) { showPrivate(); return; }
 
-  // Set the doc title to <username> upfront so the tab name is helpful
-  // even before the fetch resolves. Replaced with the real name on
-  // success.
   document.title = "@" + username + " — Joyride driver";
 
   var fetchUrl = JoyrideAPI.API_BASE + "/api/public/driver/" + encodeURIComponent(username);
@@ -323,11 +559,7 @@
   refreshLoadingDebug();
 
   // 10s timeout so the page never gets stuck on "Loading driver…"
-  // indefinitely. If the network is dead / Railway is down / Vercel
-  // CDN cached a broken HTML, the user falls back to the private
-  // state rather than staring at a spinner. AbortController is
-  // supported in every browser we target; if the controller fires
-  // after the fetch already resolved, the abort is a no-op.
+  // indefinitely.
   var controller = ("AbortController" in window) ? new AbortController() : null;
   var timeoutMs = 10000;
   var timeoutId = setTimeout(function () {
@@ -355,9 +587,6 @@
     })
     .catch(function (err) {
       clearTimeout(timeoutId);
-      // AbortError fires when our own timeout cancelled the fetch —
-      // already handled in the setTimeout callback above. Anything
-      // else is a real network/parse error.
       if (err && err.name === "AbortError") return;
       console.error("[driver-page] fetch failed", err);
       debug.fetchError = String((err && err.message) || err);
@@ -370,147 +599,202 @@
     document.getElementById("dp-content").hidden = which !== "content";
   }
 
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function renderDriver(d) {
     document.title = d.name + " — Joyride driver";
-    document.getElementById("dp-name").textContent = d.name;
-    document.getElementById("dp-handle").textContent = "@" + d.username;
 
+    // Hero — name + photo/initials, sub paragraph, rating cluster.
+    document.getElementById("dp-name").textContent = d.name;
+    var firstName = (d.name || "Driver").split(/\s+/)[0];
+    document.getElementById("dp-hero-sub").innerHTML =
+      "Hi, I'm <strong class=\"fn\">" + escapeHtml(firstName) + "</strong>. " +
+      "I drive on <strong class=\"brand\">Joyride</strong> — a better kind of rideshare. " +
+      "Book me directly and skip the surge.";
+
+    // Eyebrow city pill — only when About is enabled AND city is set.
+    if (d.about && d.about.city) {
+      document.getElementById("dp-eyebrow").hidden = false;
+      var pill = document.getElementById("dp-city-pill");
+      pill.hidden = false;
+      pill.textContent = "Joyride · " + d.about.city;
+    }
+
+    // Portrait — photo if available, otherwise canary initials bubble.
     var photo = document.getElementById("dp-photo");
+    var initialsEl = document.getElementById("dp-initials");
     if (d.photoUrl) {
       photo.src = d.photoUrl;
       photo.alt = d.name;
+      photo.hidden = false;
     } else {
-      // Fall back to a canary-on-ink initials avatar so the layout
-      // doesn't collapse when the driver hasn't uploaded a photo.
-      photo.classList.add("dp-photo--initials");
-      var parts = d.name.split(/\s+/).filter(Boolean);
-      var initials = (parts[0] || "?")[0] + ((parts[1] || "")[0] || "");
-      photo.removeAttribute("src");
-      photo.replaceWith(initialsBubble(initials));
+      var parts = (d.name || "").split(/\s+/).filter(Boolean);
+      var initials = ((parts[0] || "?")[0] || "") + ((parts[1] || "")[0] || "");
+      initialsEl.textContent = initials.toUpperCase();
+      initialsEl.hidden = false;
     }
 
-    // Rating row — round to one decimal, omit review count when 0
-    // (showing "(0 reviews)" reads worse than nothing).
-    var ratingRow = document.getElementById("dp-rating-row");
-    var rating = parseFloat(String(d.rating)) || 5;
-    var ratingHtml = '<span class="dp-stars">★ ' + rating.toFixed(2) + "</span>";
-    if (d.totalRatings > 0) {
-      ratingHtml += '<span class="sep">·</span><span>' + d.totalRatings + " review" + (d.totalRatings === 1 ? "" : "s") + "</span>";
-    }
-    ratingRow.innerHTML = ratingHtml;
+    // Rating cluster — "New on Joyride" when too few trips, otherwise
+    // big yellow number + ★ row + "Across N trips" meta.
+    renderRatingCluster(d);
 
-    // Stats: rides completed, tenure (mirrors the in-app driver-
-    // profile tile — value + unit, no sub), vehicle.
-    var stats = [];
-    stats.push({
-      label: "Rides completed",
-      value: String(d.totalRydes || 0),
-    });
-    // Tenure tile mirrors joiryde-rider/lib/tenure-display.ts:
-    //   < 1 year   → "N" / "MONTH" or "MONTHS", no suffix
-    //   ≥ 1 year   → "N+" / "YEAR" or "YEARS"
-    // (Per Dave 2026-05-19: match the in-app format exactly — value
-    // on top, unit as the tile label below.)
-    var tenure = computeTenure(d.driverSince);
-    stats.push({
-      label: tenure.unit,
-      value: tenure.value + tenure.suffix,
-    });
-    if (d.vehicle && (d.vehicle.make || d.vehicle.model)) {
-      var v = d.vehicle;
-      // Year goes on its own line as the sub-label so the make/model
-      // line doesn't wrap weirdly in a narrow tile (Dave 2026-05-19:
-      // the old "2023 Tesla Model Y" on one line wrapped the "Y" by
-      // itself).
-      var modelLine = [v.color, v.make, v.model].filter(Boolean).join(" ").trim();
-      stats.push({
-        label: "Vehicle",
-        value: modelLine || "—",
-        sub: v.year ? String(v.year) : "",
-      });
-    }
-    document.getElementById("dp-stats").innerHTML = stats
-      .map(function (s) {
-        return (
-          '<div class="dp-stat">' +
-            '<div class="label">' + s.label + "</div>" +
-            '<div class="value">' + s.value + "</div>" +
-            (s.sub ? '<div class="sub">' + s.sub + "</div>" : "") +
-          "</div>"
-        );
-      })
-      .join("");
-
-    if (d.bio) {
-      document.getElementById("dp-bio").hidden = false;
-      document.getElementById("dp-bio-body").textContent = d.bio;
+    // Stats — 3 boxes (trips, rating, fare). Rating shows "—" when no
+    // ratings yet so the page doesn't claim a fake 5.00.
+    document.getElementById("dp-stat-rydes").textContent = String(d.totalRydes || 0);
+    var ratingNum = parseFloat(String(d.rating)) || 5;
+    if ((d.totalRatings || 0) > 0) {
+      document.getElementById("dp-stat-rating").textContent = ratingNum.toFixed(2);
+      document.getElementById("dp-stat-rating-lbl").textContent = "Average rating";
+    } else {
+      document.getElementById("dp-stat-rating").textContent = "—";
+      document.getElementById("dp-stat-rating-lbl").textContent = "Awaiting first review";
     }
 
-    // Wire the Book A Ride CTA — try the rider-app deep link first;
-    // fall back to the app store after a short delay if nothing
-    // intercepted the navigation (i.e. the app isn't installed).
-    // The deep-link target is /driver/{username} so the in-app driver-
-    // profile screen pre-selects this driver and the rider can hit
-    // "Book A Ride" inside the app without re-finding them. NOTE:
-    // this URL scheme + path is a placeholder — wire to the real
-    // Universal Link once apps publish (see SESSION_HANDOFF; until
-    // then this falls through to the store on every tap).
-    var bookCta = document.getElementById("dp-book-cta");
-    if (bookCta) {
-      bookCta.addEventListener("click", function (e) {
-        e.preventDefault();
-        var deepLink  = "joyride://driver/" + encodeURIComponent(d.username);
-        var isAndroid = /android/i.test(navigator.userAgent || "");
-        var storeUrl  = isAndroid
-          ? "https://play.google.com/store/apps/details?id=co.joyride.rider"
-          : "https://apps.apple.com/app/joyride/id000000000";
-        var startedAt = Date.now();
-        // Try to open the app.
-        window.location.href = deepLink;
-        // If we're still on the page ~1.2s later, the OS didn't have
-        // a handler for the scheme — fall back to the app store.
-        // Bail out if the tab went hidden (which usually means the
-        // app DID open and the OS backgrounded the browser).
-        setTimeout(function () {
-          if (document.visibilityState !== "visible") return;
-          if (Date.now() - startedAt < 1200) return;
-          window.location.href = storeUrl;
-        }, 1200);
-      });
-    }
+    // About section — only when toggle is on (server returns null
+    // otherwise). Hides whole <section> if null so the page jumps
+    // straight from Why-Book to Reviews / Final CTA.
+    if (d.about) renderAbout(d);
+
+    // Reviews section — only when toggle is on AND list non-empty.
+    // Server already enforces the toggle; we also defensively check
+    // length here so a toggle-on driver with zero featured reviews
+    // doesn't render an empty grid.
+    if (Array.isArray(d.reviews) && d.reviews.length > 0) renderReviews(d.reviews);
 
     show("content");
   }
 
-  // Port of the rider apps shared computeTenureDisplay helper
-  // (joiryde-rider/lib/tenure-display.ts). Same rules:
-  //   - < 1 year   → "N MONTH" or "N MONTHS" (no + suffix)
-  //   - ≥ 1 year   → "N+ YEAR" or "N+ YEARS"
-  //   - missing/invalid date → "1 MONTH" (safest fallback so the
-  //     tile never reads "0").
-  function computeTenure(driverSinceIso) {
-    var since = driverSinceIso ? new Date(driverSinceIso) : null;
-    if (!since || isNaN(since.getTime())) {
-      return { value: 1, unit: "Month", suffix: "" };
+  function renderRatingCluster(d) {
+    var el = document.getElementById("dp-rating-cluster");
+    var rating = parseFloat(String(d.rating)) || 5;
+    var totalRatings = d.totalRatings || 0;
+    var totalRydes = d.totalRydes || 0;
+    // Per design spec: drivers with <20 trips get "New on Joyride"
+    // instead of a fabricated rating.
+    if (totalRydes < 20 || totalRatings === 0) {
+      el.classList.add("new-driver");
+      el.innerHTML =
+        '<div class="rt-num">New</div>' +
+        '<div>' +
+          '<div class="stars">★ ★ ★ ★ ★</div>' +
+          '<div class="rt-meta">New on Joyride</div>' +
+        '</div>';
+      return;
     }
-    var ONE_MONTH_MS = 30.44 * 24 * 60 * 60 * 1000;
-    var totalMonths = Math.floor((Date.now() - since.getTime()) / ONE_MONTH_MS);
-    if (totalMonths >= 12) {
-      var years = Math.floor(totalMonths / 12);
-      return { value: years, unit: years === 1 ? "Year" : "Years", suffix: "+" };
-    }
-    var months = Math.max(1, totalMonths);
-    return { value: months, unit: months === 1 ? "Month" : "Months", suffix: "" };
+    el.innerHTML =
+      '<div class="rt-num">' + rating.toFixed(2) + '</div>' +
+      '<div>' +
+        '<div class="stars">★ ★ ★ ★ ★</div>' +
+        '<div class="rt-meta">Across ' + totalRydes + ' completed Joyride trip' +
+          (totalRydes === 1 ? '' : 's') + '</div>' +
+      '</div>';
   }
 
-  function initialsBubble(text) {
-    var img = document.getElementById("dp-photo");
-    var div = document.createElement("div");
-    div.id = img.id;
-    div.className = img.className;
-    div.classList.add("dp-photo--initials");
-    div.textContent = (text || "?").toUpperCase();
-    return div;
+  function renderAbout(d) {
+    var section = document.getElementById("dp-about-section");
+    section.hidden = false;
+    var about = d.about;
+
+    // Headline — bioHeadline is canary-em on the last clause-ish bit.
+    // We don't try to split it; just render plain text and let drivers
+    // type any styling they want as plain copy.
+    var headlineEl = document.getElementById("dp-about-headline");
+    if (about.bioHeadline) {
+      headlineEl.textContent = about.bioHeadline;
+    } else {
+      // No headline → render a generic one using the driver's first name.
+      var fn = (d.name || "Driver").split(/\s+/)[0];
+      headlineEl.textContent = "About " + fn + ".";
+    }
+
+    // Paragraph (the long bio).
+    if (about.bioParagraph) {
+      var para = document.getElementById("dp-about-paragraph");
+      para.hidden = false;
+      para.textContent = about.bioParagraph;
+    }
+
+    // Credentials list — canary ✓ markers.
+    if (about.credentials && about.credentials.length > 0) {
+      var ul = document.getElementById("dp-about-credentials");
+      ul.hidden = false;
+      ul.innerHTML = about.credentials.map(function (c) {
+        return '<li><span class="tick">✓</span><span>' + escapeHtml(c) + '</span></li>';
+      }).join("");
+    }
+
+    // Vehicle spec card — 6 possible rows; render only the ones that
+    // have data so an empty row doesn't show up as a lonely "—".
+    var rows = [];
+    var v = d.vehicle || {};
+    var modelLine = [v.year, v.make, v.model].filter(Boolean).join(" ").trim();
+    if (modelLine) rows.push({ k: "Vehicle", v: modelLine });
+    var colorLine = [v.color, about.interiorColor ? about.interiorColor + " interior" : null]
+      .filter(Boolean).join(" · ");
+    if (colorLine) rows.push({ k: "Color", v: colorLine });
+    if (about.seats) rows.push({ k: "Seats", v: String(about.seats) });
+    if (about.amenities) rows.push({ k: "Amenities", v: about.amenities });
+    if (about.serviceArea) rows.push({ k: "Service area", v: about.serviceArea });
+    if (about.specialties) rows.push({ k: "Specialties", v: about.specialties });
+
+    var card = document.getElementById("dp-vehicle-card");
+    var rowsHost = document.getElementById("dp-vehicle-rows");
+    if (rows.length === 0) {
+      // No vehicle info at all — hide the whole card (the about-grid
+      // collapses gracefully because grid-template-columns: 1.2fr 1fr
+      // still works with an empty second cell).
+      card.hidden = true;
+    } else {
+      card.hidden = false;
+      rowsHost.innerHTML = rows.map(function (r) {
+        return '<div class="car-row">' +
+          '<span class="k">' + escapeHtml(r.k) + '</span>' +
+          '<span class="v">' + escapeHtml(r.v) + '</span>' +
+        '</div>';
+      }).join("");
+    }
+  }
+
+  function renderReviews(reviews) {
+    var section = document.getElementById("dp-reviews-section");
+    section.hidden = false;
+    var grid = document.getElementById("dp-reviews-grid");
+    // Deterministic avatar palette — hash the author name to a slot so
+    // an individual rider's avatar color is stable across visits.
+    var palette = ["#FFEF00", "#5EE08C", "#FF8FB1", "#7FB8FF", "#FFB066"];
+    function avColor(name) {
+      var sum = 0;
+      for (var i = 0; i < name.length; i++) sum = (sum + name.charCodeAt(i)) % 9973;
+      return palette[sum % palette.length];
+    }
+    grid.innerHTML = reviews.map(function (r) {
+      var stars = "★ ".repeat(Math.max(1, Math.min(5, r.stars || 5))).trim();
+      var initials = (r.author || "??")
+        .split(/\s+/).filter(Boolean)
+        .map(function (p) { return p[0]; })
+        .join("").slice(0, 2).toUpperCase();
+      var color = avColor(r.author || "");
+      return (
+        '<div class="review">' +
+          '<div class="stars">' + escapeHtml(stars) + '</div>' +
+          '<p class="quote">' + escapeHtml(r.quote) + '</p>' +
+          '<div class="author">' +
+            '<div class="av" style="background:' + color + ';">' + escapeHtml(initials) + '</div>' +
+            '<div>' +
+              '<div class="who">' + escapeHtml(r.author) + '</div>' +
+              (r.when ? '<div class="when">' + escapeHtml(r.when) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
   }
 })();
 </script>

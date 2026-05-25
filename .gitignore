@@ -2,3 +2,9 @@
 .vercel
 node_modules
 *.log
+# Local-only rollback artifacts (e.g. driver-pre-redesign-2026-05-25.html.bak)
+*.bak
+# Design handoff bundles dropped into /assets/ during iteration — they
+# stay on disk for reference but shouldn't ship with the site.
+assets/Driver public page design*.zip
+assets/driver-public-page-design-*/
