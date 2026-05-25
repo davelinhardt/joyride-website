@@ -340,6 +340,14 @@
   .driver-final-cta .btn--primary {
     background: var(--ink) !important; color: var(--canary) !important;
   }
+  /* The universal ink-color rule above forces every descendant of the
+     yellow block to ink — including the `<span class="arrow">` inside
+     this button, which made the arrow black-on-black and invisible.
+     Bump specificity on the button's children so they inherit canary
+     like their parent text does. */
+  .driver-final-cta .btn--primary > * {
+    color: var(--canary) !important;
+  }
   .driver-final-cta .btn--primary:hover {
     background: #1a1a1a !important;
   }
@@ -530,7 +538,7 @@
   // us tell from a remote browser whether a stale cached copy is being
   // served — bump on any meaningful edit to driver.html.
   var debug = {
-    pageVersion: "2026-05-25#16 (affid={username} encoded into Sign-Up CTAs)",
+    pageVersion: "2026-05-25#17 (final-CTA arrow now visible — canary on ink)",
     rawPath: window.location.pathname,
     rawSearch: window.location.search,
     pathSlug: pathSlug,
