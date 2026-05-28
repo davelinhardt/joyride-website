@@ -137,6 +137,12 @@
     padding: 20px;
     z-index: 1000;
   }
+  /* `display: flex` above wins over the user-agent stylesheet's
+     `[hidden] { display: none }`, which made the modal visible on
+     page load before openConfirm() populated its contents (showed
+     up as a yellow rectangle + a lonely "Keep current plan" button
+     blocking the page). Re-assert display:none when hidden. */
+  .sp-modal[hidden] { display: none; }
   .sp-modal-card {
     background: #1A1A1A;
     border: 1px solid var(--border);
