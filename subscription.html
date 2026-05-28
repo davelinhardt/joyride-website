@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- No-cache hardening — the plan-switch flow updates active state on
+     the server, and we don't want a stale cached version showing the
+     wrong ACTIVE badge after a switch. -->
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Subscription plan — Joyride</title>
+<link rel="icon" href="/assets/mark-canary.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .sp-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px) 120px;
+  }
+
+  /* Loading / error / gate states share one layout so transitions
+     don't reflow the page jarringly. */
+  .sp-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--fg-3);
+  }
+  .sp-state h2 { font-size: 28px; font-weight: 700; color: var(--fg); margin-bottom: 12px; }
+  .sp-state p { max-width: 48ch; margin: 0 auto; font-size: 16px; line-height: 1.5; }
+  .sp-state a.btn { margin-top: 24px; }
+
+  /* Page header — eyebrow + H1 + lede */
+  .sp-header { margin-bottom: var(--s7); }
+  .sp-header .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--fg-3);
+    margin-bottom: var(--s4);
+  }
+  .sp-header h1 {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+    margin-bottom: var(--s4);
+  }
+  .sp-header .lede {
+    color: var(--fg-2);
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.5;
+    max-width: 56ch;
+  }
+  .sp-header .lede strong { color: var(--canary); font-weight: 700; }
+
+  /* Plans grid — 3 cards across desktop, stacks on narrow viewports */
+  .sp-plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s4);
+  }
+  @media (max-width: 880px) {
+    .sp-plans { grid-template-columns: 1fr; }
+  }
+
+  .sp-plan {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s6);
+    display: flex; flex-direction: column;
+  }
+  /* Active plan picks up a canary border so it reads as "this is yours"
+     even before you spot the ACTIVE badge. */
+  .sp-plan.is-active {
+    border-color: var(--canary);
+    background: linear-gradient(180deg, rgba(255, 239, 0, 0.06) 0%, var(--surface) 60%);
+  }
+  .sp-plan-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: var(--s4);
+  }
+  .sp-plan h2 {
+    font-size: 22px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0;
+  }
+  .sp-active-badge {
+    background: #22C55E;
+    color: #000;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .sp-plan-price {
+    font-size: 44px; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--canary);
+    line-height: 1;
+    margin: 0 0 var(--s2);
+  }
+  .sp-plan-price span {
+    font-size: 16px; font-weight: 500; color: var(--fg-3);
+    letter-spacing: 0; margin-left: 4px;
+  }
+  .sp-plan-fee {
+    font-size: 14px; color: var(--fg-3);
+    margin: 0 0 var(--s3);
+  }
+  .sp-plan-desc {
+    font-size: 14px; color: var(--fg-2);
+    line-height: 1.5;
+    margin: 0 0 var(--s5);
+    flex: 1;  /* push the Switch button to the bottom of the card */
+  }
+  .sp-plan.is-active .sp-plan-desc { margin-bottom: 0; }
+  .sp-switch {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sp-footnote {
+    margin-top: var(--s7);
+    font-size: 13px;
+    color: var(--fg-3);
+    line-height: 1.6;
+    max-width: 70ch;
+  }
+
+  /* Confirm modal — house pattern (dark card on dimmed overlay,
+     canary CTA). Mirror of the cancel-rebook modal in the rider app. */
+  .sp-modal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+  .sp-modal-card {
+    background: #1A1A1A;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+  .sp-modal-card h2 {
+    font-size: 22px; font-weight: 800; color: var(--fg);
+    margin: 0 0 12px;
+  }
+  .sp-modal-card p {
+    font-size: 14px; color: var(--fg-3);
+    line-height: 1.5;
+    margin: 0 0 24px;
+  }
+  .sp-modal-actions {
+    display: grid; gap: 10px;
+  }
+  .sp-modal-actions .btn { width: 100%; justify-content: center; }
+  #sp-modal-error {
+    margin-top: 12px;
+    color: #EF4444;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body data-page="subscription">
+
+<main>
+  <section class="sp-wrap">
+    <!-- Loading state — shown until the auth check + plans fetch settle. -->
+    <div id="sp-loading" class="sp-state">
+      <p>Loading your subscription…</p>
+    </div>
+
+    <!-- Gate state — shown when an authenticated user reaches /subscription
+         but isn't a driver. Server returns 403 in that case; we redirect to
+         /account, so this is the brief flash before the navigation lands. -->
+    <div id="sp-gate" class="sp-state" hidden>
+      <h2>Driver-only.</h2>
+      <p>The subscription page is for drivers. Apply in the Driver app to manage a subscription here.</p>
+      <a href="/account" class="btn btn--canary">Back to account</a>
+    </div>
+
+    <!-- Content state — eyebrow + H1 + 3-plan grid + footnote. -->
+    <div id="sp-content" hidden>
+      <header class="sp-header">
+        <span class="eyebrow">Subscription</span>
+        <h1>Choose your plan.</h1>
+        <p class="lede">Three tiers, switch any time. <strong>Only Pro can keep 100% of every fare.</strong></p>
+      </header>
+
+      <div id="sp-plans" class="sp-plans"></div>
+
+      <p class="sp-footnote">
+        Stripe credit-card processing: $0.30 per ryde + 2.9% of the charged amount. Transaction fees are billed daily at 12:00 AM. The monthly subscription fee charges at the start of each billing cycle.
+      </p>
+    </div>
+  </section>
+</main>
+
+<!-- Confirm modal — switches plan after explicit confirmation so a
+     misclick doesn't change a driver's billing tier silently. -->
+<div id="sp-modal" class="sp-modal" hidden>
+  <div class="sp-modal-card">
+    <h2 id="sp-modal-title"></h2>
+    <p id="sp-modal-body"></p>
+    <div class="sp-modal-actions">
+      <button id="sp-modal-confirm" class="btn btn--canary" type="button"></button>
+      <button id="sp-modal-cancel" class="btn btn--ghost" type="button">Keep current plan</button>
+    </div>
+    <p id="sp-modal-error" hidden></p>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/site.js"></script>
+<script>
+(async function () {
+  "use strict";
+
+  // Display order: Basic → Growth → Pro (matches driver-app payment.tsx
+  // SLUG_ORDER). The server returns active plans in price order which
+  // happens to match today; enforce it explicitly so a future Elite tier
+  // doesn't reshuffle the page.
+  var SLUG_ORDER = ["basic", "growth", "pro"];
+
+  // ─── 1. Auth gate ────────────────────────────────────────────────
+  // Mirror the /account.html boot pattern: cached-paint first, then
+  // verify with the network. Driver-only — non-drivers bounce to
+  // /account (where they'll see the cards their type does get).
+  if (!JoyrideAPI.getToken()) {
+    window.location.replace("/login");
+    return;
+  }
+  var user = JoyrideAPI.readCachedUser();
+  var isDriver = user && (user.userType === "driver" || user.userType === "both");
+  if (!isDriver) {
+    var fresh = await JoyrideAPI.loadCurrentUser();
+    if (!fresh) { window.location.replace("/login"); return; }
+    isDriver = fresh.userType === "driver" || fresh.userType === "both";
+    if (!isDriver) {
+      window.location.replace("/account");
+      return;
+    }
+  }
+
+  // ─── 2. Fetch plans + current slug ──────────────────────────────
+  var data = null;
+  try {
+    data = await JoyrideAPI.apiGet("/api/driver/subscription-plans");
+  } catch (err) {
+    if (err && err.status === 401) {
+      window.location.replace("/login");
+      return;
+    }
+    if (err && err.status === 403) {
+      // Authenticated rider with no driver profile — show the gate
+      // briefly then bounce to /account.
+      window.location.replace("/account");
+      return;
+    }
+    var loadEl = document.getElementById("sp-loading");
+    loadEl.innerHTML = "<h2>Couldn't load plans</h2><p>The server may be redeploying. Try refreshing in a moment.</p>";
+    return;
+  }
+
+  // ─── 3. Order + render plan cards ────────────────────────────────
+  var orderedPlans = SLUG_ORDER
+    .map(function (slug) {
+      return (data.plans || []).find(function (p) { return p.slug === slug; });
+    })
+    .filter(function (p) { return p != null; });
+
+  var grid = document.getElementById("sp-plans");
+  grid.innerHTML = orderedPlans.map(function (p) {
+    var isActive = p.slug === data.currentSlug;
+    var monthly = Math.round(parseFloat(p.monthlyPrice));
+    var pct = Math.round(parseFloat(p.commissionRate) * 100);
+    return (
+      '<div class="sp-plan' + (isActive ? ' is-active' : '') + '">' +
+        '<div class="sp-plan-head">' +
+          '<h2>' + escapeHtml(p.name) + '</h2>' +
+          (isActive ? '<span class="sp-active-badge">ACTIVE</span>' : '') +
+        '</div>' +
+        '<p class="sp-plan-price">$' + monthly + '<span>/mo</span></p>' +
+        '<p class="sp-plan-fee">' + pct + '% transaction fee per ryde</p>' +
+        (p.description
+          ? '<p class="sp-plan-desc">' + escapeHtml(p.description) + '</p>'
+          : '<p class="sp-plan-desc"></p>') +
+        (isActive
+          ? ''
+          : '<button class="btn btn--canary sp-switch" type="button" data-slug="' + escapeHtml(p.slug) + '">Switch to ' + escapeHtml(p.name) + ' →</button>') +
+      '</div>'
+    );
+  }).join("");
+
+  // Wire each Switch button to the confirm modal.
+  grid.querySelectorAll(".sp-switch").forEach(function (btn) {
+    btn.addEventListener("click", function () { openConfirm(btn.dataset.slug); });
+  });
+
+  document.getElementById("sp-loading").hidden = true;
+  document.getElementById("sp-content").hidden = false;
+
+  // ─── 4. Confirm modal — open / cancel / submit ──────────────────
+  var modal = document.getElementById("sp-modal");
+  var modalTitle = document.getElementById("sp-modal-title");
+  var modalBody = document.getElementById("sp-modal-body");
+  var modalConfirm = document.getElementById("sp-modal-confirm");
+  var modalCancel = document.getElementById("sp-modal-cancel");
+  var modalError = document.getElementById("sp-modal-error");
+
+  function openConfirm(slug) {
+    var plan = orderedPlans.find(function (p) { return p.slug === slug; });
+    if (!plan) return;
+    var monthly = Math.round(parseFloat(plan.monthlyPrice));
+    var pct = Math.round(parseFloat(plan.commissionRate) * 100);
+    modalTitle.textContent = "Switch to " + plan.name + "?";
+    modalBody.textContent =
+      "Your subscription becomes $" + monthly + "/mo and your transaction fee changes to " + pct +
+      "% on every future ryde. Past rides keep the rate they were billed against.";
+    modalConfirm.textContent = "Switch to " + plan.name;
+    modalConfirm.dataset.slug = slug;
+    modalConfirm.disabled = false;
+    modalError.hidden = true;
+    modal.hidden = false;
+  }
+
+  function closeConfirm() {
+    if (modalConfirm.disabled) return;  // don't close mid-request
+    modal.hidden = true;
+  }
+
+  modalCancel.addEventListener("click", closeConfirm);
+
+  // Click-outside-to-close (overlay click)
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) closeConfirm();
+  });
+
+  modalConfirm.addEventListener("click", async function () {
+    var slug = modalConfirm.dataset.slug;
+    if (!slug) return;
+    modalConfirm.disabled = true;
+    var originalText = modalConfirm.textContent;
+    modalConfirm.textContent = "Switching…";
+    modalError.hidden = true;
+    try {
+      await JoyrideAPI.apiPost("/api/driver/subscription-plan", { slug: slug });
+      // Simplest correct refresh — re-render from scratch so the ACTIVE
+      // badge moves to the new plan without stale local state.
+      window.location.reload();
+    } catch (err) {
+      modalConfirm.disabled = false;
+      modalConfirm.textContent = originalText;
+      modalError.textContent = "Couldn't switch plans. Try again.";
+      modalError.hidden = false;
+    }
+  });
+
+  // ─── Helpers ────────────────────────────────────────────────────
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

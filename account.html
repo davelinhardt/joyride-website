@@ -397,6 +397,23 @@
       });
     }
 
+    if (isDriver) {
+      // Subscription plan management. Mirrors the driver app's
+      // "SUBSCRIPTION PLANS & BILLING" screen but routed through the
+      // /api/driver/subscription-plans HTTP endpoints rather than tRPC.
+      // Driver-only intentionally (not isDriver || isAdmin) — admins
+      // don't have a driver_profiles row to manage a plan on, and the
+      // server endpoint 403s for them anyway.
+      cards.push({
+        key: "subscription",
+        eyebrow: "Driver",
+        h2: "Subscription plan",
+        p: "Switch between Basic, Growth, and Pro. Same plans + transaction fees as the Driver app.",
+        href: "/subscription",
+        go: "Manage subscription →",
+      });
+    }
+
     if (isAdmin) {
       cards.push({
         key: "admin",

@@ -15,6 +15,7 @@
     { "source": "/rides", "destination": "/rides.html" },
     { "source": "/receipt", "destination": "/receipt.html" },
     { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/subscription", "destination": "/subscription.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/community-guidelines", "destination": "/community-guidelines.html" },
