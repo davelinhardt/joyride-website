@@ -28,6 +28,7 @@
     { "source": "/copyright", "destination": "/copyright.html" },
     { "source": "/cookies", "destination": "/cookies.html" },
     { "source": "/raise1", "destination": "/raise1.html" },
+    { "source": "/raise1/uber_analysis", "destination": "/raise1-uber-analysis.html" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [

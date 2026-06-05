@@ -32,6 +32,8 @@ export const config = {
 const PUBLIC_PATHS = [
   '/raise1',                  // investor landing (added 2026-05-24)
   '/raise1.html',
+  '/raise1/uber_analysis',    // investor article (added 2026-06-03)
+  '/raise1-uber-analysis.html',
   '/styles.css',              // design system stylesheet
   '/site.js',                 // header/footer injector
   // Root-level files that browsers (Safari, Chrome) auto-fetch on
