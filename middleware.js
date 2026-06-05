@@ -34,15 +34,25 @@ const PUBLIC_PATHS = [
   '/raise1.html',
   '/styles.css',              // design system stylesheet
   '/site.js',                 // header/footer injector
-  // Root-level favicon fallbacks — browsers auto-fetch these without
-  // auth headers, so the password gate would otherwise hide them and
-  // every tab would show no favicon for unauthenticated visitors.
+  // Root-level files that browsers (Safari, Chrome) auto-fetch on
+  // every page load. If any of these returns a 401 with
+  // WWW-Authenticate, the browser pops the basic-auth prompt up
+  // over whatever page the user is actually trying to view —
+  // even when the page HTML itself is gate-exempt. Letting them
+  // 404 instead of 401 is what we want here; the gate only exists
+  // to hide unreleased HTML pages.
   '/favicon.ico',
   '/apple-touch-icon.png',
+  '/apple-touch-icon-precomposed.png',
+  '/manifest.json',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/apple-app-site-association',
 ];
 const PUBLIC_PREFIXES = [
   '/assets/',                 // logos, brand marks, page screenshots
   '/js/',                     // /js/api.js etc.
+  '/.well-known/',            // change-password, security.txt, ACME challenges, etc.
 ];
 
 export default function middleware(request) {
