@@ -34,6 +34,8 @@ const PUBLIC_PATHS = [
   '/raise1.html',
   '/raise1/uber_analysis',    // investor article (added 2026-06-03)
   '/raise1-uber-analysis.html',
+  '/raise1/tam',              // TAM/SAM/SOM visualization (added 2026-06-21)
+  '/raise1-tam.html',
   '/styles.css',              // design system stylesheet
   '/site.js',                 // header/footer injector
   // Root-level files that browsers (Safari, Chrome) auto-fetch on

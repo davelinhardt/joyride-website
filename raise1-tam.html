@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joyride — TAM / SAM / SOM</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#0a0a0a; --panel:#141414; --panel2:#1c1c1c; --line:#2a2a2a;
+    --txt:#f4f4f4; --muted:#9a9a9a; --head:#c9c9c9;
+    --tam:#3b82f6; --sam:#f59e0b; --som:#22c55e;
+    --tamb:rgba(59,130,246,.12); --samb:rgba(245,158,11,.12); --somb:rgba(34,197,94,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       padding:32px 20px;line-height:1.4;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1.title{font-size:23px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:28px}
+  .tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--head);padding:9px 18px;border-radius:10px;
+       cursor:pointer;font-size:14px;font-weight:600;transition:.15s}
+  .tab:hover{background:var(--panel2)}
+  .tab.active{background:#fff;color:#0a0a0a;border-color:#fff}
+  .geo{display:none}.geo.active{display:block}
+  .geohead{font-size:19px;font-weight:700;margin:6px 0 16px;letter-spacing:-.2px}
+  .geohead .pop{color:var(--muted);font-weight:500;font-size:14px;margin-left:8px}
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);
+        border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  thead th{background:#101010;color:var(--head);font-size:12.5px;font-weight:600;text-align:right;
+           padding:16px 18px;border-bottom:1px solid var(--line);text-transform:none}
+  thead th:first-child{text-align:left}
+  tbody td{padding:15px 18px;text-align:right;font-size:14px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  tbody td:first-child{text-align:left;color:var(--txt)}
+  tbody tr:last-child td{border-bottom:none}
+  .seg-sub{color:var(--muted);font-size:11.5px;display:block;margin-top:2px;font-weight:400}
+  tr.tam td{background:var(--tamb);font-weight:700;border-top:2px solid var(--tam)}
+  tr.sam td{background:var(--samb);font-weight:700}
+  tr.som td{background:var(--somb);font-weight:700}
+  .pill{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:9px;vertical-align:middle}
+  .p-tam{background:var(--tam)}.p-sam{background:var(--sam)}.p-som{background:var(--som)}
+  .big{font-size:15px}
+  .legend{display:flex;gap:22px;margin:18px 2px 0;flex-wrap:wrap;color:var(--muted);font-size:12.5px}
+  .legend span{display:flex;align-items:center}
+  .foot{margin-top:22px;color:#777;font-size:11.5px;line-height:1.7}
+  .foot b{color:var(--muted);font-weight:600}
+  .cards{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+  .card{flex:1;min-width:200px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card .lbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;display:flex;align-items:center}
+  .card .val{font-size:30px;font-weight:700;margin-top:8px;letter-spacing:-.5px}
+  .card.tam{border-top:2px solid var(--tam)} .card.sam{border-top:2px solid var(--sam)} .card.som{border-top:2px solid var(--som)}
+  .card .note{font-size:11px;color:#777;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/raise1" style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:600;margin-bottom:16px;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--muted)'">← Back to the raise</a>
+  <h1 class="title">Joyride — Premium &amp; Luxury Ground Transportation</h1>
+  <div class="sub">TAM / SAM / SOM · 2026 estimates · Gross bookings basis · SAM excludes Base tier · SOM = 3% of SAM</div>
+
+  <div class="tabs">
+    <div class="tab active" data-geo="us">United States</div>
+    <div class="tab" data-geo="mia">Miami MSA</div>
+    <div class="tab" data-geo="tri">Triangle (Ral-Cary + Durham-CH)</div>
+  </div>
+
+  <div id="container"></div>
+
+  <div class="foot" id="footnotes"></div>
+</div>
+
+<script>
+const DATA = {
+  us: {
+    name:"United States Total", pop:"Pop. ~340.1M (Census 2024)",
+    rows:[
+      {seg:"Base", sub:"UberX / Lyft standard", rides:"5,228M", fare:"$12", gb:"$62.7B", drv:"4.75M"},
+      {seg:"Premium", sub:"Comfort / Premier / XL", rides:"452M", fare:"$22", gb:"$9.9B", drv:"904K"},
+      {seg:"Luxury — Rideshare", sub:"Uber Black / Lyft Lux", rides:"79.7M", fare:"$48", gb:"$3.8B", drv:"228K"},
+      {seg:"Luxury — Car Service", sub:"livery / chauffeur / limo", rides:"77.3M", fare:"$135", gb:"$10.4B", drv:"129K"},
+    ],
+    tam:"$86.9B", sam:"$24.2B", som:"$726M"
+  },
+  mia: {
+    name:"Miami MSA", pop:"Pop. 6,457,988 (Census 2024) · intensity ×1.45",
+    rows:[
+      {seg:"Base", sub:"UberX / Lyft standard", rides:"96.0M", fare:"$18", gb:"$1.73B", drv:"87K"},
+      {seg:"Premium", sub:"Comfort / Premier / XL", rides:"8.3M", fare:"$33", gb:"$274M", drv:"16.6K"},
+      {seg:"Luxury — Rideshare", sub:"Uber Black / Lyft Lux", rides:"1.6M", fare:"$64", gb:"$105M", drv:"4.7K"},
+      {seg:"Luxury — Car Service", sub:"livery / chauffeur / limo", rides:"2.1M", fare:"$140", gb:"$287M", drv:"3.4K"},
+    ],
+    tam:"$2.39B", sam:"$667M", som:"$20.0M"
+  },
+  tri: {
+    name:"Triangle — Raleigh-Cary + Durham-Chapel Hill", pop:"Pop. ~2.18M (Census 2024) · intensity ×1.10",
+    rows:[
+      {seg:"Base", sub:"UberX / Lyft standard", rides:"31.6M", fare:"$14", gb:"$443M", drv:"28.8K"},
+      {seg:"Premium", sub:"Comfort / Premier / XL", rides:"2.7M", fare:"$26", gb:"$70M", drv:"5.4K"},
+      {seg:"Luxury — Rideshare", sub:"Uber Black / Lyft Lux", rides:"0.5M", fare:"$52", gb:"$27M", drv:"1.5K"},
+      {seg:"Luxury — Car Service", sub:"livery / chauffeur / limo", rides:"0.6M", fare:"$120", gb:"$74M", drv:"1.0K"},
+    ],
+    tam:"$614M", sam:"$171M", som:"$5.1M"
+  }
+};
+
+function render(geo){
+  const d = DATA[geo];
+  let rows = d.rows.map(r=>`
+    <tr>
+      <td>${r.seg}<span class="seg-sub">${r.sub}</span></td>
+      <td>${r.rides}</td><td>${r.fare}</td><td class="big">${r.gb}</td><td>${r.drv}</td>
+    </tr>`).join("");
+  return `
+  <div class="geo active">
+    <div class="geohead">${d.name}<span class="pop">${d.pop}</span></div>
+    <div class="cards">
+      <div class="card tam"><div class="lbl"><span class="pill p-tam"></span>TAM</div><div class="val">${d.tam}</div><div class="note">All segments incl. Base</div></div>
+      <div class="card sam"><div class="lbl"><span class="pill p-sam"></span>SAM</div><div class="val">${d.sam}</div><div class="note">Premium + Luxury + Car Service</div></div>
+      <div class="card som"><div class="lbl"><span class="pill p-som"></span>SOM</div><div class="val">${d.som}</div><div class="note">3% of SAM · yr-3 target</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Segment</th><th>Annual Rides</th><th>Avg Fare</th><th>Gross Bookings</th><th>Est. Drivers</th></tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="tam"><td><span class="pill p-tam"></span>TAM — Total Addressable</td><td>—</td><td>—</td><td class="big">${d.tam}</td><td>—</td></tr>
+        <tr class="sam"><td><span class="pill p-sam"></span>SAM — Serviceable Addressable</td><td>—</td><td>—</td><td class="big">${d.sam}</td><td>—</td></tr>
+        <tr class="som"><td><span class="pill p-som"></span>SOM — Serviceable Obtainable</td><td>—</td><td>—</td><td class="big">${d.som}</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="legend">
+      <span><span class="pill p-tam"></span>TAM = everything</span>
+      <span><span class="pill p-sam"></span>SAM = premium tiers only (Base excluded)</span>
+      <span><span class="pill p-som"></span>SOM = 3% early-capture of SAM</span>
+    </div>
+  </div>`;
+}
+
+const FOOT = `
+<b>Sources:</b> Rideshare gross bookings &amp; rides — SEC EDGAR, Uber 8-K Q4 2024 ($22.8B Mobility GB) &amp; Q1–Q3 2025; Lyft 8-K FY2024 ($16.1B GB, 828M rides) &amp; Q1–Q3 2025.
+Premium-tier share — Uber DEF 14A FY2024 (non-UberX suite ~14% of Mobility GB). Luxury car service — IBISWorld, Limousine &amp; Town Car Services US (NAICS 5622), $11.6B 2026.
+Populations — U.S. Census Bureau 2024: US 340.1M; Miami MSA 6,457,988; Raleigh-Cary 1,562,009 + Durham-Chapel Hill ~621,000.<br>
+<b>Method:</b> National rideshare GB scaled to MSAs by population share × premium-intensity multiplier (Miami ×1.45, Triangle ×1.10). Tier shares: Base 82% / Premium 13% / Luxury rideshare 5%. SAM excludes Base. SOM = 3% of SAM (defensible early-capture in a fragmented market — no incumbent &gt;5% share, IBISWorld).<br>
+<b>Caveats:</b> Tier shares, intensity multipliers, fares, and SOM rate are analyst estimates. Driver counts are derived (rides ÷ annual productivity) and are the loosest figures; columns are not strictly additive since drivers serve multiple tiers. Note: Lyft acquired luxury chauffeur firm TBR Global Chauffeuring (Oct 2025) — incumbents are entering this segment.
+`;
+
+const container = document.getElementById("container");
+const tabs = document.querySelectorAll(".tab");
+function show(geo){
+  container.innerHTML = render(geo);
+  document.getElementById("footnotes").innerHTML = FOOT;
+}
+tabs.forEach(t=>t.addEventListener("click",()=>{
+  tabs.forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  show(t.dataset.geo);
+}));
+show("us");
+</script>
+</body>
+</html>
