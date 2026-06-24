@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joyride — Invest Now</title>
+<meta name="description" content="Invest in Joyride's equity crowdfunding round. Any amount over $100. Review the Form C and complete your investment securely.">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="icon" type="image/svg+xml" href="/assets/mark-black.svg?v=3"><link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon-180.png">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  /* ─── /raise1/invest specific ─── */
+  .invest-hero { padding-block: clamp(56px, 7vw, 96px) clamp(32px, 4vw, 56px); }
+  .invest-eyebrow-row { display: flex; gap: var(--s3); align-items: center; flex-wrap: wrap; margin-bottom: var(--s5); }
+  .invest-eyebrow-row .pill { background: var(--canary); color: var(--ink); font-weight: 700; }
+
+  .raise-investor-only {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 32px; padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 239, 0, 0.12);
+    color: var(--canary);
+    border: 1px solid var(--canary);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .invest-hero h1 {
+    font-size: clamp(44px, 6.5vw, 88px);
+    font-weight: 700; letter-spacing: -0.04em; line-height: 0.95;
+    max-width: 16ch;
+  }
+  .invest-hero h1 em { font-style: normal; color: var(--canary); }
+  .invest-hero .lead {
+    margin-top: var(--s6);
+    font-size: clamp(18px, 1.7vw, 22px);
+    max-width: 58ch;
+  }
+
+  .btn--canary { background: var(--canary); color: var(--ink); }
+  .btn--canary:hover { background: var(--canary-deep); }
+  .btn--lg { font-size: 19px; padding: 16px 28px; }
+
+  /* The two-up primary action panel */
+  .invest-actions {
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--s5);
+    margin-top: var(--s8);
+  }
+  @media (max-width: 880px) { .invest-actions { grid-template-columns: 1fr; } }
+
+  .action-card {
+    border-radius: var(--r-xl);
+    padding: clamp(28px, 3vw, 44px);
+    display: flex; flex-direction: column; gap: var(--s4);
+  }
+  .action-card .eyebrow { font-weight: 700; }
+  .action-card h3 { font-size: clamp(24px, 2.4vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .action-card p { font-size: 16px; line-height: 1.5; }
+  .action-card .btn { align-self: flex-start; margin-top: auto; }
+
+  .action-card--invest { background: var(--canary); }
+  .action-card--invest, .action-card--invest * { color: var(--ink); }
+  .action-card--invest .btn { background: var(--ink); color: var(--canary); }
+  .action-card--invest .btn > * { color: var(--canary); }
+  .action-card--invest .btn:hover { background: #1a1a1a; }
+
+  .action-card--form {
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .action-card--form .eyebrow { color: var(--canary); }
+  .action-card--form h3 { color: var(--fg); }
+  .action-card--form p { color: #c8c8c0; }
+  .action-card--form .btn { background: var(--fg); color: var(--ink); }
+
+  /* How it works */
+  .invest-section { padding-block: clamp(48px, 6vw, 88px); border-top: 1px solid var(--border); }
+  .invest-section > .section-head h2 { font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; }
+  .invest-section > .section-head p.lead { margin-top: var(--s4); max-width: 56ch; }
+
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); margin-top: var(--s7); }
+  @media (max-width: 880px) { .steps-grid { grid-template-columns: 1fr; } }
+  .step-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: var(--s6);
+  }
+  .step-card .n {
+    font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--canary);
+  }
+  .step-card h4 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin-top: var(--s3); color: var(--fg); }
+  .step-card p { margin-top: var(--s3); font-size: 16px; line-height: 1.5; color: #c8c8c0; }
+
+  /* Terms table */
+  .terms-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: clamp(32px, 4vw, 56px); margin-top: var(--s7); }
+  .terms-grid { display: grid; gap: 0; }
+  .terms-row { display: grid; grid-template-columns: 220px 1fr; gap: var(--s5); padding-block: var(--s4); border-bottom: 1px solid var(--border); }
+  .terms-row:last-child { border-bottom: 0; }
+  .terms-row .k { color: #BFBFBF; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+  .terms-row .v { color: #FFFFFF; font-size: 18px; line-height: 1.45; }
+  .terms-row .v strong { color: var(--canary); font-weight: 700; }
+  @media (max-width: 540px) { .terms-row { grid-template-columns: 1fr; gap: 4px; } }
+
+  /* Final CTA */
+  .invest-final {
+    background: var(--canary);
+    border-radius: var(--r-xl);
+    padding: clamp(40px, 6vw, 80px);
+    text-align: center;
+    margin-top: var(--s8);
+  }
+  .invest-final, .invest-final * { color: var(--ink) !important; }
+  .invest-final h2 { font-size: clamp(36px, 5.5vw, 72px); font-weight: 700; letter-spacing: -0.04em; line-height: 0.95; margin-bottom: var(--s5); }
+  .invest-final p { font-size: clamp(18px, 1.6vw, 22px); max-width: 52ch; margin: 0 auto var(--s7); }
+  .invest-final .btns { display: inline-flex; gap: var(--s4); flex-wrap: wrap; justify-content: center; }
+  .invest-final .btn--primary { background: var(--ink) !important; color: var(--canary) !important; }
+  .invest-final .btn--primary > * { color: var(--canary) !important; }
+  .invest-final .btn--primary:hover { background: #1a1a1a !important; }
+  .invest-final .btn--ghost { background: transparent !important; color: var(--ink) !important; border: 1.5px solid var(--ink); }
+  .invest-final .btn--ghost:hover { background: var(--ink) !important; color: var(--canary) !important; }
+
+  /* Reg CF legal disclosure */
+  .invest-disclosure {
+    margin-top: var(--s8); padding-top: var(--s6);
+    border-top: 1px solid var(--border);
+  }
+  .invest-disclosure h5 { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #BFBFBF; font-weight: 700; margin-bottom: var(--s4); }
+  .invest-disclosure p { font-size: 13px; line-height: 1.6; color: #8f8f88; max-width: 90ch; margin-bottom: var(--s3); }
+  .invest-disclosure a { color: #BFBFBF; text-decoration: underline; }
+
+  .back-link { display: inline-flex; align-items: center; gap: 8px; color: #BFBFBF; font-size: 15px; font-weight: 600; text-decoration: none; }
+  .back-link:hover { color: var(--canary); }
+</style>
+</head>
+<body data-page="raise1-invest">
+
+<main>
+
+  <!-- ─── HERO ─── -->
+  <section class="invest-hero wrap">
+    <a href="/raise1" class="back-link" style="margin-bottom: var(--s5);">← Back to the raise</a>
+
+    <div class="invest-eyebrow-row mt-4">
+      <span class="raise-investor-only">Equity Crowdfunding</span>
+      <span class="pill"><span class="dot"></span> Open · Regulation CF</span>
+    </div>
+
+    <h1>Invest in <em>Joyride</em>.</h1>
+
+    <p class="lead">
+      Joyride is raising capital through a Regulation Crowdfunding (Reg CF) offering — so you don't have to be a venture fund to own a piece of the company. <strong style="color:var(--canary)">Invest any amount over $100.</strong> Review the official Form C, then complete your investment securely.
+    </p>
+
+    <!-- ─── PRIMARY ACTIONS ─── -->
+    <div class="invest-actions">
+      <!-- Invest via Stripe -->
+      <div class="action-card action-card--invest">
+        <span class="eyebrow">Step 2 · Make your investment</span>
+        <h3>Invest now</h3>
+        <p>Choose your amount — anything over $100 — and complete your investment securely. Card and bank payment supported.</p>
+        <!-- TODO: replace href with the live Stripe payment page URL -->
+        <a href="#stripe-payment-url" class="btn btn--lg">Invest via Stripe <span class="arrow">→</span></a>
+      </div>
+
+      <!-- Read the Form C -->
+      <div class="action-card action-card--form">
+        <span class="eyebrow">Step 1 · Read first</span>
+        <h3>The Form C</h3>
+        <p>The official offering document filed with the SEC — terms, financials, risks, and use of proceeds. Please review before investing.</p>
+        <!-- TODO: replace href with the live Form C document URL -->
+        <a href="#form-c-url" target="_blank" rel="noopener" class="btn btn--lg">Review the Form C <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ─── -->
+  <section class="invest-section wrap">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2 class="mt-3">Three steps to invest.</h2>
+      <p class="lead">
+        Regulation Crowdfunding lets everyday investors back early-stage companies. The process is simple and fully online.
+      </p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="n">Step 1</div>
+        <h4>Read the Form C</h4>
+        <p>Review the official offering document — the deal terms, company financials, risk factors, and how we'll use the proceeds.</p>
+      </div>
+      <div class="step-card">
+        <div class="n">Step 2</div>
+        <h4>Choose your amount</h4>
+        <p>Invest any amount over $100. There's no upper limit beyond the Reg CF investment caps based on your income and net worth.</p>
+      </div>
+      <div class="step-card">
+        <div class="n">Step 3</div>
+        <h4>Complete on Stripe</h4>
+        <p>Pay securely by card or bank transfer. You'll receive confirmation and your investment documents by email.</p>
+      </div>
+    </div>
+
+    <!-- Deal terms -->
+    <div class="terms-block">
+      <span class="eyebrow" style="color: var(--canary);">The offering</span>
+      <div class="terms-grid mt-5">
+        <div class="terms-row">
+          <span class="k">Offering type</span>
+          <span class="v">Regulation Crowdfunding (Reg CF)</span>
+        </div>
+        <div class="terms-row">
+          <span class="k">Minimum investment</span>
+          <span class="v"><strong>$100</strong> · invest any amount above</span>
+        </div>
+        <div class="terms-row">
+          <span class="k">Instrument</span>
+          <span class="v">Equity Purchase Agreement</span>
+        </div>
+        <div class="terms-row">
+          <span class="k">Who can invest</span>
+          <span class="v">Anyone 18+ — accredited or not</span>
+        </div>
+        <div class="terms-row">
+          <span class="k">Offering document</span>
+          <!-- TODO: replace href with the live Form C document URL -->
+          <span class="v"><a href="#form-c-url" target="_blank" rel="noopener" style="color: var(--canary); text-decoration: underline;">Form C (SEC filing)</a></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FINAL CTA ─── -->
+    <div class="invest-final">
+      <span class="eyebrow" style="opacity: 0.7;">Ready when you are</span>
+      <h2 class="mt-4">Own a piece of Joyride.</h2>
+      <p>
+        Review the Form C, decide your amount, and invest in minutes. Questions first? Email Dave and we'll talk it through.
+      </p>
+      <div class="btns">
+        <!-- TODO: replace href with the live Stripe payment page URL -->
+        <a href="#stripe-payment-url" class="btn btn--primary btn--lg">Invest via Stripe <span class="arrow">→</span></a>
+        <a href="mailto:dave@joyride.cool?subject=Joyride%20investment%20%E2%80%94%20question" class="btn btn--ghost btn--lg">Email Dave</a>
+      </div>
+    </div>
+
+    <!-- ─── LEGAL DISCLOSURE (Reg CF) ─── -->
+    <div class="invest-disclosure">
+      <h5>Important disclosures</h5>
+      <p>
+        This page is a summary and is qualified in its entirety by the offering materials, including the Form C filed with the U.S. Securities and Exchange Commission. Before making any investment decision, please review the Form C in full, including the risk factors and financial statements.
+      </p>
+      <p>
+        Investing in early-stage companies involves a high degree of risk. You may lose your entire investment, and securities sold through Regulation Crowdfunding are subject to transfer restrictions. Investment limits apply based on your annual income and net worth. Past performance and projections are not guarantees of future results. Nothing on this page constitutes investment, legal, or tax advice; consult your own advisors.
+      </p>
+      <p>
+        Joyride, Inc. is a Florida corporation. Forward-looking statements reflect current expectations and are subject to change.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<script src="/site.js"></script>
+</body>
+</html>

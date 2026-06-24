@@ -30,6 +30,7 @@
     { "source": "/raise1", "destination": "/raise1.html" },
     { "source": "/raise1/uber_analysis", "destination": "/raise1-uber-analysis.html" },
     { "source": "/raise1/tam", "destination": "/raise1-tam.html" },
+    { "source": "/raise1/invest", "destination": "/raise1-invest.html" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [
