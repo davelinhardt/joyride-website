@@ -147,6 +147,21 @@
     opacity: 0.7;
   }
 
+  /* Scan-to-open QR — sits in the contact block. Kept black-on-white
+     inside a white card for reliable scanning off a projected screen.
+     The .contact-block universal ink rule recolors text but not the
+     <img>, so the QR renders normally. */
+  .qr-share { display: flex; flex-direction: column; align-items: center; gap: var(--s3); margin-top: var(--s7); }
+  .qr-share .qr-card {
+    background: #FFFFFF;
+    border-radius: var(--r-lg);
+    padding: 14px;
+    width: 168px; height: 168px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .qr-share .qr-card img { width: 100%; height: 100%; display: block; }
+  .qr-share .qr-cap { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+
   /* Investor section section divider */
   .raise-investor-only {
     display: inline-flex; align-items: center; gap: 8px;
@@ -411,6 +426,12 @@
       <div class="btns">
         <a href="mailto:dave@joyride.cool?subject=Joyride%20angel%20round%20%E2%80%94%20chat%3F" class="btn btn--primary">Email Dave <span class="arrow">→</span></a>
         <a href="https://www.linkedin.com/in/davelinhardt" target="_blank" rel="noopener" class="btn btn--ghost">LinkedIn</a>
+      </div>
+      <div class="qr-share">
+        <div class="qr-card">
+          <img src="/assets/raise1/qr-raise1.svg?v=1" alt="QR code linking to joyride.cool/raise1" width="168" height="168">
+        </div>
+        <span class="qr-cap">Scan to open this page</span>
       </div>
       <p class="small">David Linhardt · Founder &amp; CEO · dave@joyride.cool</p>
     </div>
