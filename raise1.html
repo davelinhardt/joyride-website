@@ -147,20 +147,23 @@
     opacity: 0.7;
   }
 
-  /* Scan-to-open QR — sits in the contact block. Kept black-on-white
-     inside a white card for reliable scanning off a projected screen.
-     The .contact-block universal ink rule recolors text but not the
-     <img>, so the QR renders normally. */
-  .qr-share { display: flex; flex-direction: column; align-items: center; gap: var(--s3); margin-top: var(--s7); }
-  .qr-share .qr-card {
+  /* Hero headline row — headline on the left, scan-to-open QR filling
+     the blank space on the right. Stacks/hides on narrow screens. */
+  .hero-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s6); flex-wrap: nowrap; }
+  .hero-head h1 { flex: 0 1 auto; min-width: 0; }
+  .hero-qr { display: flex; flex-direction: column; align-items: center; gap: var(--s3); flex: 0 0 auto; }
+  .hero-qr .qr-card {
     background: #FFFFFF;
     border-radius: var(--r-lg);
     padding: 14px;
-    width: 168px; height: 168px;
+    width: 176px; height: 176px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.18);
   }
-  .qr-share .qr-card img { width: 100%; height: 100%; display: block; }
-  .qr-share .qr-cap { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .hero-qr .qr-card img { width: 100%; height: 100%; display: block; }
+  .hero-qr .qr-cap { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #BFBFBF; }
+  /* On phones the visitor is already on a device — the QR adds clutter
+     with no purpose, so drop it below the headline-width breakpoint. */
+  @media (max-width: 768px) { .hero-qr { display: none; } }
 
   /* Investor section section divider */
   .raise-investor-only {
@@ -185,7 +188,15 @@
       <span class="pill"><span class="dot"></span> $1MM angel round · Open</span>
     </div>
 
-    <h1>The <em>Amazon</em> of ground transportation.</h1>
+    <div class="hero-head">
+      <h1>The <em>Amazon</em> of ground transportation.</h1>
+      <div class="hero-qr">
+        <div class="qr-card">
+          <img src="/assets/raise1/qr-raise1.svg?v=1" alt="QR code linking to joyride.cool/raise1" width="176" height="176">
+        </div>
+        <span class="qr-cap">Scan to open this page</span>
+      </div>
+    </div>
 
     <p class="lead">
       Joyride is a new rideshare marketplace where drivers can keep 100% of the fare and riders get a dramatically better ride. We're raising <strong style="color:var(--canary)">$1MM</strong> to launch our first market and reach 400 drivers / $2M ARR.
@@ -426,12 +437,6 @@
       <div class="btns">
         <a href="mailto:dave@joyride.cool?subject=Joyride%20angel%20round%20%E2%80%94%20chat%3F" class="btn btn--primary">Email Dave <span class="arrow">→</span></a>
         <a href="https://www.linkedin.com/in/davelinhardt" target="_blank" rel="noopener" class="btn btn--ghost">LinkedIn</a>
-      </div>
-      <div class="qr-share">
-        <div class="qr-card">
-          <img src="/assets/raise1/qr-raise1.svg?v=1" alt="QR code linking to joyride.cool/raise1" width="168" height="168">
-        </div>
-        <span class="qr-cap">Scan to open this page</span>
       </div>
       <p class="small">David Linhardt · Founder &amp; CEO · dave@joyride.cool</p>
     </div>
