@@ -51,6 +51,22 @@
   @media (max-width: 880px) { .hero-stats { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr; } }
 
+  /* Hero CTA row — buttons on the left, low-minimum "flag" callout
+     pushed into the open space on the right. Stacks on narrow screens. */
+  .hero-cta-row { display: flex; align-items: center; gap: var(--s6); flex-wrap: wrap; }
+  .hero-cta-row .cluster { margin: 0; }
+  .min-flag {
+    margin-left: auto;
+    display: flex; align-items: center; gap: var(--s4);
+    background: rgba(255, 239, 0, 0.08);
+    border: 1px solid var(--canary);
+    border-radius: var(--r-lg);
+    padding: 12px 22px;
+  }
+  .min-flag .amt { font-size: clamp(30px, 3vw, 40px); font-weight: 700; color: var(--canary); letter-spacing: -0.02em; line-height: 1; }
+  .min-flag .lbl { font-size: 13px; color: #FFFFFF; line-height: 1.35; letter-spacing: 0.03em; text-transform: uppercase; font-weight: 600; }
+  @media (max-width: 620px) { .min-flag { margin-left: 0; } }
+
   /* Media (video) blocks */
   .media-block { padding-block: clamp(56px, 6vw, 96px); border-top: 1px solid var(--border); }
   .media-header { display: flex; justify-content: space-between; align-items: end; gap: var(--s5); flex-wrap: wrap; margin-bottom: var(--s7); }
@@ -202,9 +218,15 @@
       Joyride is a new rideshare marketplace where drivers can keep 100% of the fare and riders get a better ride at a lower price. We're raising <strong style="color:var(--canary)">$1MM</strong> to launch our first market and reach 400 drivers / $2M ARR.
     </p>
 
-    <div class="cluster mt-7">
-      <a href="/raise1/invest" class="btn btn--canary">Invest Now <span class="arrow">→</span></a>
-      <a href="mailto:dave@joyride.cool?subject=Joyride%20angel%20round" class="btn btn--ghost">Get in touch</a>
+    <div class="hero-cta-row mt-7">
+      <div class="cluster">
+        <a href="/raise1/invest" class="btn btn--canary">Invest Now <span class="arrow">→</span></a>
+        <a href="mailto:dave@joyride.cool?subject=Joyride%20angel%20round" class="btn btn--ghost">Get in touch</a>
+      </div>
+      <div class="min-flag">
+        <span class="amt">$100</span>
+        <span class="lbl">Minimum investment<br>Open to everyone</span>
+      </div>
     </div>
 
     <div class="hero-stats">
