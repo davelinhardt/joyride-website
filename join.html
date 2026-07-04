@@ -21,7 +21,12 @@
      site.js — no header/footer chrome in kiosk mode. -->
 <link rel="stylesheet" href="/styles.css">
 <style>
-  html, body { height: 100%; overflow: hidden; background: #0A0A0A; }
+  /* NOTE: intentionally NOT `overflow:hidden` on html/body. That kills
+     iOS Safari's pull-to-refresh (you can't overscroll to reload). The
+     stage is exactly 100dvh so nothing actually scrolls, but the
+     overscroll gesture still works so the kiosk can be manually
+     refreshed. Horizontal drift is pinned via overflow-x. */
+  html, body { height: 100%; overflow-x: hidden; background: #0A0A0A; }
   body {
     /* Deep ink base with two soft canary glows so the dark screen
        isn't flat under the Tesla dome light. */
@@ -303,6 +308,39 @@
     vv.addEventListener('resize', applyLift);
     input.addEventListener('blur', function () { stage.style.setProperty('--lift', '0px'); });
   }
+
+  // ---- Kiosk self-update ----------------------------------------------
+  // An always-on headrest iPad (especially one added to the Home Screen,
+  // where there's no address bar to reload) would otherwise show a stale
+  // page forever. Poll this page's version tag; when a new build is
+  // deployed and the kiosk is idle (nobody mid-signup), reload to pick it
+  // up. This is what lets content edits reach the screen without anyone
+  // touching it.
+  var lastTouch = Date.now();
+  ['pointerdown', 'touchstart', 'keydown', 'input'].forEach(function (ev) {
+    window.addEventListener(ev, function () { lastTouch = Date.now(); }, { passive: true });
+  });
+  function isIdle() {
+    return (Date.now() - lastTouch > 15000) &&      // 15s since last interaction
+      document.activeElement !== input &&           // not typing an email
+      !card.classList.contains('is-done');          // not showing the success state
+  }
+  var versionBaseline = null;
+  async function checkForUpdate() {
+    try {
+      var res = await fetch(location.pathname, { method: 'GET', cache: 'no-store' });
+      var tag = res.headers.get('etag') || res.headers.get('last-modified');
+      if (!tag) return;
+      if (versionBaseline === null) { versionBaseline = tag; return; }
+      if (tag !== versionBaseline && isIdle()) { location.reload(); }
+    } catch (_) { /* offline / transient — try again next tick */ }
+  }
+  setInterval(checkForUpdate, 60000);
+  // Also re-check the moment the screen wakes / the app is re-focused —
+  // the most common "new passenger just picked it up" signal.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') checkForUpdate();
+  });
 })();
 </script>
 </body>
