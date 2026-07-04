@@ -20,6 +20,10 @@
      so it loads on the public kiosk page. We deliberately DON'T load
      site.js — no header/footer chrome in kiosk mode. -->
 <link rel="stylesheet" href="/styles.css">
+<!-- Cloudflare Turnstile — bot check on the signup form. The site key
+     is public; the secret lives server-side (TURNSTILE_SECRET_KEY) and
+     the /api/waitlist function verifies the token before subscribing. -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   /* NOTE: intentionally NOT `overflow:hidden` on html/body. That kills
      iOS Safari's pull-to-refresh (you can't overscroll to reload). The
@@ -139,6 +143,12 @@
   /* In the success state the whole header (copy + QR) gives way to the
      confirmation. */
   .card.is-done .card-top { display: none; }
+
+  /* Turnstile: invisible for humans (interaction-only), so this mostly
+     reserves nothing; when a challenge appears it's centered under the
+     form. Hidden once the signup succeeds. */
+  .jr-turnstile { margin-top: clamp(6px, 1vh, 10px); display: flex; justify-content: center; }
+  .card.is-done .jr-turnstile { display: none; }
 
   form.signup { margin-top: clamp(18px, 3vh, 28px); display: grid; gap: clamp(12px, 1.8vh, 16px); }
   .signup input[type="email"] {
@@ -279,6 +289,18 @@
         </div>
       </form>
 
+      <!-- Turnstile widget. interaction-only = invisible for real humans
+           (validates silently), only shows a challenge if Cloudflare
+           needs one. Outside the form grid so it adds no empty gap when
+           invisible; hidden in the success state. -->
+      <div class="cf-turnstile jr-turnstile" id="cf-turnstile"
+           data-sitekey="0x4AAAAAADvVDMZbxvZph4oj"
+           data-callback="jrTurnstileOk"
+           data-expired-callback="jrTurnstileExpired"
+           data-error-callback="jrTurnstileExpired"
+           data-theme="light"
+           data-appearance="interaction-only"></div>
+
       <div class="done" id="done" role="status" aria-live="polite">
         <div class="check">✓</div>
         <h2 class="d">You're on the list.</h2>
@@ -297,6 +319,22 @@
   var card = document.getElementById('card');
   var stage = document.getElementById('stage');
   var resetTimer = null;
+
+  // Cloudflare Turnstile: the interaction-only widget validates silently
+  // and fires jrTurnstileOk with a token. Tokens are single-use, so we
+  // reset the widget after every submit attempt.
+  var turnstileToken = '';
+  window.jrTurnstileOk = function (t) { turnstileToken = t || ''; };
+  window.jrTurnstileExpired = function () { turnstileToken = ''; };
+  function getTurnstileToken() {
+    if (turnstileToken) return turnstileToken;
+    try { return (window.turnstile && window.turnstile.getResponse('#cf-turnstile')) || ''; }
+    catch (_) { return ''; }
+  }
+  function resetTurnstile() {
+    turnstileToken = '';
+    try { if (window.turnstile) window.turnstile.reset('#cf-turnstile'); } catch (_) {}
+  }
 
   // Same conservative check the server uses — reject the obvious
   // garbage before spending a network round-trip.
@@ -328,6 +366,15 @@
       return;
     }
 
+    var token = getTurnstileToken();
+    if (!token) {
+      // Widget hasn't produced a token yet (still initializing, or it
+      // errored). Nudge it and ask the passenger to tap again.
+      resetTurnstile();
+      showError("One moment — verifying you're human. Please tap Notify me again.");
+      return;
+    }
+
     btn.disabled = true;
     var original = btn.innerHTML;
     btn.innerHTML = 'Adding you…';
@@ -336,7 +383,7 @@
       var res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email }),
+        body: JSON.stringify({ email: email, turnstileToken: token }),
       });
       var data = {};
       try { data = await res.json(); } catch (_) {}
@@ -351,11 +398,14 @@
       } else {
         btn.disabled = false;
         btn.innerHTML = original;
+        // The token was consumed by that attempt — get a fresh one.
+        resetTurnstile();
         showError((data && data.error) || 'Something went wrong. Please try again.');
       }
     } catch (_) {
       btn.disabled = false;
       btn.innerHTML = original;
+      resetTurnstile();
       showError('No connection. Please try again in a moment.');
     }
   });
@@ -366,6 +416,7 @@
     btn.disabled = false;
     btn.innerHTML = 'Notify me <span class="arrow">→</span>';
     clearError();
+    resetTurnstile(); // fresh challenge for the next passenger
   }
 
   // Keep the field + button clear of the on-screen keyboard. When the

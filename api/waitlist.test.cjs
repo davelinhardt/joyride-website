@@ -15,6 +15,7 @@ const {
   isValidEmail,
   buildBeehiivPayload,
   extractEmail,
+  extractTurnstileToken,
   normalizePublicationId,
 } = require("./waitlist.js");
 
@@ -65,4 +66,13 @@ test("extractEmail handles parsed objects and raw JSON strings", () => {
   assert.equal(extractEmail(null), "");
   assert.equal(extractEmail("not json"), "");
   assert.equal(extractEmail({ nope: 1 }), "");
+});
+
+test("extractTurnstileToken handles parsed objects and raw JSON strings", () => {
+  assert.equal(extractTurnstileToken({ turnstileToken: "tok123" }), "tok123");
+  assert.equal(extractTurnstileToken('{"turnstileToken":"tok123"}'), "tok123");
+  assert.equal(extractTurnstileToken({ email: "x@y.com" }), "");
+  assert.equal(extractTurnstileToken(""), "");
+  assert.equal(extractTurnstileToken(null), "");
+  assert.equal(extractTurnstileToken("not json"), "");
 });

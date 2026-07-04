@@ -9,11 +9,14 @@
  * Env (set in Vercel → Project → Settings → Environment Variables):
  *   BEEHIIV_API_KEY         — Beehiiv API key (secret)
  *   BEEHIIV_PUBLICATION_ID  — e.g. "pub_xxxxxxxx-xxxx-xxxx-..."
+ *   TURNSTILE_SECRET_KEY    — Cloudflare Turnstile secret (bot check).
+ *                             If unset, the bot check is skipped (logged).
  *
  * Contract:
- *   Request : POST { "email": "you@example.com" }
+ *   Request : POST { "email": "you@example.com", "turnstileToken": "..." }
  *   Success : 200 { ok: true }
  *   Bad email: 400 { ok: false, error: "..." }
+ *   Failed bot check: 403 { ok: false, error: "..." }
  *   Misconfig/ upstream failure: 502/500 { ok: false, error: "..." }
  *
  * CommonJS (module.exports) on purpose: (a) Vercel runs it as a Node
@@ -24,6 +27,7 @@
 "use strict";
 
 var BEEHIIV_API_BASE = "https://api.beehiiv.com/v2";
+var TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 /**
  * Conservative email sanity check. Not RFC-5322 exhaustive — just
@@ -86,6 +90,47 @@ function extractEmail(body) {
   return body && typeof body.email === "string" ? body.email : "";
 }
 
+/**
+ * Pull the Cloudflare Turnstile token the client widget produced.
+ * Handles both an already-parsed body and a raw JSON string.
+ */
+function extractTurnstileToken(body) {
+  if (!body) return "";
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (_) {
+      return "";
+    }
+  }
+  return body && typeof body.turnstileToken === "string" ? body.turnstileToken : "";
+}
+
+/** First IP from x-forwarded-for, passed to Turnstile as remoteip. */
+function getClientIp(req) {
+  var xff = req && req.headers && req.headers["x-forwarded-for"];
+  if (typeof xff === "string" && xff.length) return xff.split(",")[0].trim();
+  return "";
+}
+
+/**
+ * Verify a Turnstile token with Cloudflare's siteverify endpoint.
+ * Resolves true only when Cloudflare confirms the token is valid.
+ */
+async function verifyTurnstile(token, secret, remoteip) {
+  var form = new URLSearchParams();
+  form.append("secret", secret);
+  form.append("response", token);
+  if (remoteip) form.append("remoteip", remoteip);
+  var res = await fetch(TURNSTILE_VERIFY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString(),
+  });
+  var data = await res.json();
+  return !!(data && data.success);
+}
+
 async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -97,6 +142,30 @@ async function handler(req, res) {
   if (!isValidEmail(email)) {
     res.status(400).json({ ok: false, error: "Please enter a valid email address." });
     return;
+  }
+
+  // Cloudflare Turnstile bot check. Enforced whenever the secret is
+  // configured; if it's missing we log and skip so signups never hard-
+  // break on a misconfiguration.
+  var turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+  if (turnstileSecret) {
+    var token = extractTurnstileToken(req.body);
+    if (!token) {
+      res.status(400).json({ ok: false, error: "Please complete the verification and try again." });
+      return;
+    }
+    var humanVerified = false;
+    try {
+      humanVerified = await verifyTurnstile(token, turnstileSecret, getClientIp(req));
+    } catch (err) {
+      console.error("[waitlist] Turnstile verify threw", err);
+    }
+    if (!humanVerified) {
+      res.status(403).json({ ok: false, error: "Verification failed. Please try again." });
+      return;
+    }
+  } else {
+    console.warn("[waitlist] TURNSTILE_SECRET_KEY not set — skipping bot check.");
   }
 
   var apiKey = process.env.BEEHIIV_API_KEY;
@@ -145,4 +214,5 @@ module.exports = handler;
 module.exports.isValidEmail = isValidEmail;
 module.exports.buildBeehiivPayload = buildBeehiivPayload;
 module.exports.extractEmail = extractEmail;
+module.exports.extractTurnstileToken = extractTurnstileToken;
 module.exports.normalizePublicationId = normalizePublicationId;
