@@ -91,6 +91,26 @@
   .prop .tx b { display: block; font-size: clamp(15px, 2vh, 20px); font-weight: 700; letter-spacing: -0.01em; }
   .prop .tx span { display: block; color: var(--fg-3); font-size: clamp(12px, 1.6vh, 15px); line-height: 1.3; }
 
+  /* Savings badge above the headline — the single most compelling
+     rider hook (cheaper + no surge). */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px; border-radius: 999px;
+    background: rgba(255,239,0,0.12); border: 1px solid rgba(255,239,0,0.3);
+    color: var(--canary); font-weight: 700; letter-spacing: 0.01em;
+    font-size: clamp(11px, 1.5vh, 14px);
+  }
+  .badge b { color: #fff; }
+
+  /* Trust strip — the in-person vetting story, condensed. */
+  .trust {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    margin-top: clamp(14px, 2.4vh, 24px);
+    color: var(--fg-3); font-weight: 600; letter-spacing: 0.02em;
+    font-size: clamp(11px, 1.5vh, 14px);
+  }
+  .trust i { width: 4px; height: 4px; border-radius: 50%; background: var(--fg-3); opacity: .5; display: inline-block; }
+
   /* ---- Right: the signup card ---- */
   .card {
     background: var(--canary); color: var(--ink);
@@ -168,20 +188,21 @@
 
   <div class="cols">
     <div class="pitch">
-      <span class="eyebrow">A new kind of rideshare</span>
-      <h1>Your next ride could be a <em>Joyride.</em></h1>
-      <p class="lead">Choose your own driver, see the price before you book, and ride with drivers who keep up to 100% of the fare — so they show up happier.</p>
+      <span class="badge"><b>Usually 10%+ cheaper</b> · No surge, ever</span>
+      <h1>Pick your driver.<br>Skip the surge. <em>Ride for less.</em></h1>
+      <p class="lead">Joyride is the rideshare where you choose your own driver, see the exact price before you book, and never pay surge. Every driver is interviewed in person — so you ride with pros who actually love the work.</p>
       <div class="props">
-        <div class="prop"><div class="ic">★</div><div class="tx"><b>Choose your driver</b><span>Real ratings, photos, and rates. No black-box matching.</span></div></div>
-        <div class="prop"><div class="ic">$</div><div class="tx"><b>Price upfront</b><span>The rate you see is the rate you pay. No surge surprises.</span></div></div>
-        <div class="prop"><div class="ic">♥</div><div class="tx"><b>Better drivers</b><span>Every driver is interviewed and vetted in person.</span></div></div>
+        <div class="prop"><div class="ic">$</div><div class="tx"><b>Pay less than Uber &amp; Lyft</b><span>Drivers set fair rates and there's no surge pricing — ever. See the exact fare before you book.</span></div></div>
+        <div class="prop"><div class="ic">★</div><div class="tx"><b>You choose the driver</b><span>Browse drivers near you by rating, photo, and price. Save your favorites and rebook them in a tap.</span></div></div>
+        <div class="prop"><div class="ic">✓</div><div class="tx"><b>Every driver vetted in person</b><span>Interviewed face-to-face, background-checked, and GPS-tracked. No black-box matching.</span></div></div>
       </div>
+      <div class="trust">Interviewed in person<i></i>Background-checked<i></i>Vehicles inspected<i></i>Every ride GPS-tracked</div>
     </div>
 
     <div class="card" id="card">
       <span class="kicker">Be first to ride</span>
-      <h2>Get notified at&nbsp;launch.</h2>
-      <p class="sub">We're rolling out city by city. Drop your email and we'll tell you the moment Joyride lands near you.</p>
+      <h2>Get early&nbsp;access.</h2>
+      <p class="sub">We're launching city by city in 2026. Drop your email and you'll be first to ride the moment Joyride reaches you.</p>
 
       <form class="signup" id="signupForm" novalidate>
         <input
@@ -192,7 +213,7 @@
           required aria-label="Email address">
         <button type="submit" id="submitBtn">Notify me <span class="arrow">→</span></button>
         <div class="finewrap">
-          <span class="fine" id="fine">No spam. Just one heads-up when we launch.</span>
+          <span class="fine" id="fine">No spam — just one heads-up when we launch near you.</span>
         </div>
       </form>
 
@@ -228,7 +249,7 @@
     fine.className = 'err';
   }
   function clearError() {
-    fine.textContent = 'No spam. Just one heads-up when we launch.';
+    fine.textContent = 'No spam — just one heads-up when we launch near you.';
     fine.className = 'fine';
   }
 
