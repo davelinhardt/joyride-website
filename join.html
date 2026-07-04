@@ -45,7 +45,7 @@
     display: grid;
     grid-template-rows: auto 1fr;
     padding: clamp(20px, 3.2vh, 40px) clamp(24px, 4vw, 72px);
-    gap: clamp(16px, 3vh, 40px);
+    gap: clamp(10px, 2vh, 24px);
     /* Lifts everything up when the on-screen keyboard opens so the
        email field + button stay visible. Driven by visualViewport JS. */
     transform: translateY(calc(var(--lift, 0px) * -1));
@@ -53,9 +53,10 @@
   }
 
   .brandbar { display: flex; align-items: center; justify-content: space-between; }
-  /* Match the shared site-header logo scale (styles.css: 52px) so the
-     kiosk brand mark reads the same size as every other page. */
-  .brandbar img { height: 52px; width: auto; display: block; }
+  /* Larger than the shared site-header logo (52px) — this is a back-seat
+     kiosk, so the brand mark is sized up for distance. vh term grows it
+     further on taller iPads. */
+  .brandbar img { height: clamp(64px, 8.2vh, 80px); width: auto; display: block; }
   /* Subtle pulse on the DS .pill's dot to signal "coming soon" on the
      always-on kiosk — additive to the design-system pill, not a reskin. */
   .brandbar .pill .dot { animation: pulse 2s var(--ease) infinite; }
@@ -117,6 +118,27 @@
   .card .kicker { font-size: clamp(11px, 1.5vh, 13px); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: .65; }
   .card h2 { font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-size: clamp(28px, 4.6vh, 52px); margin: clamp(8px, 1.4vh, 14px) 0 clamp(10px, 1.6vh, 16px); }
   .card p.sub { font-size: clamp(14px, 1.9vh, 19px); line-height: 1.4; max-width: 34ch; opacity: .85; }
+
+  /* Signup card header: copy on the left, scan-to-sign-up QR pinned to
+     the upper-right corner. QR encodes joyride.cool/join so a passenger
+     can sign up on their own phone instead of the shared iPad. */
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: clamp(14px, 2vw, 26px); }
+  .card-copy { min-width: 0; }
+  .qr { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; }
+  .qr-code {
+    width: clamp(86px, 12vh, 112px); height: clamp(86px, 12vh, 112px);
+    background: #fff; border-radius: 14px; padding: 9px;
+    box-shadow: 0 8px 22px rgba(10,10,10,0.22);
+  }
+  .qr-code svg { width: 100%; height: 100%; display: block; }
+  .qr-cap {
+    font-size: clamp(10px, 1.3vh, 12px); font-weight: 700; line-height: 1.15;
+    text-align: center; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink); opacity: .7; max-width: 12ch;
+  }
+  /* In the success state the whole header (copy + QR) gives way to the
+     confirmation. */
+  .card.is-done .card-top { display: none; }
 
   form.signup { margin-top: clamp(18px, 3vh, 28px); display: grid; gap: clamp(12px, 1.8vh, 16px); }
   .signup input[type="email"] {
@@ -208,9 +230,17 @@
     </div>
 
     <div class="card" id="card">
-      <span class="kicker">Pre-launch · Join the waitlist</span>
-      <h2>Enjoy the&nbsp;ride.</h2>
-      <p class="sub">We're rolling out city by city in 2026. Get on the list and we'll let you know when we land in yours.</p>
+      <div class="card-top">
+        <div class="card-copy">
+          <span class="kicker">Pre-launch · Join the waitlist</span>
+          <h2>Enjoy the&nbsp;ride.</h2>
+          <p class="sub">We're rolling out city by city in 2026. Get on the list and we'll let you know when we land in yours.</p>
+        </div>
+        <figure class="qr">
+          <div class="qr-code" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" shape-rendering="crispEdges"><path stroke="#0A0A0A" d="M0 0.5h7m3 0h4m2 0h1m1 0h7M0 1.5h1m5 0h1m3 0h7m1 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h1m3 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4m2 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h3m1 0h4m2 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h2m4 0h1m1 0h1M0 8.5h1m1 0h5m6 0h2m3 0h5M5 9.5h1m2 0h1m1 0h2m1 0h1m5 0h1m3 0h1M1 10.5h2m3 0h2m1 0h4m1 0h4m2 0h2m1 0h2M4 11.5h1m2 0h2m6 0h3m2 0h1m3 0h1M0 12.5h2m1 0h6m1 0h4m1 0h1m1 0h2m1 0h1m1 0h3M0 13.5h1m6 0h1m1 0h1m3 0h1m2 0h2m1 0h1m1 0h1m1 0h1M0 14.5h1m1 0h3m1 0h2m2 0h6m3 0h3m1 0h2M0 15.5h1m2 0h1m3 0h1m2 0h2m2 0h7m3 0h1M0 16.5h1m1 0h1m2 0h3m2 0h11m1 0h1M8 17.5h1m1 0h1m1 0h2m1 0h2m3 0h2M0 18.5h7m3 0h1m1 0h2m2 0h1m1 0h1m1 0h1m1 0h3M0 19.5h1m5 0h1m1 0h4m4 0h1m3 0h2m1 0h2M0 20.5h1m1 0h3m1 0h1m1 0h2m1 0h10m1 0h1M0 21.5h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m3 0h2m1 0h5M0 22.5h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h5m3 0h2m1 0h1M0 23.5h1m5 0h1m2 0h1m2 0h1m1 0h3m1 0h4m2 0h1M0 24.5h7m1 0h1m2 0h4m4 0h6"/></svg></div>
+          <figcaption class="qr-cap">Scan to sign up</figcaption>
+        </figure>
+      </div>
 
       <form class="signup" id="signupForm" novalidate>
         <input
