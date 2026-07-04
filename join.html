@@ -216,6 +216,18 @@
     }
     .cols { grid-template-columns: 1fr; align-items: start; gap: clamp(20px, 3vh, 32px); overflow: visible; }
     .qr { display: none; }                 /* redundant on the phone that scanned it */
+
+    /* Brand bar: the back-seat-sized logo is too big for a hand-held
+       phone and crowds the pill (its text was wrapping). Scale the logo
+       down, keep the pill on one line, and let the row wrap gracefully
+       on very narrow phones. */
+    .brandbar { flex-wrap: wrap; gap: 8px 12px; }
+    .brandbar img { height: clamp(38px, 10.5vw, 50px); }
+    .brandbar .pill {
+      white-space: nowrap;
+      font-size: clamp(11px, 3vw, 13px);
+      padding: 6px 12px;
+    }
   }
   @media (max-height: 520px) { .props { display: none; } }
 </style>
