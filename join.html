@@ -200,13 +200,22 @@
     .trust { margin-top: clamp(12px, 1.9vh, 20px); }
   }
 
-  /* Portrait / narrow fallback so it's never broken if the iPad
-     rotates or a phone hits the URL. Landscape is the design target. */
+  /* Portrait / narrow (a phone that scanned the QR, or the iPad rotated):
+     switch from the fixed-height landscape kiosk to a NORMAL scrolling
+     document. The lock bug was the 100dvh stage + a translateY transform
+     + nested overflow-y:auto scroll containers — iOS Safari swallows the
+     touch scroll and nothing moves. Letting the stage grow with content
+     and the document scroll naturally fixes it. */
   @media (max-width: 860px), (orientation: portrait) {
-    .cols { grid-template-columns: 1fr; align-items: start; gap: clamp(20px, 3vh, 32px); overflow-y: auto; }
-    .stage { grid-template-rows: auto auto; overflow-y: auto; }
-    html, body { overflow: auto; }
-    .props { display: none; }
+    html, body { height: auto; overflow-x: hidden; }
+    .stage {
+      height: auto; min-height: 100dvh;   /* grow past the viewport = page scrolls */
+      grid-template-rows: auto auto;
+      overflow: visible;
+      transform: none;                     /* native scroll handles the keyboard here */
+    }
+    .cols { grid-template-columns: 1fr; align-items: start; gap: clamp(20px, 3vh, 32px); overflow: visible; }
+    .qr { display: none; }                 /* redundant on the phone that scanned it */
   }
   @media (max-height: 520px) { .props { display: none; } }
 </style>
