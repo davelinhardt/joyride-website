@@ -43,6 +43,7 @@ test("buildBeehiivPayload normalizes email and tags the source", () => {
   assert.equal(p.email, "dave@example.com");
   assert.equal(p.reactivate_existing, true);
   assert.equal(p.send_welcome_email, false);
+  assert.equal(p.double_opt_override, "on");
   assert.equal(p.utm_source, "tesla-kiosk");
   assert.equal(p.utm_medium, "ipad-headrest");
   assert.equal(p.utm_campaign, "rider-waitlist");

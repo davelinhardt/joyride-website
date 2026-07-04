@@ -49,12 +49,17 @@ function isValidEmail(email) {
  * so Dave can see in Beehiiv which signups came from the Tesla kiosk
  * vs. the website. reactivate_existing:true means a passenger who
  * already unsubscribed once gets quietly re-added rather than erroring.
+ *
+ * double_opt_override:"on" forces Beehiiv's double opt-in: the subscriber
+ * gets a "confirm your subscription" email and stays pending until they
+ * click it (rather than being added straight to the list).
  */
 function buildBeehiivPayload(email) {
   return {
     email: String(email).trim().toLowerCase(),
     reactivate_existing: true,
     send_welcome_email: false,
+    double_opt_override: "on",
     utm_source: "tesla-kiosk",
     utm_medium: "ipad-headrest",
     utm_campaign: "rider-waitlist",
