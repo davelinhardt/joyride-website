@@ -65,7 +65,11 @@
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
     gap: clamp(28px, 4vw, 72px);
-    align-items: center;
+    /* Top-align so the pitch sits directly under the logo instead of
+       being centered in the leftover height (which left a big gap under
+       the brand bar). Also keeps content in the upper zone, clear of the
+       on-screen keyboard. */
+    align-items: start;
     min-height: 0;
   }
 
@@ -183,7 +187,7 @@
       <p class="lead">When drivers are treated fairly, your ride is better. Choose your driver, save your favorites, and ride happier.</p>
       <div class="props">
         <div class="prop"><div class="ic">☺</div><div class="tx"><b>Drivers treated fairly</b><span>Drivers can keep up to 100% of the fare — so they show up happier and take better care of you.</span></div></div>
-        <div class="prop"><div class="ic">★</div><div class="tx"><b>Choose your driver</b><span>Browse drivers near you by real rating and photo. You pick who drives you — no black box.</span></div></div>
+        <div class="prop"><div class="ic">$</div><div class="tx"><b>Lower prices</b><span>When drivers cut out the middleman and set their own prices, rides are 10% to 15% less.</span></div></div>
         <div class="prop"><div class="ic">♥</div><div class="tx"><b>Save your favorites</b><span>Loved your driver? Save them and rebook in a tap. Ride happier every time.</span></div></div>
       </div>
       <div class="trust">Interviewed in person<i></i>Background-checked<i></i>Vehicles inspected<i></i>Every ride GPS-tracked</div>
