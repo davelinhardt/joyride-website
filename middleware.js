@@ -38,6 +38,9 @@ const PUBLIC_PATHS = [
   '/raise1-tam.html',
   '/raise1/invest',           // equity crowdfunding invest page (added 2026-06-24)
   '/raise1-invest.html',
+  '/join',                    // Tesla-headrest rider-waitlist kiosk (added 2026-07-03)
+  '/join.html',
+  '/api/waitlist',            // Beehiiv subscribe proxy the kiosk POSTs to
   '/styles.css',              // design system stylesheet
   '/site.js',                 // header/footer injector
   // Root-level files that browsers (Safari, Chrome) auto-fetch on

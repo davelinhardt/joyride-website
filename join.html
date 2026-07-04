@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Kiosk page for an iPad mounted on a Tesla headrest, LANDSCAPE.
+     viewport-fit=cover fills under the rounded corners; maximum-scale
+     stops the accidental pinch-zoom a passenger's thumb triggers.
+     Inputs are >=20px so iOS Safari won't auto-zoom on focus. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Joyride">
+<meta name="robots" content="noindex">
+<title>Joyride — Be first to ride</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/svg+xml" href="/assets/mark-black.svg?v=4">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon-180.png">
+<!-- Shared stylesheet for the Inter Tight font + brand tokens
+     (--canary, --ink, etc.). It's allow-listed past the password gate,
+     so it loads on the public kiosk page. We deliberately DON'T load
+     site.js — no header/footer chrome in kiosk mode. -->
+<link rel="stylesheet" href="/styles.css">
+<style>
+  html, body { height: 100%; overflow: hidden; background: #0A0A0A; }
+  body {
+    /* Deep ink base with two soft canary glows so the dark screen
+       isn't flat under the Tesla dome light. */
+    background:
+      radial-gradient(circle at 82% 12%, rgba(255,239,0,0.16), transparent 42%),
+      radial-gradient(circle at 8% 92%, rgba(255,239,0,0.08), transparent 45%),
+      #0A0A0A;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  * { -webkit-user-select: none; user-select: none; }
+  input { -webkit-user-select: text; user-select: text; }
+
+  .stage {
+    height: 100vh; height: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: clamp(20px, 3.2vh, 40px) clamp(24px, 4vw, 72px);
+    gap: clamp(16px, 3vh, 40px);
+    /* Lifts everything up when the on-screen keyboard opens so the
+       email field + button stay visible. Driven by visualViewport JS. */
+    transform: translateY(calc(var(--lift, 0px) * -1));
+    transition: transform .25s var(--ease);
+  }
+
+  .brandbar { display: flex; align-items: center; justify-content: space-between; }
+  .brandbar img { height: clamp(26px, 3.4vh, 40px); display: block; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 999px;
+    border: 1px solid rgba(255,239,0,0.35);
+    color: var(--canary); font-weight: 600; letter-spacing: 0.04em;
+    font-size: clamp(11px, 1.4vh, 14px); text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .tag .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--canary); animation: pulse 2s var(--ease) infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(28px, 4vw, 72px);
+    align-items: center;
+    min-height: 0;
+  }
+
+  /* ---- Left: the pitch ---- */
+  .pitch .eyebrow { color: var(--canary); font-size: clamp(11px, 1.5vh, 14px); }
+  .pitch h1 {
+    font-weight: 800; letter-spacing: -0.045em; line-height: 0.95;
+    font-size: clamp(38px, 6.4vh, 76px);
+    margin: clamp(10px, 1.6vh, 18px) 0 clamp(12px, 1.8vh, 20px);
+  }
+  .pitch h1 em { font-style: normal; color: var(--canary); }
+  .pitch .lead {
+    color: var(--fg-3); max-width: 46ch;
+    font-size: clamp(15px, 2vh, 21px); line-height: 1.45;
+  }
+  .props { display: grid; gap: clamp(10px, 1.6vh, 16px); margin-top: clamp(18px, 2.8vh, 30px); }
+  .prop { display: flex; align-items: center; gap: 16px; }
+  .prop .ic {
+    flex: 0 0 auto; width: clamp(40px, 5.4vh, 54px); height: clamp(40px, 5.4vh, 54px);
+    border-radius: 14px; background: var(--canary); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(20px, 2.8vh, 26px); font-weight: 700;
+  }
+  .prop .tx b { display: block; font-size: clamp(15px, 2vh, 20px); font-weight: 700; letter-spacing: -0.01em; }
+  .prop .tx span { display: block; color: var(--fg-3); font-size: clamp(12px, 1.6vh, 15px); line-height: 1.3; }
+
+  /* ---- Right: the signup card ---- */
+  .card {
+    background: var(--canary); color: var(--ink);
+    border-radius: clamp(20px, 3vh, 32px);
+    padding: clamp(24px, 4vh, 48px);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.45);
+  }
+  .card .kicker { font-size: clamp(11px, 1.5vh, 13px); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: .65; }
+  .card h2 { font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-size: clamp(28px, 4.6vh, 52px); margin: clamp(8px, 1.4vh, 14px) 0 clamp(10px, 1.6vh, 16px); }
+  .card p.sub { font-size: clamp(14px, 1.9vh, 19px); line-height: 1.4; max-width: 34ch; opacity: .85; }
+
+  form.signup { margin-top: clamp(18px, 3vh, 28px); display: grid; gap: clamp(12px, 1.8vh, 16px); }
+  .signup input[type="email"] {
+    width: 100%; box-sizing: border-box;
+    font-family: var(--font); font-size: clamp(20px, 2.8vh, 24px); font-weight: 500;
+    color: var(--ink);
+    padding: clamp(16px, 2.4vh, 22px) clamp(18px, 2vw, 24px);
+    border-radius: 16px; border: 2px solid rgba(10,10,10,0.18);
+    background: rgba(255,255,255,0.72);
+    transition: border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .signup input[type="email"]::placeholder { color: rgba(10,10,10,0.4); }
+  .signup input[type="email"]:focus { outline: 0; border-color: var(--ink); background: #fff; }
+
+  .signup button {
+    font-family: var(--font); font-weight: 800; letter-spacing: -0.01em;
+    font-size: clamp(19px, 2.6vh, 24px); color: var(--canary); background: var(--ink);
+    border: 0; cursor: pointer;
+    padding: clamp(16px, 2.4vh, 22px) clamp(20px, 2vw, 28px);
+    border-radius: 16px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    transition: transform .12s var(--ease), opacity .15s var(--ease);
+  }
+  .signup button:active { transform: scale(0.98); }
+  .signup button[disabled] { opacity: .55; cursor: default; }
+  .signup button .arrow { transition: transform .2s var(--ease); }
+  .signup button:not([disabled]):hover .arrow { transform: translateX(5px); }
+
+  .finewrap { min-height: 1.4em; }
+  .fine { font-size: clamp(12px, 1.5vh, 14px); opacity: .6; }
+  .err { font-size: clamp(13px, 1.6vh, 15px); font-weight: 600; color: #B00020; }
+
+  /* Success takeover of the card */
+  .done { display: none; text-align: left; }
+  .done .check {
+    width: clamp(48px, 6.4vh, 68px); height: clamp(48px, 6.4vh, 68px); border-radius: 50%;
+    background: var(--ink); color: var(--canary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(26px, 3.6vh, 38px); font-weight: 800;
+    margin-bottom: clamp(14px, 2vh, 22px);
+  }
+  .done h2 { font-weight: 800; letter-spacing: -0.03em; font-size: clamp(28px, 4.6vh, 52px); line-height: 1; margin: 0 0 clamp(8px, 1.4vh, 14px); }
+  .done p { font-size: clamp(14px, 1.9vh, 19px); line-height: 1.4; max-width: 32ch; opacity: .85; }
+  .card.is-done form.signup, .card.is-done .kicker, .card.is-done h2:not(.d), .card.is-done p.sub { display: none; }
+  .card.is-done .done { display: block; }
+
+  /* Portrait / narrow fallback so it's never broken if the iPad
+     rotates or a phone hits the URL. Landscape is the design target. */
+  @media (max-width: 860px), (orientation: portrait) {
+    .cols { grid-template-columns: 1fr; align-items: start; gap: clamp(20px, 3vh, 32px); overflow-y: auto; }
+    .stage { grid-template-rows: auto auto; overflow-y: auto; }
+    html, body { overflow: auto; }
+    .props { display: none; }
+  }
+  @media (max-height: 520px) { .props { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="brandbar">
+    <img src="/assets/lockup-on-dark.svg" alt="Joyride">
+    <span class="tag"><span class="dot"></span>Launching 2026</span>
+  </div>
+
+  <div class="cols">
+    <div class="pitch">
+      <span class="eyebrow">A new kind of rideshare</span>
+      <h1>Your next ride could be a <em>Joyride.</em></h1>
+      <p class="lead">Choose your own driver, see the price before you book, and ride with drivers who keep up to 100% of the fare — so they show up happier.</p>
+      <div class="props">
+        <div class="prop"><div class="ic">★</div><div class="tx"><b>Choose your driver</b><span>Real ratings, photos, and rates. No black-box matching.</span></div></div>
+        <div class="prop"><div class="ic">$</div><div class="tx"><b>Price upfront</b><span>The rate you see is the rate you pay. No surge surprises.</span></div></div>
+        <div class="prop"><div class="ic">♥</div><div class="tx"><b>Better drivers</b><span>Every driver is interviewed and vetted in person.</span></div></div>
+      </div>
+    </div>
+
+    <div class="card" id="card">
+      <span class="kicker">Be first to ride</span>
+      <h2>Get notified at&nbsp;launch.</h2>
+      <p class="sub">We're rolling out city by city. Drop your email and we'll tell you the moment Joyride lands near you.</p>
+
+      <form class="signup" id="signupForm" novalidate>
+        <input
+          type="email" id="email" name="email"
+          placeholder="you@email.com"
+          autocomplete="email" inputmode="email"
+          autocapitalize="off" autocorrect="off" spellcheck="false"
+          required aria-label="Email address">
+        <button type="submit" id="submitBtn">Notify me <span class="arrow">→</span></button>
+        <div class="finewrap">
+          <span class="fine" id="fine">No spam. Just one heads-up when we launch.</span>
+        </div>
+      </form>
+
+      <div class="done" id="done" role="status" aria-live="polite">
+        <div class="check">✓</div>
+        <h2 class="d">You're on the list.</h2>
+        <p>We'll email you the moment Joyride launches in your city. Enjoy the rest of your ride.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var form = document.getElementById('signupForm');
+  var input = document.getElementById('email');
+  var btn = document.getElementById('submitBtn');
+  var fine = document.getElementById('fine');
+  var card = document.getElementById('card');
+  var stage = document.getElementById('stage');
+  var resetTimer = null;
+
+  // Same conservative check the server uses — reject the obvious
+  // garbage before spending a network round-trip.
+  function looksLikeEmail(v) {
+    if (typeof v !== 'string') return false;
+    v = v.trim();
+    return v.length >= 5 && v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  }
+
+  function showError(msg) {
+    fine.textContent = msg;
+    fine.className = 'err';
+  }
+  function clearError() {
+    fine.textContent = 'No spam. Just one heads-up when we launch.';
+    fine.className = 'fine';
+  }
+
+  input.addEventListener('input', function () {
+    if (fine.className === 'err') clearError();
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var email = input.value.trim();
+    if (!looksLikeEmail(email)) {
+      showError('Please enter a valid email address.');
+      input.focus();
+      return;
+    }
+
+    btn.disabled = true;
+    var original = btn.innerHTML;
+    btn.innerHTML = 'Adding you…';
+
+    try {
+      var res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (_) {}
+
+      if (res.ok && data.ok) {
+        input.blur(); // dismiss the on-screen keyboard
+        card.classList.add('is-done');
+        // Kiosk: reset back to the empty form so it's ready for the
+        // next passenger.
+        if (resetTimer) clearTimeout(resetTimer);
+        resetTimer = setTimeout(resetKiosk, 9000);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        showError((data && data.error) || 'Something went wrong. Please try again.');
+      }
+    } catch (_) {
+      btn.disabled = false;
+      btn.innerHTML = original;
+      showError('No connection. Please try again in a moment.');
+    }
+  });
+
+  function resetKiosk() {
+    card.classList.remove('is-done');
+    input.value = '';
+    btn.disabled = false;
+    btn.innerHTML = 'Notify me <span class="arrow">→</span>';
+    clearError();
+  }
+
+  // Keep the field + button clear of the on-screen keyboard. When the
+  // keyboard opens, visualViewport shrinks; lift the stage by that gap.
+  if (window.visualViewport) {
+    var vv = window.visualViewport;
+    var applyLift = function () {
+      var gap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      // Only lift meaningfully when the keyboard is actually up.
+      stage.style.setProperty('--lift', gap > 120 ? Math.round(gap * 0.55) + 'px' : '0px');
+    };
+    vv.addEventListener('resize', applyLift);
+    input.addEventListener('blur', function () { stage.style.setProperty('--lift', '0px'); });
+  }
+})();
+</script>
+</body>
+</html>
