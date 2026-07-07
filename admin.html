@@ -157,6 +157,19 @@
     .sidebar-footer .who { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
     .sidebar-footer .who strong { color: var(--text); display: block; }
 
+    /* Mobile nav: a hamburger top bar + off-canvas drawer. Both are
+       hidden on desktop and switched on in the max-width:768px block
+       below — that's what makes every admin tool reachable on phones. */
+    .mobile-topbar { display: none; align-items: center; gap: 12px;
+      padding: 12px 16px; background: var(--panel);
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 40; }
+    .mobile-topbar .hamburger { background: transparent; border: 1px solid var(--border-2);
+      color: var(--text); font-size: 20px; line-height: 1; width: 42px; height: 42px;
+      border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .mobile-topbar .hamburger:hover { border-color: var(--action); color: var(--action); }
+    .mobile-topbar .mobile-title { font-weight: 700; font-size: 16px; color: var(--text); }
+    .nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 55; }
+
     /* min-width:0 lets the 1fr grid track shrink below the natural
        width of its contents — without it, a wide table (or any
        wider-than-viewport child) would push the whole .shell grid
@@ -357,7 +370,14 @@
 
     @media (max-width: 768px) {
       .shell { grid-template-columns: 1fr; }
-      .sidebar { display: none; }
+      /* Off-canvas slide-in drawer (was display:none, which hid the whole
+         menu on mobile). It opens when body has .nav-open. */
+      .sidebar { position: fixed; top: 0; left: 0; bottom: 0; z-index: 60;
+        width: 280px; max-width: 84vw; transform: translateX(-100%);
+        transition: transform .25s ease; overflow-y: auto; }
+      body.nav-open .sidebar { transform: translateX(0); box-shadow: 4px 0 40px rgba(0,0,0,.5); }
+      body.nav-open .nav-overlay { display: block; }
+      .mobile-topbar { display: flex; }
       .drawer { width: 100vw; }
       .main { padding: 20px 16px; }
     }
@@ -372,6 +392,11 @@
 <!-- APP -->
 <div id="appView">
   <div class="shell">
+    <div class="mobile-topbar">
+      <button class="hamburger" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+      <span class="mobile-title">Joyride Admin</span>
+    </div>
+    <div class="nav-overlay" id="navOverlay"></div>
     <aside class="sidebar">
       <div class="brand">
         <svg class="logo-mark" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -979,8 +1004,25 @@
       if (view === 'taxes') loadTaxSettings();
       if (view === 'rate-sampler') loadRateSampler();
       if (view === 'settings') { loadSystemSettings(); loadSubscriptionPlans(); }
+      // Close the mobile drawer after picking a tool.
+      document.body.classList.remove('nav-open');
+      if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
     });
   });
+
+  // ─── Mobile drawer toggle ───────────────────────────────────────────────
+  const navToggle = document.getElementById('navToggle');
+  const navOverlay = document.getElementById('navOverlay');
+  function closeNav() {
+    document.body.classList.remove('nav-open');
+    if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+  }
+  if (navToggle) navToggle.addEventListener('click', () => {
+    const open = document.body.classList.toggle('nav-open');
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  if (navOverlay) navOverlay.addEventListener('click', closeNav);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNav(); });
 
   // ─── Users ─────────────────────────────────────────────────────────────
   document.getElementById('userSearch').addEventListener('input', (e) => {
