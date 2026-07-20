@@ -1,4 +1,5 @@
 // Joyride site — shared header/footer (dark mode only).
+// Vercel GitHub auto-deploy reconnected 2026-07-20.
 
 window.addEventListener('error', (e) => {
   if (e.message && e.message.indexOf('ResizeObserver') !== -1) {
