@@ -17,7 +17,13 @@
     gap: 0;
     align-items: stretch;
   }
-  @media (max-width: 880px) { .auth-wrap { grid-template-columns: 1fr; } }
+  @media (max-width: 880px) {
+    .auth-wrap { grid-template-columns: 1fr; }
+    /* On mobile show the login/signup form first; the yellow promo card
+       drops below it (was above the fold, hiding the form). */
+    .auth-form { order: 1; }
+    .auth-side { order: 2; }
+  }
 
   .auth-side {
     background: var(--canary);
