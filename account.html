@@ -69,6 +69,10 @@
   .action-card.is-primary {
     background: var(--canary); color: var(--ink); border-color: var(--canary);
   }
+  /* Non-clickable placeholder cards (e.g. app downloads not yet live). */
+  .action-card.is-coming-soon { cursor: default; opacity: 0.5; }
+  .action-card.is-coming-soon:hover { transform: none; border-color: var(--rule); }
+  .action-card.is-coming-soon .go { opacity: 0.9; }
   .action-card .eyebrow {
     font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
     text-transform: uppercase; opacity: 0.7;
@@ -368,10 +372,21 @@
     var isAdmin    = user.role === "admin";
     var isDriver   = user.userType === "driver" || user.userType === "both";
     var canRide    = user.userType === "rider"  || user.userType === "both" || isAdmin;
-    var primaryKey = isAdmin ? "admin" : (isDriver ? "driver" : "rider");
+    // Booking a ride is the rider's primary action now that the web
+    // rider app lives at /rider. The shared session (localStorage token,
+    // same origin) carries over, so /rider lands already logged in.
+    var primaryKey = isAdmin ? "admin" : (isDriver ? "driver" : "book-ride");
     var cards = [];
 
     if (canRide) {
+      cards.push({
+        key: "book-ride",
+        eyebrow: "Rider",
+        h2: "Book a ride",
+        p: "Set your pickup and destination and get matched with a driver — right here in your browser.",
+        href: "/rider",
+        go: "Book a ride →",
+      });
       cards.push({
         key: "rider",
         eyebrow: "Rider",
@@ -434,32 +449,37 @@
     // server-side userType flips.
     // Both hrefs are placeholders until App Store + Play listings are
     // public (per SESSION_HANDOFF: EAS Build is queued).
+    // Native apps aren't published yet — render as non-clickable
+    // "Coming soon" placeholders (no App Store / Play listings live).
     cards.push({
       key: "rider-app",
       eyebrow: "Rider app",
       h2: "Download the Rider app",
       p: "Book rides, see your driver in real time, save favorites, manage payments. Coming soon to the App Store and Google Play.",
-      href: "/#download-rider",
-      go: "Get the Rider app →",
+      go: "Coming soon",
+      disabled: true,
     });
     cards.push({
       key: "driver-app",
       eyebrow: "Driver app",
       h2: "Download the Driver app",
       p: "Want to drive? Install the Driver app and apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
-      href: "/#download-driver",
-      go: "Get the Driver app →",
+      go: "Coming soon",
+      disabled: true,
     });
 
     grid.innerHTML = cards.map(function (c) {
-      var isPrimary = c.key === primaryKey;
+      var isPrimary = c.key === primaryKey && !c.disabled;
+      var tag = c.disabled ? "div" : "a";
+      var cls = "action-card" + (isPrimary ? " is-primary" : "") + (c.disabled ? " is-coming-soon" : "");
+      var hrefAttr = c.disabled ? "" : ' href="' + c.href + '"';
       return (
-        '<a class="action-card' + (isPrimary ? " is-primary" : "") + '" href="' + c.href + '">' +
+        "<" + tag + ' class="' + cls + '"' + hrefAttr + ">" +
           '<span class="eyebrow">' + c.eyebrow + '</span>' +
           '<h2>' + c.h2 + '</h2>' +
           '<p>' + c.p + '</p>' +
           '<span class="go">' + c.go + '</span>' +
-        '</a>'
+        "</" + tag + ">"
       );
     }).join("");
   }
