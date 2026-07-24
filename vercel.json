@@ -37,8 +37,8 @@
     { "source": "/raise1/invest", "destination": "/raise1-invest.html" },
     { "source": "/raise1/driver_signup", "destination": "/raise1-driver-signup.html" },
     { "source": "/join", "destination": "/join.html" },
-    { "source": "/rider", "destination": "https://joyride-rider-web.vercel.app" },
-    { "source": "/rider/:path*", "destination": "https://joyride-rider-web.vercel.app/:path*" },
+    { "source": "/rider", "destination": "https://joyride-rider-web.vercel.app/rider" },
+    { "source": "/rider/:path*", "destination": "https://joyride-rider-web.vercel.app/rider/:path*" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [
