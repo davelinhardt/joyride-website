@@ -42,6 +42,10 @@ const PUBLIC_PATHS = [
   '/join.html',
   '/api/waitlist',            // Beehiiv subscribe proxy the kiosk POSTs to
   '/rider',                   // WEB rider app entry (see '/rider/' prefix below)
+  '/login',                   // the rider app redirects logged-out users here;
+  '/login.html',              // gating it re-popped the site prompt on /rider.
+  '/account',                 // rider login lands here (routeAfterAuth). Both
+  '/account.html',            // require rider credentials, so nothing exposed.
   '/styles.css',              // design system stylesheet
   '/site.js',                 // header/footer injector
   // Root-level files that browsers (Safari, Chrome) auto-fetch on
