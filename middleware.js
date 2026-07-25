@@ -41,6 +41,7 @@ const PUBLIC_PATHS = [
   '/join',                    // Tesla-headrest rider-waitlist kiosk (added 2026-07-03)
   '/join.html',
   '/api/waitlist',            // Beehiiv subscribe proxy the kiosk POSTs to
+  '/rider',                   // WEB rider app entry (see '/rider/' prefix below)
   '/styles.css',              // design system stylesheet
   '/site.js',                 // header/footer injector
   // Root-level files that browsers (Safari, Chrome) auto-fetch on
@@ -62,6 +63,12 @@ const PUBLIC_PREFIXES = [
   '/assets/',                 // logos, brand marks, page screenshots
   '/js/',                     // /js/api.js etc.
   '/.well-known/',            // change-password, security.txt, ACME challenges, etc.
+  '/rider/',                  // the WEB rider app + all its assets (Expo Web
+                              // build proxied from joyride-rider-web). Exempt
+                              // from the site gate: the app has its own user
+                              // login, and gating it caused a Safari
+                              // cascade-401 double-prompt. Re-gate by removing
+                              // this line + the '/rider' entry below.
 ];
 
 export default function middleware(request) {
