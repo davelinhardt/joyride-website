@@ -106,11 +106,39 @@ export default function middleware(request) {
     }
   }
 
-  return new Response('Authentication required.', {
-    status: 401,
-    headers: {
-      'WWW-Authenticate': 'Basic realm="Joyride preview (any username; password required)"',
-      'Content-Type': 'text/plain',
-    },
-  });
+  // Unauthorized. WHETHER WE SEND THE CHALLENGE HEADER IS THE IMPORTANT PART.
+  //
+  // A browser pops its password dialog only when a 401 carries
+  // `WWW-Authenticate`. Send it for a top-level page navigation — that is the
+  // gate doing its job. NEVER send it for a subresource (fetch/XHR/script/
+  // image/manifest), because there the dialog can only ever appear *over an
+  // already-loaded page* — which is exactly how the "second password gate on
+  // /rider" bug kept coming back, three times from three different causes:
+  // the app fetching `joyride.cool/api/*`, then a root-level `/manifest.json`,
+  // then browser-autofetched icons. Each time the fix was to add one more
+  // entry to PUBLIC_PATHS, and each time a new path we hadn't thought of
+  // reopened it.
+  //
+  // Suppressing the header does NOT weaken the gate: the response is still a
+  // 401 and still serves no content. It only removes the browser's ability to
+  // prompt for a subresource, which is never the behaviour we want. This makes
+  // "the rider app is never gated" structurally true instead of dependent on
+  // keeping a list exhaustive.
+  //
+  // `sec-fetch-mode` is the reliable signal (Safari 16.4+, Chrome, Firefox).
+  // When it is absent (older browsers), fall back to the Accept header — a
+  // document navigation asks for text/html, a fetch/XHR does not — so the gate
+  // still prompts real visitors on those browsers.
+  const fetchMode = request.headers.get('sec-fetch-mode');
+  const isDocumentNavigation = fetchMode
+    ? fetchMode === 'navigate'
+    : (request.headers.get('accept') || '').includes('text/html');
+
+  const headers = { 'Content-Type': 'text/plain' };
+  if (isDocumentNavigation) {
+    headers['WWW-Authenticate'] =
+      'Basic realm="Joyride preview (any username; password required)"';
+  }
+
+  return new Response('Authentication required.', { status: 401, headers });
 }
