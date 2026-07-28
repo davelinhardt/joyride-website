@@ -339,6 +339,9 @@ form.contact-form, form.contact-form *,
 .btn--canary, .btn--canary *,
 .pill:not(.pill--ghost), .pill:not(.pill--ghost) *,
 .kicker, .kicker *,
+.driver-step .n, .driver-step .n *,
+.perk .icon, .perk .icon *,
+.why-card .icon, .why-card .icon *,
 [style*="background: var(--canary)"], [style*="background: var(--canary)"] *,
 [style*="background:var(--canary)"], [style*="background:var(--canary)"] *,
 [style*="background: #FFEF00"], [style*="background: #FFEF00"] *,
@@ -349,6 +352,7 @@ form.contact-form, form.contact-form *,
 /* Yellow surfaces also need to override the white ink tokens */
 .canary-block, .final-cta, .card--canary,
 .hero-cta--driver, .marquee, .apply,
+.driver-step .n, .perk .icon, .why-card .icon,
 form.contact-form, .app-btn,
 [style*="background: var(--canary)"], [style*="background:var(--canary)"],
 [style*="background: #FFEF00"], [style*="background:#FFEF00"] {
@@ -361,6 +365,56 @@ form.contact-form, .app-btn,
 .card--canary .eyebrow, .apply .eyebrow {
   color: var(--ink);
   opacity: 0.7;
+}
+
+/* ── Buttons on a canary surface ──
+   .btn--primary is itself canary-filled, so on a yellow card it
+   vanishes: invert it to an ink pill with a canary label AND arrow
+   (the ` *` selector is what saves the arrow — same gotcha that bit
+   .contact-block on raise1.html). .btn--ghost draws a 1.5px --fg
+   (white) border, equally invisible on yellow, so pin its outline to
+   ink and fill with ink on hover.
+
+   These are global on purpose. Every canary surface on the site is in
+   the selector list below, so new yellow blocks inherit the fix
+   instead of needing a per-page override. */
+.canary-block .btn--primary, .final-cta .btn--primary,
+.card--canary .btn--primary, .hero-cta--driver .btn--primary,
+.apply .btn--primary, form.contact-form .btn--primary,
+.canary-block .btn--primary *, .final-cta .btn--primary *,
+.card--canary .btn--primary *, .hero-cta--driver .btn--primary *,
+.apply .btn--primary *, form.contact-form .btn--primary * {
+  color: var(--canary) !important;
+}
+.canary-block .btn--primary, .final-cta .btn--primary,
+.card--canary .btn--primary, .hero-cta--driver .btn--primary,
+.apply .btn--primary, form.contact-form .btn--primary {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+}
+.canary-block .btn--primary:hover, .final-cta .btn--primary:hover,
+.card--canary .btn--primary:hover, .hero-cta--driver .btn--primary:hover,
+.apply .btn--primary:hover, form.contact-form .btn--primary:hover {
+  background: #1A1A1A !important;
+}
+.canary-block .btn--ghost, .final-cta .btn--ghost,
+.card--canary .btn--ghost, .hero-cta--driver .btn--ghost,
+.apply .btn--ghost, form.contact-form .btn--ghost {
+  background: transparent !important;
+  border: 1.5px solid var(--ink) !important;
+}
+.canary-block .btn--ghost:hover, .final-cta .btn--ghost:hover,
+.card--canary .btn--ghost:hover, .hero-cta--driver .btn--ghost:hover,
+.apply .btn--ghost:hover, form.contact-form .btn--ghost:hover {
+  background: var(--ink) !important;
+}
+.canary-block .btn--ghost:hover, .canary-block .btn--ghost:hover *,
+.final-cta .btn--ghost:hover, .final-cta .btn--ghost:hover *,
+.card--canary .btn--ghost:hover, .card--canary .btn--ghost:hover *,
+.hero-cta--driver .btn--ghost:hover, .hero-cta--driver .btn--ghost:hover *,
+.apply .btn--ghost:hover, .apply .btn--ghost:hover *,
+form.contact-form .btn--ghost:hover, form.contact-form .btn--ghost:hover * {
+  color: var(--canary) !important;
 }
 
 /* Light-grey body text on dark surfaces → white */

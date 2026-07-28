@@ -21,11 +21,13 @@ window.addEventListener('error', (e) => {
     // same way under the catch-all rewrite (joyride.cool/{username})
     // as they do under the known-page rewrites — and so the URL bar
     // matches Vercel's source patterns in vercel.json.
+    // Nav is Home · Drivers · Contact (2026-07-28 repositioning).
+    // `/riders` is retired — the home page IS the rider page — and
+    // `/blog` is deliberately unlinked until there's a real blogging
+    // tool behind it. Both pages/routes still resolve by direct URL.
     const navItems = [
       { href: '/', label: 'Home', key: 'home' },
       { href: '/drivers', label: 'Drivers', key: 'drivers' },
-      { href: '/riders', label: 'Riders', key: 'riders' },
-      { href: '/blog', label: 'Updates', key: 'blog' },
       { href: '/contact', label: 'Contact', key: 'contact' },
     ];
     const navHtml = navItems.map(it =>
@@ -33,7 +35,7 @@ window.addEventListener('error', (e) => {
     ).join('') + `
       <div class="mobile-cta-stack">
         <a href="/login" class="btn btn--ghost btn--sm">Log in</a>
-        <a href="/riders" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
+        <a href="/login" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
       </div>
     `;
 
@@ -45,7 +47,7 @@ window.addEventListener('error', (e) => {
         <nav>${navHtml}</nav>
         <div class="nav-cta">
           <a href="/login" class="btn btn--ghost btn--sm">Log in</a>
-          <a href="/riders" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
+          <a href="/login" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
           <button class="menu-toggle" aria-label="Open menu" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
           </button>
@@ -66,7 +68,7 @@ window.addEventListener('error', (e) => {
             <a href="/" class="brand">
               <img src="/assets/lockup-on-dark.svg" alt="Joyride">
             </a>
-            <p class="blurb"><strong style="color:var(--canary);">Enjoy the ride.</strong> A new kind of rideshare. Drivers can keep 100% of the fare. Riders get a better ride.</p>
+            <p class="blurb"><strong style="color:var(--canary);">Enjoy the ride.</strong> A premium vehicle and a professional driver, every time. No surge pricing. No cancellations.</p>
             <form class="newsletter" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Thanks ✓'; this.querySelector('input').value='';">
               <input type="email" required placeholder="Your email" aria-label="Email for newsletter">
               <button type="submit">Subscribe</button>
@@ -76,18 +78,15 @@ window.addEventListener('error', (e) => {
             <h4>Joyride</h4>
             <ul>
               <li><a href="/drivers">For drivers</a></li>
-              <li><a href="/riders">For riders</a></li>
-              <li><a href="/blog">Latest updates</a></li>
+              <li><a href="/">For riders</a></li>
               <li><a href="/contact">Contact</a></li>
             </ul>
           </div>
           <div>
             <h4>Company</h4>
             <ul>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Careers</a></li>
-              <li><a href="#">Press</a></li>
-              <li><a href="#">Investors</a></li>
+              <li><a href="/about">About</a></li>
+              <li><a href="/raise1">Investors</a></li>
             </ul>
           </div>
           <div class="legal-col">
@@ -112,7 +111,7 @@ window.addEventListener('error', (e) => {
           </div>
         </div>
         <div class="bottom">
-          <span>© 2026 Joyride, Inc. All rights reserved. · Joyride, Inc. is an <a href="https://i12s.com/" target="_blank" rel="noopener" style="color:var(--canary); margin-left:0;">InsightStudios</a> company.</span>
+          <span>© 2026 Joyride Technologies, Inc. All rights reserved.</span>
         </div>
       </div>
     `);

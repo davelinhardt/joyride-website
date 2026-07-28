@@ -1,13 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/riders", "destination": "/", "permanent": true },
+    { "source": "/riders.html", "destination": "/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/index", "destination": "/index.html" },
     { "source": "/login", "destination": "/login.html" },
     { "source": "/account", "destination": "/account.html" },
+    { "source": "/about", "destination": "/about.html" },
     { "source": "/drivers", "destination": "/drivers.html" },
-    { "source": "/riders", "destination": "/riders.html" },
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/contact", "destination": "/contact.html" },
     { "source": "/design-system", "destination": "/design-system.html" },

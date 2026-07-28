@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Joyride — For Drivers</title>
+<title>Joyride — For Chauffeur &amp; Car Service Operators</title>
+<meta name="description" content="Joyride is a premium transportation marketplace for licensed car service operators. More rides, more repeat customers, and the tools to grow your fleet.">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="icon" type="image/svg+xml" href="/assets/mark-black.svg?v=3"><link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon-180.png">
 <link rel="stylesheet" href="/styles.css">
 <style>
@@ -12,62 +13,33 @@
   .page-hero h1 em { font-style: normal; color: var(--canary-deep); }
   .page-hero .lead { margin-top: var(--s6); font-size: clamp(18px, 1.8vw, 22px); }
 
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); margin-top: var(--s8); }
-  .stat { padding: var(--s5); border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--white); }
-  .stat .tier { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-3); margin-bottom: var(--s3); }
-  .stat .num { font-size: clamp(32px, 4vw, 52px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
-  .stat .lbl { color: var(--ink-3); margin-top: var(--s2); font-size: 13px; }
-  /* Pro plan highlight — canary background instead of surface so the
-     Pro column reads as the headline tier without restating "best
-     deal" copy. Matches the .us treatment on the homepage compare
-     table. */
-  .stat--pro { background: var(--canary); border-color: var(--canary); }
-  .stat--pro .tier, .stat--pro .num, .stat--pro .lbl { color: var(--ink); }
-  @media (max-width: 720px) {
-    .stats { grid-template-columns: 1fr; }
-  }
+  /* Three value pillars */
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); margin-top: var(--s8); }
+  .pillar { padding: var(--s7) var(--s6); border: 1px solid var(--rule); border-radius: var(--r-xl); background: var(--white); }
+  .pillar .num { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: var(--s5); }
+  .pillar h3 { margin-bottom: var(--s3); font-size: clamp(22px, 2.2vw, 28px); letter-spacing: -0.02em; }
+  .pillar p { color: var(--ink-2); }
+  @media (max-width: 880px) { .pillars { grid-template-columns: 1fr; } }
 
-  /* Calculator */
-  .calc { background: var(--ink); color: var(--paper); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); }
-  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s8); margin-top: var(--s7); }
-  .calc-input label { display: block; font-size: 14px; font-weight: 600; color: #c8c8c0; margin-bottom: var(--s3); }
-  .calc-input .val { font-size: clamp(36px, 5vw, 56px); font-weight: 700; color: var(--canary); margin-bottom: var(--s4); letter-spacing: -0.03em; }
-  .calc-input input[type=range] {
-    width: 100%; height: 6px; appearance: none; background: rgba(255,255,255,0.15); border-radius: 999px;
-  }
-  .calc-input input[type=range]::-webkit-slider-thumb {
-    appearance: none; width: 28px; height: 28px; border-radius: 50%; background: var(--canary); border: 0; cursor: pointer;
-  }
-  .calc-input input[type=range]::-moz-range-thumb {
-    width: 28px; height: 28px; border-radius: 50%; background: var(--canary); border: 0; cursor: pointer;
-  }
-  .calc-result { background: rgba(255,255,255,0.04); border-radius: var(--r-lg); padding: var(--s6); display: grid; gap: var(--s5); }
-  .calc-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--s3); border-bottom: 1px solid rgba(255,255,255,0.15); }
-  .calc-row .label { font-size: 14px; color: var(--fg); }
-  /* Default amount color = white so unstyled rows are visible against
-     the dark .calc background. */
-  .calc-row .amt { font-size: clamp(22px, 2.4vw, 30px); font-weight: 700; color: var(--fg); }
+  /* Platform tools. Dark card → `color: var(--fg)`, never
+     `var(--paper)` (#0A0A0A in the dark theme = black on black). */
+  .tools { background: var(--surface-2); color: var(--fg); border: 1px solid var(--rule); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); }
+  .tools h2 { color: var(--fg); }
+  .tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s6) var(--s7); margin-top: var(--s7); }
+  .tool { border-top: 1px solid var(--rule); padding-top: var(--s5); }
+  .tool h3 { font-size: 20px; letter-spacing: -0.01em; margin-bottom: var(--s3); color: var(--fg); }
+  .tool p { color: #c8c8c0; font-size: 16px; }
+  @media (max-width: 720px) { .tools-grid { grid-template-columns: 1fr; } }
 
-  /* Mini comparison grid — Fees / Extra/mo / Per year across the
-     four plan columns. Mirrors the homepage compare-table layout
-     but lives inside the calculator result panel. */
-  .calc-table { width: 100%; border-collapse: collapse; font-size: clamp(15px, 1.4vw, 18px); }
-  .calc-table th, .calc-table td {
-    padding: 14px 10px; text-align: right; vertical-align: middle;
-    border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap;
-  }
-  .calc-table th { font-size: clamp(12px, 1vw, 14px); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); }
-  .calc-table th.us { color: var(--canary); }
-  .calc-table td { color: var(--fg); }
-  .calc-table td.yes { color: var(--canary); font-weight: 700; }
-  .calc-table tr td:first-child,
-  .calc-table tr th:first-child { text-align: left; font-weight: 500; }
-  .calc-table tbody tr:last-child td { border-bottom: 0; }
+  /* Requirements */
+  .reqs { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s4) var(--s7); margin-top: var(--s6); list-style: none; padding: 0; font-size: 17px; }
+  .reqs li { display: flex; gap: var(--s3); align-items: flex-start; padding-block: var(--s3); border-bottom: 1px solid var(--rule); }
+  .reqs li::before { content: '✓'; color: var(--canary-deep); font-weight: 700; flex-shrink: 0; }
+  @media (max-width: 720px) { .reqs { grid-template-columns: 1fr; } }
 
-  .calc-assumption { font-size: 12px; color: #c8c8c0; margin-top: var(--s4); }
-  @media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
-
-  /* Steps */
+  /* Steps. The .n chip is canary, so it needs explicit ink — that's
+     what the `.driver-step .n` entry in styles.css's canary-surface
+     list is for. Without it the numeral inherits white on yellow. */
   .driver-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s4); }
   .driver-step { padding: var(--s6); border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--white); }
   .driver-step .n { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--canary); font-weight: 700; margin-bottom: var(--s4); }
@@ -87,23 +59,21 @@
   details[open] summary::after { transform: rotate(45deg); }
   details > p { margin-top: var(--s4); color: var(--ink-2); max-width: 70ch; }
 
-  /* Apply */
-  .apply { background: var(--canary); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 80px); color: var(--ink); }
-  .apply-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: start; }
-  .apply h2, .apply p, .apply .eyebrow { color: var(--ink); }
-  .apply .lead { color: var(--ink-2); }
-  .apply-steps { display: grid; gap: var(--s5); }
-  .apply-step { display: grid; grid-template-columns: 40px 1fr; gap: var(--s4); align-items: start; }
-  .apply-step .n {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--ink); color: var(--canary);
+  /* Apply. No form here on purpose — operators apply inside the app. */
+  .apply { background: var(--canary); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 80px); }
+  .apply-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: var(--s7) var(--s8); align-items: start; }
+  .apply-steps { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s5); counter-reset: apply; }
+  .apply-steps li { display: grid; grid-template-columns: 40px 1fr; gap: var(--s4); align-items: start; }
+  .apply-steps li::before {
+    counter-increment: apply; content: counter(apply);
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--ink); color: var(--canary) !important;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 17px;
-    flex-shrink: 0;
   }
-  .apply-step h3 { font-size: 18px; font-weight: 700; margin: 4px 0 4px; color: var(--ink); letter-spacing: -0.01em; }
-  .apply-step p { color: var(--ink-2); font-size: 15px; line-height: 1.5; }
-  .apply-followup { font-size: 14px; color: var(--ink-2); margin-top: var(--s4); }
+  .apply-steps .st { font-size: clamp(19px, 1.9vw, 23px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; }
+  .apply-steps .sd { display: block; margin-top: 4px; font-size: 16px; line-height: 1.45; }
+  .apply-steps code { font-family: inherit; font-weight: 700; }
   @media (max-width: 880px) { .apply-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -111,147 +81,126 @@
 
 <main>
   <section class="page-hero wrap">
-    <span class="eyebrow">For drivers</span>
-    <h1 class="mt-4">Run your business. <em>Keep your money.</em></h1>
-    <p class="lead">Joyride is the rideshare marketplace built by drivers for drivers. Set your own prices. Build a real client list. Keep 100% of tips. Keep 85% to 100% of fares.</p>
+    <span class="eyebrow">For operators &amp; professional drivers</span>
+    <h1 class="mt-4">More rides. More clients. <em>A bigger business.</em></h1>
+    <p class="lead">Joyride is a premium transportation marketplace for licensed car service operators. We bring you riders who book in advance and come back — so your vehicles run full and your business grows.</p>
     <div class="cluster mt-7">
-      <a href="#apply" class="btn btn--primary">Apply to drive <span class="arrow">→</span></a>
-      <a href="#calculator" class="btn btn--ghost">See your earnings</a>
+      <a href="#apply" class="btn btn--primary">Apply to join <span class="arrow">→</span></a>
+      <a href="#requirements" class="btn btn--ghost">See requirements</a>
     </div>
 
-    <div class="stats">
-      <!-- Row 1: monthly subscription price -->
-      <div class="stat"><div class="tier">Basic</div><div class="num">$0</div><div class="lbl">flat monthly subscription</div></div>
-      <div class="stat"><div class="tier">Growth</div><div class="num">$249</div><div class="lbl">flat monthly subscription</div></div>
-      <div class="stat stat--pro"><div class="tier">Pro</div><div class="num">$499</div><div class="lbl">flat monthly subscription</div></div>
-      <!-- Row 2: share of fare the driver keeps -->
-      <div class="stat"><div class="tier">Basic</div><div class="num">85%</div><div class="lbl">of every fare goes to you</div></div>
-      <div class="stat"><div class="tier">Growth</div><div class="num">93%</div><div class="lbl">of every fare goes to you</div></div>
-      <div class="stat stat--pro"><div class="tier">Pro</div><div class="num">100%</div><div class="lbl">of every fare goes to you</div></div>
-      <!-- Row 3: transaction fee taken by Joyride -->
-      <div class="stat"><div class="tier">Basic</div><div class="num">15%</div><div class="lbl">transaction fee</div></div>
-      <div class="stat"><div class="tier">Growth</div><div class="num">7%</div><div class="lbl">transaction fee</div></div>
-      <div class="stat stat--pro"><div class="tier">Pro</div><div class="num">0%</div><div class="lbl">transaction fee</div></div>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">01 — More rides</div>
+        <h3>Fill the gaps in your day.</h3>
+        <p>Pre-booked airport runs, evenings out, events, and standing family trips — routed to your fleet, scheduled ahead, so you're not waiting on the phone to ring.</p>
+      </div>
+      <div class="pillar" style="background: var(--canary); border-color: var(--canary);">
+        <div class="num">02 — More customers</div>
+        <h3>Clients who come back.</h3>
+        <p>Riders are matched to your company and can request you again. Every good trip builds a repeat client relationship that belongs to your business.</p>
+      </div>
+      <div class="pillar">
+        <div class="num">03 — Grow</div>
+        <h3>Scale beyond your phone book.</h3>
+        <p>Add vehicles and chauffeurs as demand grows, with dispatch, scheduling, and payments handled for you. No new software to buy.</p>
+      </div>
     </div>
   </section>
 
-  <section class="section wrap" id="calculator">
-    <div class="calc">
-      <span class="eyebrow" style="color: var(--canary-deep);">Earnings calculator</span>
-      <h2 class="mt-3" style="max-width: 16ch;">See what you'd actually take home.</h2>
+  <section class="section wrap">
+    <div class="tools">
+      <span class="eyebrow" style="color: var(--canary-deep);">What you get</span>
+      <h2 class="mt-3" style="max-width: 20ch;">The back office of a large operator, without the overhead.</h2>
+      <p class="lead mt-4" style="color: #c8c8c0; max-width: 52ch;">
+        Everything you need to accept, run, and get paid for premium work — built for companies, not gig drivers.
+      </p>
 
-      <div class="calc-grid">
-        <div class="stack-sm">
-          <div class="calc-input">
-            <label>Rides per day</label>
-            <div class="val" id="ridesVal">21</div>
-            <input type="range" id="ridesSlider" min="1" max="40" step="1" value="21">
-          </div>
-          <div class="calc-input mt-5">
-            <label>Driving days per month</label>
-            <div class="val" id="daysVal">20</div>
-            <input type="range" id="daysSlider" min="1" max="30" step="1" value="20">
-          </div>
-          <p class="calc-assumption">Assumes an average fare of <strong style="color: var(--canary);">$23.66</strong> per ride.</p>
+      <div class="tools-grid">
+        <div class="tool">
+          <h3>Advance bookings</h3>
+          <p>Rides are confirmed and assigned to your fleet ahead of time, so you can plan chauffeur schedules with confidence.</p>
         </div>
-        <div class="calc-result">
-          <div class="calc-row">
-            <span class="label">Monthly fares</span>
-            <span class="amt" id="monthlyFares">$9,937</span>
-          </div>
-          <table class="calc-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>UberLyft</th>
-                <th class="us">Basic</th>
-                <th class="us">Growth</th>
-                <th class="us">Pro</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Fees</td>
-                <td id="ulFees">$3,975</td>
-                <td id="basicFees">$1,491</td>
-                <td id="growthFees">$945</td>
-                <td id="proFees">$499</td>
-              </tr>
-              <tr>
-                <td>Extra in your pocket / mo</td>
-                <td>—</td>
-                <td class="yes" id="basicExtra">+$2,304</td>
-                <td class="yes" id="growthExtra">+$2,850</td>
-                <td class="yes" id="proExtra">+$3,296</td>
-              </tr>
-              <tr>
-                <td>Per year</td>
-                <td>—</td>
-                <td class="yes" id="basicYear">+$27,652</td>
-                <td class="yes" id="growthYear">+$34,203</td>
-                <td class="yes" id="proYear">+$39,551</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="tool">
+          <h3>Dispatch &amp; driver app</h3>
+          <p>Assign trips to your chauffeurs, track them live, and keep everyone on the same manifest.</p>
+        </div>
+        <div class="tool">
+          <h3>Your rates, your service</h3>
+          <p>You publish the rates for the classes of service you offer. Pricing is fixed at booking — no discounting, no surge games.</p>
+        </div>
+        <div class="tool">
+          <h3>Payments &amp; payouts</h3>
+          <p>Riders pay in-app. Funds land in your account on a predictable schedule, with statements you can hand to your accountant.</p>
+        </div>
+        <div class="tool">
+          <h3>Client relationships</h3>
+          <p>Repeat riders, recurring trips, and your ratings and reviews stay attached to your company.</p>
+        </div>
+        <div class="tool">
+          <h3>Earnings &amp; tax records</h3>
+          <p>Trip history, earnings reports, and year-end documents for the business and for each chauffeur.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="requirements">
+    <div class="grid grid-2" style="gap: var(--s8); align-items: start;">
+      <div>
+        <span class="eyebrow">Who we work with</span>
+        <h2 class="mt-3" style="max-width: 18ch;">Licensed operators and career chauffeurs only.</h2>
+        <p class="lead mt-5">Our promise to riders is that every trip is a premium vehicle with a professional driver, and that we never cancel. That only works if every company on the platform is held to a real standard.</p>
+        <ul class="reqs">
+          <li>Commercially licensed for passenger service</li>
+          <li>Commercial insurance in force</li>
+          <li>Late-model, well-maintained vehicles</li>
+          <li>Professional chauffeurs, vetted individually</li>
+          <li>Clean driving and inspection records</li>
+          <li>A record of showing up, on time</li>
+        </ul>
+      </div>
+      <div class="photo photo--portrait" aria-label="Chauffeur with a premium sedan" style="background:none;padding:0;aspect-ratio:4/5;border-radius:var(--r-xl);overflow:hidden;--pattern-display:none"><img src="/assets/rider-driver.webp" alt="A professional chauffeur at the wheel of a premium vehicle" style="width:100%;height:100%;object-fit:cover;display:block"></div>
     </div>
   </section>
 
   <section class="section wrap">
     <span class="eyebrow">How it works</span>
-    <h2 class="mt-3 mb-7" style="max-width: 18ch;">From application to first ride in days.</h2>
+    <h2 class="mt-3 mb-7" style="max-width: 18ch;">From application to your first booking.</h2>
     <div class="driver-steps">
-      <div class="driver-step"><div class="n">1</div><h3>Apply</h3><p>Tell us about you and your vehicle. We'll review and onboard quickly.</p></div>
-      <div class="driver-step"><div class="n">2</div><h3>Subscribe</h3><p>One flat monthly fee on the Pro plan. No per-ride cut. Cancel anytime.</p></div>
-      <div class="driver-step"><div class="n">3</div><h3>Set your rates</h3><p>Choose your prices for the kinds of rides you want to do.</p></div>
-      <div class="driver-step"><div class="n">4</div><h3>Drive & earn</h3><p>Riders book you. You keep every dollar of every fare.</p></div>
-    </div>
-  </section>
-
-  <section class="section wrap">
-    <div class="grid grid-2" style="gap: var(--s7);">
-      <div class="photo photo--portrait" aria-label="Driver and rider" style="background:none;padding:0;aspect-ratio:4/5;border-radius:var(--r-xl);overflow:hidden;--pattern-display:none"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80" alt="A happy rider smiling" style="width:100%;height:100%;object-fit:cover;display:block"></div>
-      <div>
-        <span class="eyebrow">A real business</span>
-        <h2 class="mt-3" style="max-width: 16ch;">Your repeat riders are your repeat riders.</h2>
-        <p class="lead mt-5">When a rider books you, they can save you to favorites. Build a regular client list — airport runs, school pickups, weekly grocery trips — that comes back to you, not to an algorithm.</p>
-        <ul class="stack-sm mt-6" style="list-style: none; padding: 0; font-size: 17px;">
-          <li>✓ Direct rebooking from your saved riders</li>
-          <li>✓ Schedule recurring trips with regulars</li>
-          <li>✓ Tips & ratings stay on your profile, forever</li>
-          <li>✓ Export your client list anytime — it's yours</li>
-        </ul>
-      </div>
+      <div class="driver-step"><div class="n">1</div><h3>Apply</h3><p>Apply in the Joyride app with your company details, licensing, and documents.</p></div>
+      <div class="driver-step"><div class="n">2</div><h3>Onboard</h3><p>Add your vehicles and chauffeurs. We verify credentials and insurance for each.</p></div>
+      <div class="driver-step"><div class="n">3</div><h3>Set your service</h3><p>Publish your classes of service, coverage area, and rates.</p></div>
+      <div class="driver-step"><div class="n">4</div><h3>Take bookings</h3><p>Riders book ahead. You assign the chauffeur, run the trip, and get paid.</p></div>
     </div>
   </section>
 
   <section class="section wrap">
     <span class="eyebrow">Frequently asked</span>
-    <h2 class="mt-3 mb-7">Driver questions, answered.</h2>
+    <h2 class="mt-3 mb-7">Operator questions, answered.</h2>
     <details open>
-      <summary>What does the monthly subscription cover?</summary>
-      <p>Access to the Joyride marketplace, ride matching system, ride progression, rendezvous feature in-app payments, rider ratings, and customer support.</p>
+      <summary>Who is Joyride for?</summary>
+      <p>Licensed car service, chauffeur, and executive transportation companies — from an owner-operator with one commercial sedan to a fleet of thirty. If you carry passengers commercially and professionally, you're who we're built for.</p>
     </details>
     <details>
-      <summary>Can I really set my own prices?</summary>
-      <p>Yes. The app includes three powerful pricing features to control how you price your rides 1) rate care per minute 2) benchmark against UberLyft and 3) higher or lower of both.</p>
+      <summary>How does Joyride bring me more work?</summary>
+      <p>Riders come to Joyride for the trips they can't risk getting wrong — early flights, events, evenings out, family trips. Those bookings are made in advance and assigned to operators in the market, which means predictable, plannable work rather than opportunistic street hails.</p>
     </details>
     <details>
-      <summary>What if I don't get enough rides?</summary>
-      <p>Every new market experiences a demand ramp up period as Customers learn about the service. Most Drivers start with the Basic plan which has a $0 subscription fee. Once you see consistent demand, you can easily switch to a higher rate plan to lower or eliminate the transaction fees.</p>
+      <summary>Do I set my own rates?</summary>
+      <p>Yes. You publish rates for each class of service you offer. The rider sees the price before booking and it doesn't change afterward, so there's no negotiating and no discount pressure.</p>
     </details>
     <details>
-      <summary>What are the vehicle requirements?</summary>
-      <p>Standard rideshare requirements vary by city — generally a 4-door vehicle, 12 years old or newer, in good condition, with current registration and insurance. We'll walk you through your city's specifics during onboarding.</p>
+      <summary>Do the customers belong to me?</summary>
+      <p>Your clients, ratings, and reviews stay with your company. Riders who liked their trip can request you again, and you can set up recurring trips with regulars directly.</p>
     </details>
     <details>
-      <summary>How do payouts work?</summary>
-      <p>We use Stripe Connect to manage driver payouts. Customers pay for the ride and we automatically route the funds to your Stripe account. Setting up a Stripe account is easy and we will walk you through it after you are approved to drive.</p>
+      <summary>Can I run Joyride alongside my existing accounts?</summary>
+      <p>Yes. Most operators use Joyride to fill open capacity around their corporate accounts and direct bookings. You control which vehicles and hours you make available.</p>
     </details>
     <details>
-      <summary>Do you offer insurance?</summary>
-      <p>We don't offer insurance at this time. We encourage all Drivers to purchase commercial insurance to make sure they are covered. If you need assistance buying insurance, we can connect you with great insurance options in your area.</p>
+      <summary>What do you expect from my chauffeurs?</summary>
+      <p>The core promise to riders is that we never cancel. Once a trip is assigned, it runs — on time, in the vehicle class booked, with a professional at the wheel. Operators who hold that standard get more bookings.</p>
     </details>
   </section>
 
@@ -260,38 +209,17 @@
       <div class="apply-grid">
         <div>
           <span class="eyebrow">Apply to drive</span>
-          <h2 class="mt-3" style="max-width: 14ch;">Ready to keep what you earn?</h2>
-          <p class="lead mt-5">The process is short. Create your account, install the Driver app, and upload your documents — we take it from there.</p>
-          <a href="/login?signup=1" class="btn btn--primary mt-7">Apply to drive <span class="arrow">→</span></a>
-          <p class="apply-followup">We will respond via email with the next steps in the interview process.</p>
+          <h2 class="mt-3" style="max-width: 16ch;">Ready to put your fleet to work?</h2>
+          <p class="lead mt-5" style="color: var(--ink-2);">Applications happen inside the Joyride app. It takes four steps — have your commercial license, insurance, and vehicle documents ready to upload.</p>
+          <div class="cluster mt-6">
+            <a href="/login" class="btn btn--primary">Start your application <span class="arrow">→</span></a>
+          </div>
         </div>
         <ol class="apply-steps">
-          <li class="apply-step">
-            <div class="n">1</div>
-            <div>
-              <h3>Create a Joyride account</h3>
-              <p>Either sign up here or download the Joyride Rider app to create an account.</p>
-            </div>
-          </li>
-          <li class="apply-step">
-            <div class="n">2</div>
-            <div>
-              <h3>Download the Joyride Driver app</h3>
-            </div>
-          </li>
-          <li class="apply-step">
-            <div class="n">3</div>
-            <div>
-              <h3>Log into the Driver app</h3>
-              <p>Use the Joyride login credentials you just created.</p>
-            </div>
-          </li>
-          <li class="apply-step">
-            <div class="n">4</div>
-            <div>
-              <h3>Complete the forms and upload your documents</h3>
-            </div>
-          </li>
+          <li><span><span class="st">Create an account.</span><span class="sd">Go to <code>joyride.cool/rider</code> and sign up.</span></span></li>
+          <li><span><span class="st">Tap “Apply to drive.”</span><span class="sd">Once you're logged in, you'll find it in your account.</span></span></li>
+          <li><span><span class="st">Complete the application and upload your documents.</span><span class="sd">Company details, commercial licensing, insurance, and vehicle information.</span></span></li>
+          <li><span><span class="st">Submit.</span><span class="sd">Someone from our team will reach out to you directly.</span></span></li>
         </ol>
       </div>
     </div>
@@ -300,80 +228,5 @@
 
 <script src="/js/api.js"></script>
 <script src="/site.js"></script>
-<script>
-  // Earnings calculator — math mirrors the homepage compare table.
-  // Per-plan formula on monthly fares F:
-  //   UberLyft Pay = F * 0.60 (40% take rate) - $120 insurance
-  //   Basic Pay    = F * 0.85 (15% transaction fee) - $300 insurance
-  //   Growth Pay   = F * 0.93 (7% transaction fee)  - $300 insurance - $249 subscription
-  //   Pro Pay      = F * 1.00 (0% transaction fee)  - $300 insurance - $499 subscription
-  //
-  // Monthly fares F = rides_per_day * driving_days * avg_fare_per_ride.
-  // AVG_FARE is an assumption; surface it in the UI so drivers can
-  // sanity-check against their own market.
-  const AVG_FARE      = 23.66;  // average fare per ride ($)
-  const UL_INSURANCE  = 120;  // monthly driver insurance, UberLyft baseline
-  const J_INSURANCE   = 300;  // monthly driver insurance, Joyride
-  const GROWTH_SUB    = 249;
-  const PRO_SUB       = 499;
-
-  const $ = (id) => document.getElementById(id);
-  const ridesSlider  = $('ridesSlider');
-  const daysSlider   = $('daysSlider');
-  const ridesVal     = $('ridesVal');
-  const daysVal      = $('daysVal');
-  const monthlyFares = $('monthlyFares');
-  const ulFees       = $('ulFees');
-  const basicFees    = $('basicFees');
-  const growthFees   = $('growthFees');
-  const proFees      = $('proFees');
-  const basicExtra   = $('basicExtra');
-  const growthExtra  = $('growthExtra');
-  const proExtra     = $('proExtra');
-  const basicYear    = $('basicYear');
-  const growthYear   = $('growthYear');
-  const proYear      = $('proYear');
-
-  const fmt = n => '$' + Math.round(n).toLocaleString();
-  function update() {
-    const rides = +ridesSlider.value;
-    const days  = +daysSlider.value;
-    ridesVal.textContent = rides;
-    daysVal.textContent  = days;
-
-    const fares = rides * days * AVG_FARE;
-
-    // Platform fees per plan (transaction % + subscription)
-    const ulFee     = fares * 0.40;
-    const basicFee  = fares * 0.15;
-    const growthFee = fares * 0.07 + GROWTH_SUB;
-    const proFee    = PRO_SUB;
-
-    // Driver pay = fares - platform fees - insurance
-    const ulPay     = fares - ulFee     - UL_INSURANCE;
-    const basicPay  = fares - basicFee  - J_INSURANCE;
-    const growthPay = fares - growthFee - J_INSURANCE;
-    const proPay    = fares - proFee    - J_INSURANCE;
-
-    monthlyFares.textContent = fmt(fares);
-    ulFees.textContent       = fmt(ulFee);
-    basicFees.textContent    = fmt(basicFee);
-    growthFees.textContent   = fmt(growthFee);
-    proFees.textContent      = fmt(proFee);
-
-    const dBasic  = basicPay  - ulPay;
-    const dGrowth = growthPay - ulPay;
-    const dPro    = proPay    - ulPay;
-    basicExtra.textContent  = '+' + fmt(dBasic);
-    growthExtra.textContent = '+' + fmt(dGrowth);
-    proExtra.textContent    = '+' + fmt(dPro);
-    basicYear.textContent   = '+' + fmt(dBasic  * 12);
-    growthYear.textContent  = '+' + fmt(dGrowth * 12);
-    proYear.textContent     = '+' + fmt(dPro    * 12);
-  }
-  ridesSlider.addEventListener('input', update);
-  daysSlider.addEventListener('input', update);
-  update();
-</script>
 </body>
 </html>

@@ -447,25 +447,26 @@
     // the website never owns that flow. Once approved, their
     // /account picks up the Driver card automatically because the
     // server-side userType flips.
-    // Both hrefs are placeholders until App Store + Play listings are
-    // public (per SESSION_HANDOFF: EAS Build is queued).
-    // Native apps aren't published yet — render as non-clickable
-    // "Coming soon" placeholders (no App Store / Play listings live).
+    //
+    // These are PWAs, not native apps (per Dave 2026-07-28), so both
+    // cards link straight into the web app rather than sitting as
+    // "Coming soon" App Store placeholders. The session token lives in
+    // localStorage on this same origin, so both land already logged in.
     cards.push({
       key: "rider-app",
       eyebrow: "Rider app",
-      h2: "Download the Rider app",
-      p: "Book rides, see your driver in real time, save favorites, manage payments. Coming soon to the App Store and Google Play.",
-      go: "Coming soon",
-      disabled: true,
+      h2: "Open the Rider app",
+      p: "Book rides, see your driver in real time, save favorites, and manage payments. Add it to your home screen to use it like an app.",
+      href: "/rider",
+      go: "Open Rider app →",
     });
     cards.push({
       key: "driver-app",
       eyebrow: "Driver app",
-      h2: "Download the Driver app",
-      p: "Want to drive? Install the Driver app and apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
-      go: "Coming soon",
-      disabled: true,
+      h2: "Open the Driver app",
+      p: "Want to drive? Apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
+      href: "/driver",
+      go: "Open Driver app →",
     });
 
     grid.innerHTML = cards.map(function (c) {

@@ -3,218 +3,214 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Joyride — A new kind of rideshare</title>
+<title>Joyride — Premium rides. Professional drivers. Never cancelled.</title>
+<meta name="description" content="Joyride is premium transportation you can count on: a premium vehicle, a professional driver, and no surge pricing. Assigned in advance, so we never cancel on you.">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="icon" type="image/svg+xml" href="/assets/mark-black.svg?v=3"><link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon-180.png">
 <link rel="stylesheet" href="/styles.css">
 <style>
   /* Hero */
-  .hero { padding-block: clamp(40px, 6vw, 88px) clamp(64px, 8vw, 120px); }
-  .hero-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--s7); align-items: end; margin-bottom: var(--s7); }
-  .hero h1 { font-size: clamp(56px, 9vw, 132px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.92; }
+  .hero { padding-block: clamp(40px, 6vw, 88px) clamp(48px, 6vw, 88px); }
+  .hero-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--s7); align-items: end; margin-bottom: var(--s6); }
+  .hero h1 { font-size: clamp(52px, 8.4vw, 124px); font-weight: 700; letter-spacing: -0.045em; line-height: 0.92; }
   .hero h1 em { font-style: normal; color: var(--canary-deep); }
   .hero .smiley-mark { width: clamp(80px, 10vw, 140px); justify-self: end; }
   .hero-meta { display: flex; flex-direction: column; gap: var(--s4); align-items: flex-start; }
-  .hero-cta-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4);
-    margin-top: var(--s7);
-  }
-  .hero-cta {
-    display: flex; flex-direction: column; gap: var(--s3);
-    padding: clamp(28px, 3.5vw, 48px); border-radius: var(--r-xl);
-    border: 1.5px solid var(--ink); position: relative; overflow: hidden;
-    transition: transform .2s var(--ease), background .2s var(--ease);
-  }
-  .hero-cta:hover { transform: translateY(-3px); }
-  .hero-cta--driver { background: var(--canary); border-color: var(--canary); }
-  .hero-cta--rider { background: var(--ink); color: var(--canary); border-color: var(--ink); }
-  .hero-cta .label { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; opacity: .7; }
-  .hero-cta h2 { font-size: clamp(28px, 3vw, 44px); margin-block: var(--s2) var(--s4); }
-  .hero-cta p { max-width: 38ch; }
-  .hero-cta .go {
-    display: inline-flex; align-items: center; gap: 8px;
-    margin-top: var(--s5); font-weight: 600; font-size: 17px;
-  }
-  .hero-cta .go .arrow { transition: transform .2s var(--ease); }
-  .hero-cta:hover .go .arrow { transform: translateX(6px); }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: var(--s4); align-items: center; margin-top: var(--s7); }
+  .hero-actions .btn--primary { height: 58px; padding-inline: 32px; font-size: 18px; }
+  .hero-assure { display: flex; flex-wrap: wrap; gap: var(--s3) var(--s6); margin-top: var(--s6); list-style: none; padding: 0; font-size: 16px; color: var(--ink-2); }
+  .hero-assure li { display: flex; align-items: center; gap: 10px; }
+  .hero-assure li::before { content: '✓'; color: var(--canary-deep); font-weight: 700; }
+  .hero-split { display: grid; grid-template-columns: 1.15fr .85fr; gap: var(--s8); align-items: center; }
+  .hero-photo { border-radius: var(--r-xl); overflow: hidden; aspect-ratio: 4/5; border: 1px solid var(--rule); }
+  .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   @media (max-width: 880px) {
     .hero-head { grid-template-columns: 1fr; }
     .hero .smiley-mark { justify-self: start; }
-    .hero-cta-grid { grid-template-columns: 1fr; }
+    .hero-split { grid-template-columns: 1fr; gap: var(--s7); }
+    .hero-photo { aspect-ratio: 16/10; }
+  }
+  @media (max-width: 540px) {
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .hero-actions .btn { width: 100%; justify-content: center; }
   }
 
-  /* Marquee strip */
-  .marquee {
-    background: var(--ink); color: var(--canary);
-    padding-block: var(--s5);
-    overflow: hidden; white-space: nowrap;
-  }
+  /* Marquee strip — canary band with ink text. Never flip this to an
+     ink background: styles.css lists .marquee among its canary
+     surfaces and forces `color: var(--ink) !important` on it and every
+     descendant, so ink-on-ink renders as invisible text. */
+  .marquee { background: var(--canary); color: var(--ink); padding-block: var(--s5); overflow: hidden; white-space: nowrap; }
   .marquee-track {
     display: inline-flex; gap: var(--s7); padding-left: 100%;
     animation: marquee 40s linear infinite;
     font-size: clamp(28px, 3.5vw, 48px); font-weight: 600; letter-spacing: -0.02em;
   }
   .marquee-track span { display: inline-flex; align-items: center; gap: var(--s7); }
-  .marquee-track span::after { content: '✺'; color: var(--canary); }
+  .marquee-track span::after { content: '✺'; color: var(--ink); opacity: 0.5; }
   @keyframes marquee { to { transform: translateX(-100%); } }
 
-  /* Value props */
+  /* Three pillars */
   .vp-grid { grid-template-columns: repeat(3, 1fr); }
   .vp { padding: var(--s7) var(--s6); border-radius: var(--r-xl); border: 1px solid var(--rule); background: var(--white); }
   .vp .num { font-size: 14px; font-weight: 600; color: var(--ink-3); margin-bottom: var(--s5); }
-
-  /* Tablet: horizontal scroll-snap with peek */
+  .vp h3 { margin-bottom: var(--s3); }
+  .vp p { color: var(--ink-2); }
   @media (max-width: 880px) and (min-width: 541px) {
     .vp-grid {
-      display: flex;
-      grid-template-columns: none;
-      gap: var(--s4);
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
+      display: flex; grid-template-columns: none; gap: var(--s4);
+      overflow-x: auto; scroll-snap-type: x mandatory;
       scroll-padding-inline: var(--gutter);
-      margin-inline: calc(var(--gutter) * -1);
-      padding-inline: var(--gutter);
-      padding-bottom: var(--s4);
-      scrollbar-width: thin;
+      margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter);
+      padding-bottom: var(--s4); scrollbar-width: thin;
     }
-    .vp {
-      flex: 0 0 75%;
-      min-width: 320px;
-      scroll-snap-align: start;
-    }
+    .vp { flex: 0 0 75%; min-width: 320px; scroll-snap-align: start; }
   }
-
-  /* Phone: full stack so each card breathes */
   @media (max-width: 540px) {
     .vp-grid { grid-template-columns: 1fr; gap: var(--s4); }
     .vp { padding: var(--s6) var(--s5); }
   }
-  .vp h3 { margin-bottom: var(--s3); }
-  .vp p { color: var(--ink-2); }
 
-  /* Compare */
-  .compare { background: var(--ink); color: var(--paper); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); }
-  .compare-table {
-    width: 100%; border-collapse: collapse; margin-top: var(--s6);
-    font-size: clamp(13px, 1.15vw, 15px);
-    /* Fixed layout = columns sized by first row's explicit widths
-       instead of content. Lets the 4 value columns split the
-       remaining width equally regardless of which has the longest
-       cell content ($11,925 vs $0). */
-    table-layout: fixed;
+  /* Use cases. The label class is deliberately .case-kicker, NOT
+     .kicker — styles.css already owns .kicker as a canary pill
+     component, and reusing the name renders these labels as
+     full-width yellow bars. */
+  .cases { grid-template-columns: repeat(2, 1fr); gap: var(--s5); }
+  .case {
+    position: relative; overflow: hidden;
+    border-radius: var(--r-xl); border: 1px solid var(--rule);
+    background: var(--white); padding: var(--s7) var(--s6);
+    display: flex; flex-direction: column; gap: var(--s3);
+    min-height: 220px;
   }
+  .case .case-kicker { align-self: flex-start; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+  .case h3 { font-size: clamp(24px, 2.6vw, 34px); letter-spacing: -0.02em; line-height: 1.1; }
+  .case p { color: var(--ink-2); max-width: 42ch; }
+  /* --surface-2, not --ink: --ink equals the page background, so an
+     ink card just vanishes into the page. */
+  .case--dark { background: var(--surface-2); border-color: var(--rule); color: var(--fg); }
+  .case--dark h3 { color: var(--canary); }
+  .case--dark p { color: #c8c8c0; }
+  .case--dark .case-kicker { color: #8f8f88; }
+  .case--canary { background: var(--canary); border-color: var(--canary); color: var(--ink); }
+  .case--canary h3, .case--canary p { color: var(--ink); }
+  .case--canary .case-kicker { color: rgba(0,0,0,0.6); }
+  @media (max-width: 720px) { .cases { grid-template-columns: 1fr; } }
+
+  /* Compare. Dark cards take `color: var(--fg)`, never `var(--paper)`
+     — --paper is #0A0A0A in the dark theme, i.e. black on black. */
+  .compare { background: var(--surface-2); color: var(--fg); border: 1px solid var(--rule); border-radius: var(--r-xl); padding: clamp(40px, 6vw, 88px); }
+  .compare h2 { color: var(--fg); }
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: var(--s7); font-size: clamp(15px, 1.5vw, 18px); }
   .compare-table th, .compare-table td {
-    padding: 10px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);
-    vertical-align: middle;
-    white-space: nowrap;
+    padding: 18px 20px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); vertical-align: middle;
   }
-  /* Per the design system: every cell is either white (--fg) or
-     canary (--canary). Default value cells need an explicit color
-     because .compare sets color: var(--paper) = #0A0A0A in dark
-     mode (black on black). .yes / :first-child still override per
-     higher specificity; .no is now redundant in color but kept as
-     a hook for the muted "bad-for-driver" cells. */
-  .compare-table tbody td { color: var(--fg); }
-  .compare-table th { font-weight: 600; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg); }
+  .compare-table th { font-weight: 600; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
   .compare-table th.us { color: var(--canary); }
-  .compare-table tr th:first-child,
-  .compare-table tr td:first-child { width: 23%; }
-  .compare-table tr td:first-child { font-weight: 500; color: var(--fg); }
+  .compare-table tr td:first-child { font-weight: 500; color: #c8c8c0; width: 40%; }
   .compare-table .yes { color: var(--canary); font-weight: 600; }
-  .compare-table .no { color: var(--fg); }
-
-  /* Mobile: convert 4-col table to stacked cards */
+  .compare-table .no { color: #777; }
   @media (max-width: 720px) {
+    /* Table becomes stacked cards. Row labels are generated from each
+       td's data-col attribute via ::before — a td missing data-col
+       silently loses its label. */
     .compare-table thead { display: none; }
     .compare-table, .compare-table tbody, .compare-table tr, .compare-table td { display: block; width: 100%; }
     .compare-table tr {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--r-lg);
-      padding: var(--s4) var(--s5);
-      margin-bottom: var(--s4);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--r-lg); padding: var(--s4) var(--s5); margin-bottom: var(--s4);
     }
     .compare-table td {
       display: flex; justify-content: space-between; align-items: center; gap: var(--s4);
-      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
-      text-align: right;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.08); text-align: right;
     }
     .compare-table td:last-child { border-bottom: 0; }
     .compare-table tr td:first-child {
-      width: auto; font-weight: 700; font-size: 18px;
-      letter-spacing: -0.01em; color: #fff !important;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
-      padding-bottom: 14px; margin-bottom: 4px;
+      width: auto; font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: #fff !important;
+      text-align: left; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 14px; margin-bottom: 4px;
     }
-    .compare-table tr td:first-child::after { content: ''; }
     .compare-table td[data-col]::before {
-      content: attr(data-col);
-      font-size: 13px; font-weight: 500;
-      color: rgba(255,255,255,0.55);
-      text-transform: uppercase; letter-spacing: 0.06em;
-      text-align: left;
-      flex-shrink: 0;
+      content: attr(data-col); font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55);
+      text-transform: uppercase; letter-spacing: 0.06em; text-align: left; flex-shrink: 0;
     }
   }
 
+  /* The standard */
+  .spec { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 var(--s7); margin-top: var(--s6); }
+  .spec-row { display: grid; gap: 6px; padding-block: var(--s5); border-bottom: 1px solid var(--rule); }
+  .spec-row .k { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); }
+  .spec-row .v { font-size: clamp(19px, 1.9vw, 24px); font-weight: 600; letter-spacing: -0.02em; color: var(--canary); line-height: 1.2; }
+  .spec-row .n { font-size: 15px; color: var(--ink-3); line-height: 1.45; max-width: 42ch; }
+  @media (max-width: 720px) { .spec { grid-template-columns: 1fr; } }
+
   /* How it works */
-  .steps { counter-reset: step; }
   .step { display: grid; grid-template-columns: 80px 1fr 1.2fr; gap: var(--s6); align-items: start; padding-block: var(--s7); border-top: 1px solid var(--rule); }
   .step:last-child { border-bottom: 1px solid var(--rule); }
   .step .n { font-size: clamp(48px, 6vw, 72px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--canary-deep); }
   .step h3 { margin-bottom: var(--s3); }
   .step p { color: var(--ink-2); }
-  @media (max-width: 720px) {
-    .step { grid-template-columns: 1fr; gap: var(--s3); }
-  }
+  @media (max-width: 720px) { .step { grid-template-columns: 1fr; gap: var(--s3); } }
 
-  /* Final CTA */
-  .final-cta {
-    background: var(--canary); border-radius: var(--r-xl);
-    padding: clamp(56px, 8vw, 120px) clamp(32px, 5vw, 80px);
-    text-align: center;
+  /* App screens */
+  .app-hero { display: grid; grid-template-columns: .9fr 1.1fr; gap: var(--s8); align-items: center; }
+  .phone-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+  .phone-mock {
+    background: var(--ink); border: 1px solid var(--rule); border-radius: 44px; aspect-ratio: 9/19;
+    padding: 14px; position: relative; max-width: 300px; width: 100%; margin: 0 auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
   }
+  .phone-img { width: 100%; height: 100%; display: block; border-radius: 32px; object-fit: cover; }
+  .phone-cap { margin-top: var(--s4); text-align: center; font-size: 14px; color: var(--ink-3); }
+  @media (max-width: 880px) { .app-hero { grid-template-columns: 1fr; } }
+  @media (max-width: 540px) { .phone-row { grid-template-columns: 1fr; gap: var(--s6); } }
+
+  /* Final CTA. The ink-pill inversion for buttons on canary is global
+     in styles.css — don't re-patch it here. */
+  .final-cta { background: var(--canary); border-radius: var(--r-xl); padding: clamp(56px, 8vw, 120px) clamp(32px, 5vw, 80px); text-align: center; }
   .final-cta h2 { font-size: clamp(40px, 7vw, 96px); margin-bottom: var(--s5); }
   .final-cta .cluster { justify-content: center; gap: var(--s4); }
+  .final-cta .btn--primary { height: 58px; padding-inline: 32px; font-size: 18px; }
 </style>
 </head>
 <body data-page="home">
 
 <main>
   <section class="hero wrap">
-    <div class="hero-head">
+    <div class="hero-split">
       <div>
-        <h1>Drivers can keep <em>100%</em> of the fare. Riders get a <em>better ride.</em></h1>
-      </div>
-      <div class="hero-meta">
-        <img data-logo="hero-mark" src="/assets/mark-hero.svg" class="smiley-mark" alt="">
-      </div>
-    </div>
-    <p class="lead" style="max-width: 56ch; font-size: clamp(18px, 1.8vw, 24px);">
-      Joyride is a new rideshare marketplace where drivers set their own prices, build their own client lists, and keep 100% of the fares on the Pro subscription plan.
-    </p>
+        <div class="hero-head">
+          <div>
+            <h1>A premium car and a professional driver. <em>Every single time.</em></h1>
+          </div>
+          <div class="hero-meta">
+            <img data-logo="hero-mark" src="/assets/mark-hero.svg" class="smiley-mark" alt="">
+          </div>
+        </div>
+        <p class="lead" style="max-width: 58ch; font-size: clamp(18px, 1.8vw, 24px);">
+          Joyride isn't a lottery. Your driver and vehicle are assigned when you book — so there's no surge pricing, no last-minute cancellation, and no surprise at the curb.
+        </p>
 
-    <div class="hero-cta-grid">
-      <a href="drivers.html" class="hero-cta hero-cta--driver">
-        <span class="label">For drivers</span>
-        <h2>Run your business. Keep more of your money.</h2>
-        <p>One flat subscription. Set your own rates. Build a client list that's actually yours.</p>
-        <span class="go">See how it works <span class="arrow">→</span></span>
-      </a>
-      <a href="riders.html" class="hero-cta hero-cta--rider">
-        <span class="label">For riders</span>
-        <h2>Better rides. Better drivers. Better for everyone.</h2>
-        <p>When drivers are treated fairly, your ride is better. Choose drivers, save favorites, ride happier.</p>
-        <span class="go">Get the app <span class="arrow">→</span></span>
-      </a>
+        <div class="hero-actions">
+          <a href="/login" class="btn btn--primary">Book a ride now <span class="arrow">→</span></a>
+          <a href="#how" class="btn btn--ghost">How it works</a>
+        </div>
+
+        <ul class="hero-assure">
+          <li>No surge pricing</li>
+          <li>We never cancel</li>
+          <li>Commercially licensed vehicles</li>
+          <li>Vetted professional drivers</li>
+        </ul>
+      </div>
+      <div class="hero-photo">
+        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" alt="A smiling rider">
+      </div>
     </div>
   </section>
 
   <div class="marquee">
     <div class="marquee-track">
-      <span>Enjoy the ride</span><span>100% of the fare on the Pro plan</span><span>One flat fee on the Pro plan</span>
-      <span>Set your own price</span><span>Own your client list</span><span>Enjoy the ride</span>
-      <span>Drive on your terms</span><span>100% of the fare on the Pro plan</span>
+      <span>Enjoy the ride</span><span>We never cancel</span><span>No surge pricing</span>
+      <span>Premium vehicles</span><span>Professional drivers</span><span>Enjoy the ride</span>
+      <span>Assigned in advance</span><span>No surge pricing</span>
     </div>
   </div>
 
@@ -222,174 +218,177 @@
     <div class="split mb-7" style="align-items: end;">
       <div>
         <span class="eyebrow">Why Joyride</span>
-        <h2 class="mt-3" style="max-width: 16ch;">Built for the people who actually do the driving.</h2>
+        <h2 class="mt-3" style="max-width: 16ch;">Transportation you can actually plan around.</h2>
       </div>
       <p class="lead" style="max-width: 40ch;">
-        Big rideshare platforms take a big chunk of every fare. We don't. Drivers keep 100% of the fares and tips on the Pro plan.
+        The big apps optimize for the nearest available car. We optimize for the ride you were promised — same standard, every trip, at a price you knew before you booked.
       </p>
     </div>
 
     <div class="grid vp-grid">
       <div class="vp">
-        <div class="num">01</div>
-        <h3>Drivers can keep 100% of every fare.</h3>
-        <p>No per-ride cut on the Pro plan. No surge skim. The fare you charge is the fare you earn.</p>
+        <div class="num">01 — Consistency</div>
+        <h3>Premium car. Professional driver.</h3>
+        <p>Every Joyride is a late-model, commercially licensed vehicle with a career driver behind the wheel. And the price is the price — no surge multipliers, ever.</p>
       </div>
       <div class="vp" style="background: var(--canary); border-color: var(--canary);">
-        <div class="num">02</div>
-        <h3>Price your own rides.</h3>
-        <p>Set rates that work for your time, your vehicle, and your market. Charge what you're worth.</p>
+        <div class="num">02 — Reliability</div>
+        <h3>We never cancel.</h3>
+        <p>Your driver and vehicle are assigned the moment you book, not auctioned off at pickup time. No 4am scramble, no watching the app reassign your ride.</p>
       </div>
       <div class="vp">
-        <div class="num">03</div>
-        <h3>Own your client list.</h3>
-        <p>Repeat riders save you to favorites. Build a real book of business — not just streaming gigs.</p>
+        <div class="num">03 — Safety</div>
+        <h3>Vetted, licensed, accountable.</h3>
+        <p>Drivers pass deep vetting before they ever carry a passenger. Vehicles carry commercial licensing and insurance — the standard a car service is held to.</p>
       </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="split mb-7" style="align-items: end;">
+      <div>
+        <span class="eyebrow">When it matters most</span>
+        <h2 class="mt-3" style="max-width: 18ch;">For the rides you can't afford to get wrong.</h2>
+      </div>
+      <p class="lead" style="max-width: 40ch;">
+        Anyone can hail a car for a coffee run. Joyride is for the trips with something on the line.
+      </p>
+    </div>
+
+    <div class="grid cases">
+      <div class="case case--dark">
+        <span class="case-kicker">Airport</span>
+        <h3>Early morning flights.</h3>
+        <p>A 4:30am pickup that's confirmed the night before, with a driver who is already assigned. No cancellation at the worst possible hour.</p>
+      </div>
+      <div class="case case--canary">
+        <span class="case-kicker">Date night</span>
+        <h3>Nights out with your person.</h3>
+        <p>Arrive in a clean, quiet, premium car — and know the ride home is waiting at the same fair price, not triple it because the restaurant let out.</p>
+      </div>
+      <div class="case">
+        <span class="case-kicker">Family</span>
+        <h3>Getting kids where they need to go.</h3>
+        <p>Practice, school, the orthodontist. The same vetted professional drivers, so the person picking up your kid isn't a stranger every time.</p>
+      </div>
+      <div class="case">
+        <span class="case-kicker">Events</span>
+        <h3>Concerts, games, big nights.</h3>
+        <p>Twenty thousand people leaving at once is exactly when other apps fail. Your Joyride is already assigned, already priced, already waiting.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="split mb-6" style="align-items: end;">
+      <div>
+        <span class="eyebrow">The standard</span>
+        <h2 class="mt-3" style="max-width: 16ch;">What every Joyride includes.</h2>
+      </div>
+      <p class="lead" style="max-width: 40ch;">
+        Not a range of outcomes. One standard, on every trip you book.
+      </p>
+    </div>
+    <div class="spec">
+      <div class="spec-row"><span class="k">Pricing</span><span class="v">Fixed at booking</span><span class="n">One quoted fare. It never moves for weather, traffic, or demand.</span></div>
+      <div class="spec-row"><span class="k">Your driver</span><span class="v">Assigned when you book</span><span class="n">You know who is coming and what they are driving before the day arrives.</span></div>
+      <div class="spec-row"><span class="k">Cancellations</span><span class="v">We never cancel</span><span class="n">Once your trip is confirmed, it runs. No reassignment, no scramble.</span></div>
+      <div class="spec-row"><span class="k">Vehicle</span><span class="v">Premium, every trip</span><span class="n">Late-model, professionally maintained, commercially licensed and insured.</span></div>
+      <div class="spec-row"><span class="k">Driver</span><span class="v">Career professional</span><span class="n">Individually vetted chauffeurs who do this for a living.</span></div>
+      <div class="spec-row"><span class="k">Booking window</span><span class="v">Now, or weeks ahead</span><span class="n">One-off trips, standing weekly rides, and big nights, in the same flow.</span></div>
     </div>
   </section>
 
   <section class="section wrap">
     <div class="compare">
-      <span class="eyebrow" style="color: var(--canary-deep);">The math</span>
-      <h2 class="mt-3" style="max-width: 22ch;">A driver doing $11,925 a month in fares.</h2>
+      <span class="eyebrow" style="color: var(--canary-deep);">The difference</span>
+      <h2 class="mt-3" style="max-width: 18ch;">Same trip. Very different experience.</h2>
       <p class="lead mt-4" style="color: #c8c8c0; max-width: 50ch;">
-        Same fares. Different platforms. Here's what's left after the platform takes its share.
+        What you're actually buying when you book a ride.
       </p>
       <table class="compare-table">
         <thead>
-          <tr>
-            <th></th>
-            <th>UberLyft</th>
-            <th class="us">Joyride Basic</th>
-            <th class="us">Joyride Growth</th>
-            <th class="us">Joyride Pro</th>
-          </tr>
+          <tr><th>What you get</th><th>Ride app A</th><th>Ride app B</th><th class="us">Joyride</th></tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Total fares</td>
-            <td data-col="UberLyft">$11,925</td>
-            <td data-col="Joyride Basic">$11,925</td>
-            <td data-col="Joyride Growth">$11,925</td>
-            <td data-col="Joyride Pro">$11,925</td>
-          </tr>
-          <tr>
-            <td>Platform fees</td>
-            <td data-col="UberLyft">$4,770</td>
-            <td data-col="Joyride Basic">$1,789</td>
-            <td data-col="Joyride Growth">$835</td>
-            <td data-col="Joyride Pro">$0</td>
-          </tr>
-          <tr>
-            <td>Platform take rate</td>
-            <td data-col="UberLyft">40%</td>
-            <td data-col="Joyride Basic">15%</td>
-            <td data-col="Joyride Growth">7%</td>
-            <td data-col="Joyride Pro">0%</td>
-          </tr>
-          <tr>
-            <td>Subscription fee</td>
-            <td data-col="UberLyft">$0</td>
-            <td data-col="Joyride Basic">$0</td>
-            <td data-col="Joyride Growth">$249</td>
-            <td data-col="Joyride Pro">$499</td>
-          </tr>
-          <tr>
-            <td>Driver insurance</td>
-            <td data-col="UberLyft">$120</td>
-            <td data-col="Joyride Basic">$300</td>
-            <td data-col="Joyride Growth">$300</td>
-            <td data-col="Joyride Pro">$300</td>
-          </tr>
-          <tr>
-            <td>Driver pay</td>
-            <td class="yes" data-col="UberLyft">$7,035</td>
-            <td class="yes" data-col="Joyride Basic">$9,836</td>
-            <td class="yes" data-col="Joyride Growth">$10,541</td>
-            <td class="yes" data-col="Joyride Pro">$11,126</td>
-          </tr>
-          <tr>
-            <td>Driver pay increase</td>
-            <td data-col="UberLyft">—</td>
-            <td class="yes" data-col="Joyride Basic">+40%</td>
-            <td class="yes" data-col="Joyride Growth">+50%</td>
-            <td class="yes" data-col="Joyride Pro">+58%</td>
-          </tr>
-          <tr>
-            <td>Set your own price</td>
-            <td data-col="UberLyft">No</td>
-            <td class="yes" data-col="Joyride Basic">Yes</td>
-            <td class="yes" data-col="Joyride Growth">Yes</td>
-            <td class="yes" data-col="Joyride Pro">Yes</td>
-          </tr>
-          <tr>
-            <td>Repeat client list</td>
-            <td data-col="UberLyft">No</td>
-            <td class="yes" data-col="Joyride Basic">Yes</td>
-            <td class="yes" data-col="Joyride Growth">Yes</td>
-            <td class="yes" data-col="Joyride Pro">Yes</td>
-          </tr>
-          <tr>
-            <td>Choose your rides</td>
-            <td data-col="UberLyft">Limited</td>
-            <td class="yes" data-col="Joyride Basic">Yes</td>
-            <td class="yes" data-col="Joyride Growth">Yes</td>
-            <td class="yes" data-col="Joyride Pro">Yes</td>
-          </tr>
-          <tr>
-            <td>Punishment-free selection</td>
-            <td data-col="UberLyft">No</td>
-            <td class="yes" data-col="Joyride Basic">Yes</td>
-            <td class="yes" data-col="Joyride Growth">Yes</td>
-            <td class="yes" data-col="Joyride Pro">Yes</td>
-          </tr>
+          <tr><td>Surge pricing</td><td class="no" data-col="Ride app A">Yes</td><td class="no" data-col="Ride app B">Yes</td><td class="yes" data-col="Joyride">Never</td></tr>
+          <tr><td>Driver assigned when you book</td><td class="no" data-col="Ride app A">No</td><td class="no" data-col="Ride app B">No</td><td class="yes" data-col="Joyride">Always</td></tr>
+          <tr><td>Last-minute cancellations</td><td class="no" data-col="Ride app A">Common</td><td class="no" data-col="Ride app B">Common</td><td class="yes" data-col="Joyride">Never</td></tr>
+          <tr><td>Vehicle standard</td><td class="no" data-col="Ride app A">Varies</td><td class="no" data-col="Ride app B">Varies</td><td class="yes" data-col="Joyride">Premium, every ride</td></tr>
+          <tr><td>Commercially licensed &amp; insured</td><td class="no" data-col="Ride app A">Not required</td><td class="no" data-col="Ride app B">Not required</td><td class="yes" data-col="Joyride">Required</td></tr>
+          <tr><td>Professional career drivers</td><td class="no" data-col="Ride app A">Mixed</td><td class="no" data-col="Ride app B">Mixed</td><td class="yes" data-col="Joyride">Only</td></tr>
         </tbody>
       </table>
       <div class="cluster mt-7">
-        <a href="drivers.html" class="btn btn--canary">Try the calculator <span class="arrow">→</span></a>
-        <a href="drivers.html" class="btn btn--ghost" style="border-color: var(--canary); color: var(--canary);">Apply to drive</a>
+        <a href="/login" class="btn btn--canary">Book a ride now <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="how">
+    <span class="eyebrow">How it works</span>
+    <h2 class="mt-3 mb-7" style="max-width: 18ch;">Book it, and it's booked.</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="n">01</div>
+        <div><h3>Tell us where and when.</h3></div>
+        <p>Right now or three weeks out. Airport runs, standing weekly trips, one big night — all the same flow.</p>
+      </div>
+      <div class="step">
+        <div class="n">02</div>
+        <div><h3>See the real price.</h3></div>
+        <p>One clear fare, quoted upfront. It doesn't move because of weather, traffic, or the concert that just ended.</p>
+      </div>
+      <div class="step">
+        <div class="n">03</div>
+        <div><h3>Get your driver and vehicle.</h3></div>
+        <p>Assigned at booking, not at pickup. You know who's coming and what they're driving before the day arrives.</p>
+      </div>
+      <div class="step">
+        <div class="n">04</div>
+        <div><h3>They show up.</h3></div>
+        <p>That's the whole promise. A premium car, a professional driver, at the time you booked — and we don't cancel.</p>
       </div>
     </div>
   </section>
 
   <section class="section wrap">
-    <span class="eyebrow">How it works</span>
-    <h2 class="mt-3 mb-7" style="max-width: 18ch;">Two sides. One marketplace. Joy on both.</h2>
-
-    <div class="steps">
-      <div class="step">
-        <div class="n">01</div>
-        <div><h3>Drivers subscribe.</h3></div>
-        <p>All subscription plans give drivers access to the marketplace, on-demand rides, scheduled rides, payments, pricing settings and Customer support.</p>
+    <div class="app-hero">
+      <div>
+        <span class="eyebrow">In the app</span>
+        <h2 class="mt-3" style="max-width: 16ch;">See your driver, your car, and your price.</h2>
+        <p class="lead mt-5">Before you confirm, you know who is picking you up, what they're driving, and exactly what the trip costs. Then you can watch them come to you.</p>
+        <div class="cluster mt-6">
+          <a href="/login" class="btn btn--primary">Book a ride now <span class="arrow">→</span></a>
+        </div>
       </div>
-      <div class="step">
-        <div class="n">02</div>
-        <div><h3>Drivers set the price.</h3></div>
-        <p>Drivers publish their rates. Riders see real, transparent pricing — no algorithmic surge math.</p>
-      </div>
-      <div class="step">
-        <div class="n">03</div>
-        <div><h3>Riders book the ride.</h3></div>
-        <p>Riders pick a driver they trust, save favorites, and pay through the app. All fares and tips go straight to the driver.</p>
-      </div>
-      <div class="step">
-        <div class="n">04</div>
-        <div><h3>Both sides win.</h3></div>
-        <p>Drivers earn more. Riders get better service. Repeat trips build relationships, not metrics. Full transparency to the penny.</p>
+      <div class="phone-row">
+        <div>
+          <div class="phone-mock">
+            <img src="/assets/rider-screens/confirm-ride-masked.png" class="phone-img" alt="Joyride app showing a matched driver with photo, rating, vehicle and a fixed fare, with a Confirm Ride button">
+          </div>
+          <div class="phone-cap">Your driver and fare, before you confirm</div>
+        </div>
+        <div>
+          <div class="phone-mock">
+            <img src="/assets/rider-screens/en-route-masked.png" class="phone-img" alt="Joyride app showing the assigned driver en route to pickup with a live map and ETA">
+          </div>
+          <div class="phone-cap">Live ETA on the way to you</div>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="section wrap">
     <div class="final-cta">
-      <span class="eyebrow">Pre-launch · Join the waitlist</span>
-      <h2 class="mt-4">Enjoy the ride.</h2>
-      <p class="lead" style="margin: 0 auto var(--s7); color: var(--ink-2);">
-        We're rolling out city by city in 2026. Get on the list and we'll let you know when we land in yours.
+      <span class="eyebrow">Ready when you are</span>
+      <h2 class="mt-4">Take a Joyride.</h2>
+      <p class="lead" style="margin: 0 auto var(--s7); color: var(--ink-2); max-width: 46ch;">
+        Book in under a minute and get the ride you were promised — premium vehicle, professional driver, price locked in.
       </p>
       <div class="cluster">
-        <a href="drivers.html" class="btn btn--primary">I want to drive <span class="arrow">→</span></a>
-        <a href="riders.html" class="btn btn--ghost">I want to ride</a>
+        <a href="/login" class="btn btn--primary">Book a ride now <span class="arrow">→</span></a>
       </div>
     </div>
   </section>

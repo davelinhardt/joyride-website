@@ -7,15 +7,15 @@ for login / signup / driver profiles / rider tool.
 
 ## Structure
 
-- `index.html` — landing
-- `riders.html` — marketing for riders
-- `drivers.html` — marketing for drivers
+- `index.html` — landing / the rider page (`/riders` 301s here; the old standalone riders page is retired)
+- `drivers.html` — marketing for licensed car service operators & career chauffeurs
+- `about.html` — company / positioning page, linked from the footer only
 - `login.html` — auth (login + signup tabs, mirrors the rider app signup flow)
 - `account.html` — post-login chooser (rider tools / driver profile if approved / admin tool / download apps) + email + mobile verification (inline widget + post-signup modal)
 - `driver.html` — public driver profile served at `/{username}`
 - `rides.html` — rider's ride history (Activity tab mirror)
 - `receipt.html` — single-ride receipt with Print/Save-as-PDF
-- `blog.html`, `contact.html`, `design-system.html`
+- `blog.html` (**unlinked + noindex** until a real blogging tool is in place — reachable by direct URL only), `contact.html`, `design-system.html`
 - `styles.css`, `site.js`, `js/api.js`
 - `vercel.json` — security headers, rewrites for known pages + `/{username}` catch-all, narrow immutable cache rule (image prefixes only)
 
