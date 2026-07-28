@@ -28,8 +28,15 @@
   .service-area p { margin-top: var(--s3); color: var(--ink-2); font-size: 16px; }
 
   form.contact-form { display: grid; gap: var(--s5); padding: var(--s7); background: var(--canary); border-radius: var(--r-xl); }
+  /* These sit on the canary card, so the global canary rule paints their
+     text ink (#0A0A0A). The field backgrounds must therefore be LITERAL
+     white — not var(--white), which is #161614 in the dark theme (a card
+     surface token, not a color). Using it here turned the field near-black
+     on focus with near-black text, so you couldn't see what you typed.
+     Same family as the var(--paper) trap on dark cards. */
   form.contact-form .field input, form.contact-form .field textarea, form.contact-form .field select { background: rgba(255,255,255,0.7); border-color: transparent; }
-  form.contact-form .field input:focus, form.contact-form .field textarea:focus, form.contact-form .field select:focus { background: var(--white); }
+  form.contact-form .field input:focus, form.contact-form .field textarea:focus, form.contact-form .field select:focus { background: #FFFFFF; }
+  form.contact-form .field input::placeholder, form.contact-form .field textarea::placeholder { color: rgba(0,0,0,0.45); }
 
   /* Inline error banner. Ink-on-canary so it reads on the yellow card
      (the global canary-surface rule would otherwise force it to ink and
