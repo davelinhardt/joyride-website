@@ -8,3 +8,7 @@ node_modules
 # stay on disk for reference but shouldn't ship with the site.
 assets/Driver public page design*.zip
 assets/driver-public-page-design-*/
+# Pulled env files (vercel env pull). Secrets come back masked, but the
+# file still shouldn't be committed.
+.env
+.env.*
