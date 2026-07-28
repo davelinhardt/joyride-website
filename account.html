@@ -456,14 +456,21 @@
     // app download. /driver is the driver web app (in progress) — the
     // same destination the rider app's "Apply to drive" button points
     // at, so both routes land in one place.
-    cards.push({
-      key: "driver-app",
-      eyebrow: "Drive with Joyride",
-      h2: "Apply to Drive",
-      p: "Want to drive? Apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
-      href: "/driver",
-      go: "Apply to drive →",
-    });
+    // Non-drivers only — an approved driver has already applied, and
+    // gets the Driver page + Subscription cards above instead. Gated on
+    // userType (the server flips it to driver/both on approval) rather
+    // than on the application row, so someone mid-application still
+    // sees the entry point.
+    if (!isDriver) {
+      cards.push({
+        key: "driver-app",
+        eyebrow: "Drive with Joyride",
+        h2: "Apply to Drive",
+        p: "Want to drive? Apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
+        href: "/driver",
+        go: "Apply to drive →",
+      });
+    }
 
     grid.innerHTML = cards.map(function (c) {
       var isPrimary = c.key === primaryKey && !c.disabled;
