@@ -35,46 +35,9 @@
 
 "use strict";
 
-var TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+var { parseBody, getClientIp, checkTurnstile } = require("./_turnstile.js");
+
 var DEFAULT_API_BASE = "https://joiryde-api-production.up.railway.app";
-
-/** Parse a body that may arrive already-parsed or as a raw JSON string. */
-function parseBody(body) {
-  if (!body) return {};
-  if (typeof body === "string") {
-    try {
-      return JSON.parse(body);
-    } catch (_) {
-      return {};
-    }
-  }
-  return typeof body === "object" ? body : {};
-}
-
-/** First IP from x-forwarded-for, passed to Turnstile as remoteip. */
-function getClientIp(req) {
-  var xff = req && req.headers && req.headers["x-forwarded-for"];
-  if (typeof xff === "string" && xff.length) return xff.split(",")[0].trim();
-  return "";
-}
-
-/**
- * Verify a Turnstile token with Cloudflare's siteverify endpoint.
- * Resolves true only when Cloudflare confirms the token is valid.
- */
-async function verifyTurnstile(token, secret, remoteip) {
-  var form = new URLSearchParams();
-  form.append("secret", secret);
-  form.append("response", token);
-  if (remoteip) form.append("remoteip", remoteip);
-  var res = await fetch(TURNSTILE_VERIFY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: form.toString(),
-  });
-  var data = await res.json();
-  return !!(data && data.success);
-}
 
 async function handler(req, res) {
   if (req.method !== "POST") {
@@ -86,25 +49,10 @@ async function handler(req, res) {
   var body = parseBody(req.body);
 
   // Bot check first — no point spending an upstream round-trip on a bot.
-  var turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
-  if (turnstileSecret) {
-    var token = typeof body.turnstileToken === "string" ? body.turnstileToken : "";
-    if (!token) {
-      res.status(400).json({ error: "Please complete the verification and try again." });
-      return;
-    }
-    var humanVerified = false;
-    try {
-      humanVerified = await verifyTurnstile(token, turnstileSecret, getClientIp(req));
-    } catch (err) {
-      console.error("[contact] Turnstile verify threw", err);
-    }
-    if (!humanVerified) {
-      res.status(403).json({ error: "Verification failed. Please try again." });
-      return;
-    }
-  } else {
-    console.warn("[contact] TURNSTILE_SECRET_KEY not set — skipping bot check.");
+  var gate = await checkTurnstile(req, body, "contact");
+  if (gate) {
+    res.status(gate.status).json({ error: gate.error });
+    return;
   }
 
   var apiBase = process.env.JOYRIDE_API_BASE || DEFAULT_API_BASE;
@@ -140,4 +88,3 @@ async function handler(req, res) {
 module.exports = handler;
 module.exports.parseBody = parseBody;
 module.exports.getClientIp = getClientIp;
-module.exports.verifyTurnstile = verifyTurnstile;

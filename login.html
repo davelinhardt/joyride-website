@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
+<!-- Cloudflare Turnstile — bot check on SIGNUP only (login is
+     credential-gated already). Site key is public; the secret lives in
+     the Vercel project and is verified by /api/signup. -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   .auth-wrap {
     min-height: calc(100vh - 76px - 320px);
@@ -168,7 +172,7 @@
       <h1 data-mode="login">Welcome back.</h1>
       <h1 data-mode="signup">Join Joyride.</h1>
       <p class="sub" data-mode="login">Log in to manage your rides, earnings, or account.</p>
-      <p class="sub" data-mode="signup">Create an account in under a minute. We'll let you know when we launch in your city.</p>
+      <p class="sub" data-mode="signup">Create an account in under a minute and book your first ride.</p>
 
       <!-- Status banner — used for both error messages ("This email is
            already registered") and success messages ("Account created —
@@ -221,6 +225,13 @@
         </div>
 
         <button type="submit" class="submit" data-mode="login">Log in</button>
+        <div class="cf-turnstile" id="cf-turnstile" data-mode="signup"
+             data-sitekey="0x4AAAAAADvVDMZbxvZph4oj"
+             data-callback="jrTurnstileOk"
+             data-expired-callback="jrTurnstileExpired"
+             data-error-callback="jrTurnstileExpired"
+             data-theme="dark"
+             data-appearance="interaction-only"></div>
         <button type="submit" class="submit" data-mode="signup">Create account</button>
 
         <div class="meta" data-mode="login">
@@ -298,6 +309,22 @@
     banner.classList.remove("is-error", "is-success");
     banner.textContent = "";
   }
+  // Cloudflare Turnstile (signup only). The interaction-only widget
+  // validates silently and fires jrTurnstileOk with a token. Tokens are
+  // single-use, so the widget is reset after every failed attempt.
+  var turnstileToken = "";
+  window.jrTurnstileOk = function (t) { turnstileToken = t || ""; };
+  window.jrTurnstileExpired = function () { turnstileToken = ""; };
+  function getTurnstileToken() {
+    if (turnstileToken) return turnstileToken;
+    try { return (window.turnstile && window.turnstile.getResponse("#cf-turnstile")) || ""; }
+    catch (_) { return ""; }
+  }
+  function resetTurnstile() {
+    turnstileToken = "";
+    try { if (window.turnstile) window.turnstile.reset("#cf-turnstile"); } catch (_) {}
+  }
+
   function showError(msg) {
     banner.hidden = false;
     banner.classList.remove("is-success");
@@ -374,19 +401,43 @@
     if (!username || username.length < 3) return showError("Username must be at least 3 characters.");
     if (!password || password.length < 6) return showError("Password must be at least 6 characters.");
 
-    var result = await JoyrideAPI.apiPost("/api/rider/signup", {
-      firstName: firstName,
-      lastName:  lastName,
-      email:     email,
-      mobile:    mobile,
-      username:  username,
-      password:  password,
-      // Optional: driver-public-profile referral. Server resolves
-      // affid → driver and adds them to the new rider's favorites
-      // (best-effort; bad affid silently skips).
-      affid:     affid || undefined,
-    });
+    // Signup goes through the same-origin Vercel function at
+    // /api/signup, which verifies the Cloudflare Turnstile token before
+    // forwarding to Railway. Every accepted signup costs an email and an
+    // SMS, so the bot check pays for itself. Login still posts straight
+    // to the API — it's credential-gated already.
+    var result;
+    try {
+      var res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: firstName,
+          lastName:  lastName,
+          email:     email,
+          mobile:    mobile,
+          username:  username,
+          password:  password,
+          // Optional: driver-public-profile referral. Server resolves
+          // affid → driver and adds them to the new rider's favorites
+          // (best-effort; bad affid silently skips).
+          affid:     affid || undefined,
+          turnstileToken: getTurnstileToken(),
+        }),
+      });
+      result = await res.json().catch(function () { return null; });
+      if (!res.ok) {
+        resetTurnstile();
+        showError((result && result.error) || "Signup failed. Please try again.");
+        return;
+      }
+    } catch (err) {
+      resetTurnstile();
+      showError("We couldn't reach our servers. Please try again.");
+      return;
+    }
     if (!result || !result.sessionToken || !result.rider) {
+      resetTurnstile();
       showError("Signup failed. Please try again.");
       return;
     }
