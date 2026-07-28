@@ -1027,6 +1027,19 @@
     // Deep-link: if URL hash points to a user, open it right away
     const m = location.hash.match(/^#\/user\/(\d+)$/);
     if (m) openUser(parseInt(m[1], 10));
+    // …or straight to Inbound. The new-inquiry notification email links
+    // to /admin#/inbound so Dave lands on the message, not on User
+    // Management (the default tab).
+    else if (location.hash === '#/inbound') selectView('inquiries');
+  }
+
+  /**
+   * Programmatically switch tabs — same effect as clicking the sidebar
+   * item, so deep links and clicks can't drift apart.
+   */
+  function selectView(view) {
+    const item = document.querySelector('.nav-item[data-view="' + view + '"]');
+    if (item) item.click();
   }
   document.getElementById('logoutBtn').addEventListener('click', () => {
     // Single sign-out — clear the shared Bearer token and bounce to login.
@@ -1045,7 +1058,7 @@
       // Switching tabs always takes us back to the list for that tab
       document.getElementById('userDetailView').style.display = 'none';
       openUserId = null; currentUserDetail = null;
-      if (location.hash.startsWith('#/user/')) {
+      if (location.hash.startsWith('#/')) {
         history.pushState({}, '', location.pathname + location.search);
       }
       document.getElementById('usersView').style.display = view === 'users' ? 'block' : 'none';
@@ -1184,6 +1197,8 @@
     const m = location.hash.match(/^#\/user\/(\d+)$/);
     if (m) {
       openUser(parseInt(m[1], 10));
+    } else if (location.hash === '#/inbound') {
+      selectView('inquiries');
     } else {
       openUserId = null; currentUserDetail = null;
       showUserList();
