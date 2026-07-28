@@ -151,6 +151,22 @@
       border-radius: 8px; color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; }
     .nav-item:hover { background: var(--panel-2); color: var(--text); }
     .nav-item.active { background: var(--action-soft); color: var(--action-soft-text); font-weight: 600; }
+    /* Unread count of status='new' inquiries. */
+    .nav-badge { margin-left: auto; background: #FFEF00; color: #0A0A0A;
+      font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
+    .nav-badge[hidden] { display: none; }
+
+    /* Inbound view */
+    .inq-status { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-2);
+      background: var(--panel-2); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .inq-msg { max-width: 520px; white-space: pre-wrap; word-break: break-word;
+      color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .inq-row-new td { background: rgba(255,239,0,0.06); }
+    .badge-new { background: #FFEF00; color: #0A0A0A; }
+    .badge-processing { background: #3B82F6; color: #fff; }
+    .badge-resolved { background: #10B981; color: #fff; }
+    .inq-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: .04em; }
     .nav-section { font-size: 11px; color: var(--muted); text-transform: uppercase;
       letter-spacing: 1px; padding: 16px 14px 6px; }
     .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
@@ -417,6 +433,10 @@
         <div class="nav-item" data-view="applications">
           <span>📋</span> Driver Apps
         </div>
+        <div class="nav-item" data-view="inquiries">
+          <span>📥</span> Inbound
+          <span class="nav-badge" id="inquiryBadge" hidden>0</span>
+        </div>
         <div class="nav-item" data-view="taxes">
           <span>🧾</span> Taxes &amp; Fees
         </div>
@@ -512,6 +532,39 @@
           </table>
           <div class="empty" id="appEmpty" style="display:none">
             <h3>No applications found</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- INBOUND (contact-form inquiries) VIEW -->
+      <div id="inquiriesView" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1>Inbound</h1>
+            <div class="sub">Messages from the contact form on joyride.cool.</div>
+          </div>
+        </div>
+        <div class="chips" id="inqChips">
+          <button class="chip active" data-inq-filter="all">All</button>
+          <button class="chip" data-inq-filter="new">New</button>
+          <button class="chip" data-inq-filter="processing">Processing</button>
+          <button class="chip" data-inq-filter="resolved">Resolved</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th>Received</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="inqTableBody"></tbody>
+          </table>
+          <div class="empty" id="inqEmpty" style="display:none">
+            <h3>No inquiries yet</h3>
           </div>
         </div>
       </div>
@@ -997,10 +1050,12 @@
       }
       document.getElementById('usersView').style.display = view === 'users' ? 'block' : 'none';
       document.getElementById('applicationsView').style.display = view === 'applications' ? 'block' : 'none';
+      document.getElementById('inquiriesView').style.display = view === 'inquiries' ? 'block' : 'none';
       document.getElementById('taxesView').style.display = view === 'taxes' ? 'block' : 'none';
       document.getElementById('rateSamplerView').style.display = view === 'rate-sampler' ? 'block' : 'none';
       document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
       if (view === 'applications') loadApplications();
+      if (view === 'inquiries') loadInquiries();
       if (view === 'taxes') loadTaxSettings();
       if (view === 'rate-sampler') loadRateSampler();
       if (view === 'settings') { loadSystemSettings(); loadSubscriptionPlans(); }
@@ -1087,6 +1142,7 @@
     const view = activeNav?.dataset?.view || 'users';
     document.getElementById('usersView').style.display = view === 'users' ? 'block' : 'none';
     document.getElementById('applicationsView').style.display = view === 'applications' ? 'block' : 'none';
+    document.getElementById('inquiriesView').style.display = view === 'inquiries' ? 'block' : 'none';
     document.getElementById('taxesView').style.display = view === 'taxes' ? 'block' : 'none';
     document.getElementById('rateSamplerView').style.display = view === 'rate-sampler' ? 'block' : 'none';
     document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
@@ -1094,6 +1150,7 @@
   function showUserDetail() {
     document.getElementById('usersView').style.display = 'none';
     document.getElementById('applicationsView').style.display = 'none';
+    document.getElementById('inquiriesView').style.display = 'none';
     document.getElementById('taxesView').style.display = 'none';
     document.getElementById('rateSamplerView').style.display = 'none';
     document.getElementById('settingsView').style.display = 'none';
@@ -1517,6 +1574,95 @@
       toast('Notes saved');
     } catch (err) { toast(err.message, 'error'); }
   });
+
+  // ─── Inbound (contact-form inquiries) ──────────────────────────────────
+  // Submissions from joyride.cool/contact land in the `inquiries` table.
+  // Triage states are new → processing → resolved; the server rejects
+  // anything outside that enum, so the <select> here is the whole UI.
+  let currentInqFilter = 'all';
+  let currentInquiries = [];
+
+  document.querySelectorAll('#inqChips .chip').forEach((c) => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#inqChips .chip').forEach((x) => x.classList.remove('active'));
+      c.classList.add('active');
+      currentInqFilter = c.dataset.inqFilter;
+      // Filtering happens server-side so the counts stay honest even
+      // once the list outgrows the 200-row page.
+      loadInquiries();
+    });
+  });
+
+  async function loadInquiries() {
+    const body = document.getElementById('inqTableBody');
+    body.innerHTML = '<tr><td colspan="5" style="color:var(--muted)">Loading…</td></tr>';
+    try {
+      const q = currentInqFilter && currentInqFilter !== 'all' ? '?status=' + encodeURIComponent(currentInqFilter) : '';
+      const data = await apiFetch('/api/inquiries' + q);
+      currentInquiries = data.inquiries || [];
+      updateInquiryBadge(data.newCount || 0);
+      renderInquiries();
+    } catch (err) {
+      body.innerHTML = '<tr><td colspan="5" style="color:var(--danger)">Failed to load inquiries: '
+        + escapeHtml(err.message || 'unknown error') + '</td></tr>';
+    }
+  }
+
+  function updateInquiryBadge(count) {
+    const badge = document.getElementById('inquiryBadge');
+    if (!badge) return;
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  }
+
+  function renderInquiries() {
+    const body = document.getElementById('inqTableBody');
+    const empty = document.getElementById('inqEmpty');
+    if (!currentInquiries.length) {
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    body.innerHTML = currentInquiries.map((i) => {
+      const when = i.createdAt ? new Date(i.createdAt).toLocaleString() : '—';
+      const opts = ['new', 'processing', 'resolved'].map((s) =>
+        '<option value="' + s + '"' + (i.status === s ? ' selected' : '') + '>'
+        + s.charAt(0).toUpperCase() + s.slice(1) + '</option>').join('');
+      return '<tr class="' + (i.status === 'new' ? 'inq-row-new' : '') + '">'
+        + '<td><div style="font-weight:600">' + escapeHtml(i.name) + '</div>'
+        +   '<div style="font-size:12px"><a href="mailto:' + escapeHtml(i.email) + '">' + escapeHtml(i.email) + '</a></div></td>'
+        + '<td><span class="inq-badge badge-' + escapeHtml(i.status) + '">' + escapeHtml(i.subject) + '</span></td>'
+        + '<td><div class="inq-msg">' + escapeHtml(i.message) + '</div></td>'
+        + '<td style="white-space:nowrap;font-size:13px;color:var(--muted)">' + escapeHtml(when) + '</td>'
+        + '<td><select class="inq-status" data-inq-id="' + i.id + '">' + opts + '</select></td>'
+        + '</tr>';
+    }).join('');
+
+    body.querySelectorAll('.inq-status').forEach((sel) => {
+      sel.addEventListener('change', async () => {
+        const id = sel.dataset.inqId;
+        const previous = currentInquiries.find((x) => String(x.id) === String(id))?.status;
+        sel.disabled = true;
+        try {
+          await apiFetch('/api/inquiries/' + id + '/status', {
+            method: 'PATCH',
+            body: { status: sel.value },
+          });
+          toast('Inquiry #' + id + ' → ' + sel.value, 'success');
+          // Reload rather than patching in place: the row may now fall
+          // outside the active filter, and the New badge has to move.
+          loadInquiries();
+        } catch (err) {
+          // Put the control back where it was so the UI never claims a
+          // state the server didn't accept.
+          if (previous) sel.value = previous;
+          sel.disabled = false;
+          toast('Could not update: ' + (err.message || 'unknown error'), 'error');
+        }
+      });
+    });
+  }
 
   // ─── Applications ──────────────────────────────────────────────────────
   let currentAppFilter = 'all';
