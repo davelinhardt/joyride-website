@@ -991,10 +991,36 @@
   // tool. If the user has no token, send them to /login. If they have a
   // token but aren't an admin, send them back to /account (which gates
   // the Admin tool card on role anyway, so this is belt-and-suspenders).
+  /**
+   * Deep links survive the login round-trip.
+   *
+   * Clicking /admin#/inbound from the notification email while logged
+   * out hits the gate below, which replaces the URL with /login — and
+   * the hash goes with it. The user then signs in, lands on /account,
+   * and arrives at /admin with no hash, i.e. User Management. Stashing
+   * the hash in sessionStorage (same tab, survives the redirects) and
+   * replaying it on the next successful admin load fixes that without
+   * touching the auth flow itself.
+   */
+  const RETURN_HASH_KEY = 'jr_admin_return_hash';
+  function stashReturnHash() {
+    try {
+      if (location.hash.startsWith('#/')) sessionStorage.setItem(RETURN_HASH_KEY, location.hash);
+    } catch (_) { /* private mode — deep link just won't survive */ }
+  }
+  function takeReturnHash() {
+    try {
+      const h = sessionStorage.getItem(RETURN_HASH_KEY);
+      if (h) sessionStorage.removeItem(RETURN_HASH_KEY);
+      return h;
+    } catch (_) { return null; }
+  }
+
   async function checkSession() {
     // Hydrate from cache for an instant first paint before /me round-trip.
     const cached = JoyrideAPI.readCachedUser();
     if (!JoyrideAPI.getToken() && !cached) {
+      stashReturnHash();
       window.location.replace('/login');
       return false;
     }
@@ -1006,6 +1032,7 @@
       // A definitive 401 already cleared auth inside loadCurrentUser.
     }
     if (!user) {
+      stashReturnHash();
       window.location.replace('/login');
       return false;
     }
@@ -1024,13 +1051,15 @@
     document.getElementById('adminName').textContent = admin.name || fullName || 'Admin';
     document.getElementById('adminEmail').textContent = admin.email || '';
     loadUsers();
-    // Deep-link: if URL hash points to a user, open it right away
-    const m = location.hash.match(/^#\/user\/(\d+)$/);
+    // Deep-link target: the live hash, or one stashed before a login
+    // bounce threw it away.
+    const target = location.hash.startsWith('#/') ? location.hash : (takeReturnHash() || '');
+    const m = target.match(/^#\/user\/(\d+)$/);
     if (m) openUser(parseInt(m[1], 10));
     // …or straight to Inbound. The new-inquiry notification email links
     // to /admin#/inbound so Dave lands on the message, not on User
     // Management (the default tab).
-    else if (location.hash === '#/inbound') selectView('inquiries');
+    else if (target === '#/inbound') selectView('inquiries');
   }
 
   /**
