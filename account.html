@@ -399,16 +399,30 @@
 
     if (isDriver || isAdmin) {
       // Even admin-only users get the Driver card so they can preview
-      // the public profile UX. Falls back to /driver (debug entry)
-      // when the admin has no username set.
-      var profileSlug = user.username ? "/" + encodeURIComponent(user.username) : "/driver";
+      // the public profile UX.
+      //
+      // The no-username case USED TO fall back to href "/driver", which was a
+      // debug entry into driver.html (the public-profile page rendered without
+      // a ?u= slug). As of 2026-07-28 /driver serves the driver WEB APP, so
+      // that fallback would have sent someone looking for their public profile
+      // into the app instead — a silent wrong destination rather than an
+      // obvious dead end.
+      //
+      // There is no correct URL to offer without a username, because the
+      // public page IS joyride.cool/<username>. So the card is disabled and
+      // says what to do about it. `disabled` renders a non-clickable div (see
+      // the grid renderer below), which is the existing pattern.
+      var hasUsername = !!user.username;
       cards.push({
         key: "driver",
         eyebrow: "Driver",
-        h2: user.username ? "joyride.cool/" + user.username : "Your driver page",
-        p: "Your public profile. Drivers share this URL with potential riders so they can book directly.",
-        href: profileSlug,
-        go: "View Driver page →",
+        h2: hasUsername ? "joyride.cool/" + user.username : "Your driver page",
+        p: hasUsername
+          ? "Your public profile. Drivers share this URL with potential riders so they can book directly."
+          : "Set a username in the Joyride Driver app to claim your public profile URL and share it with riders.",
+        href: hasUsername ? "/" + encodeURIComponent(user.username) : "",
+        disabled: !hasUsername,
+        go: hasUsername ? "View Driver page →" : "Username needed",
       });
     }
 

@@ -15,7 +15,6 @@
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/contact", "destination": "/contact.html" },
     { "source": "/design-system", "destination": "/design-system.html" },
-    { "source": "/driver", "destination": "/driver.html" },
     { "source": "/rides", "destination": "/rides.html" },
     { "source": "/receipt", "destination": "/receipt.html" },
     { "source": "/admin", "destination": "/admin.html" },
@@ -43,6 +42,8 @@
     { "source": "/join", "destination": "/join.html" },
     { "source": "/rider", "destination": "https://joyride-rider-web.vercel.app/rider" },
     { "source": "/rider/:path*", "destination": "https://joyride-rider-web.vercel.app/rider/:path*" },
+    { "source": "/driver", "destination": "https://joyride-driver-web.vercel.app/driver" },
+    { "source": "/driver/:path*", "destination": "https://joyride-driver-web.vercel.app/driver/:path*" },
     { "source": "/:slug", "destination": "/driver.html?u=:slug" }
   ],
   "headers": [
