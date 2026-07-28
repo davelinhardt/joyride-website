@@ -448,25 +448,21 @@
     // /account picks up the Driver card automatically because the
     // server-side userType flips.
     //
-    // These are PWAs, not native apps (per Dave 2026-07-28), so both
-    // cards link straight into the web app rather than sitting as
-    // "Coming soon" App Store placeholders. The session token lives in
-    // localStorage on this same origin, so both land already logged in.
-    cards.push({
-      key: "rider-app",
-      eyebrow: "Rider app",
-      h2: "Open the Rider app",
-      p: "Book rides, see your driver in real time, save favorites, and manage payments. Add it to your home screen to use it like an app.",
-      href: "/rider",
-      go: "Open Rider app →",
-    });
+    // No native apps — these are PWAs (Dave 2026-07-28). There's no
+    // "Open the Rider app" card because "Book a ride" above already
+    // goes to /rider; a second tile to the same place was just noise.
+    //
+    // The driver tile is the entry to the driver application, not an
+    // app download. /driver is the driver web app (in progress) — the
+    // same destination the rider app's "Apply to drive" button points
+    // at, so both routes land in one place.
     cards.push({
       key: "driver-app",
-      eyebrow: "Driver app",
-      h2: "Open the Driver app",
+      eyebrow: "Drive with Joyride",
+      h2: "Apply to Drive",
       p: "Want to drive? Apply with these same Joyride credentials. Approval happens after license, insurance, vehicle, and background check.",
       href: "/driver",
-      go: "Open Driver app →",
+      go: "Apply to drive →",
     });
 
     grid.innerHTML = cards.map(function (c) {
