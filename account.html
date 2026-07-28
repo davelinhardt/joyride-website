@@ -416,13 +416,37 @@
       cards.push({
         key: "driver",
         eyebrow: "Driver",
-        h2: hasUsername ? "joyride.cool/" + user.username : "Your driver page",
+        // Title is the plain-English thing, not the URL. The URL moved into the
+        // description: as the h2 it read as the card's SUBJECT rather than as
+        // something you own and share, which is what made this tile confusing
+        // next to the other Driver cards.
+        h2: "Your Driver Page",
         p: hasUsername
-          ? "Your public profile. Drivers share this URL with potential riders so they can book directly."
-          : "Set a username in the Joyride Driver app to claim your public profile URL and share it with riders.",
+          ? "Your public profile lives at joyride.cool/" + user.username +
+            " — share that URL with riders so they can book you directly."
+          : "Set a username in the Joyride Driver app to claim your public profile at joyride.cool/{username} and share it with riders.",
         href: hasUsername ? "/" + encodeURIComponent(user.username) : "",
         disabled: !hasUsername,
         go: hasUsername ? "View Driver page →" : "Username needed",
+      });
+
+      // The driver APP itself. Distinct from the card above: that one is the
+      // public page riders look at, this one is the tool the driver works in.
+      // Same destination as the "Apply to Drive" tile further down, but that
+      // one is for people who have not applied yet (gated on !isDriver) and is
+      // worded as an application — an approved driver needs the entry point,
+      // not the pitch.
+      cards.push({
+        // NOT "driver-app" — the "Apply to Drive" tile below already claims
+        // that key, and an ADMIN who is not a driver renders both (this block
+        // is isDriver||isAdmin, that one is !isDriver), which would put two
+        // cards with the same key in the grid.
+        key: "driver-get-rides",
+        eyebrow: "Driver",
+        h2: "Get Rides",
+        p: "The Joyride Driver app — go online, take ride requests, and track your earnings at joyride.cool/driver.",
+        href: "/driver",
+        go: "Open Driver app →",
       });
     }
 
