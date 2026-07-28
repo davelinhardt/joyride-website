@@ -35,7 +35,7 @@ window.addEventListener('error', (e) => {
     ).join('') + `
       <div class="mobile-cta-stack">
         <a href="/login" class="btn btn--ghost btn--sm">Log in</a>
-        <a href="/login" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
+        <a href="/login?signup=1" class="btn btn--primary btn--sm">Sign up <span class="arrow">→</span></a>
       </div>
     `;
 
@@ -47,7 +47,7 @@ window.addEventListener('error', (e) => {
         <nav>${navHtml}</nav>
         <div class="nav-cta">
           <a href="/login" class="btn btn--ghost btn--sm">Log in</a>
-          <a href="/login" class="btn btn--primary btn--sm">Get the app <span class="arrow">→</span></a>
+          <a href="/login?signup=1" class="btn btn--primary btn--sm">Sign up <span class="arrow">→</span></a>
           <button class="menu-toggle" aria-label="Open menu" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
           </button>
@@ -119,7 +119,7 @@ window.addEventListener('error', (e) => {
   }
 
   /**
-   * Swap the header's "Log in / Get the app" CTAs for an
+   * Swap the header's "Log in / Sign up" CTAs for an
    * "Account / Log out" pair whenever we have a session token.
    *
    * Runs in two passes:
@@ -146,7 +146,8 @@ window.addEventListener('error', (e) => {
     //                consolidated logout button everywhere, and the
     //                username button as the entry to the account
     //                tool).
-    //   Logged out → ghost "Log in" → /login, yellow "Get the app".
+    //   Logged out → ghost "Log in" → /login, yellow "Sign up"
+    //                → /login?signup=1.
     //
     // The primary IS the logout button whenever loggedIn — its click
     // handler is bound below so the same yellow button works on
@@ -172,9 +173,14 @@ window.addEventListener('error', (e) => {
       primaryArrow = '';
       primaryHref = '#';
     } else {
-      primaryLabel = 'Get the app';
+      // We're launching on web + PWA, not native apps, so the CTA is
+      // "Sign up", not "Get the app" (Dave 2026-07-28). ?signup=1 is
+      // what opens login.html on the Sign up tab — without it a first-
+      // time visitor lands on a Log in form for an account they don't
+      // have yet.
+      primaryLabel = 'Sign up';
       primaryArrow = '<span class="arrow">→</span>';
-      primaryHref = '/login';
+      primaryHref = '/login?signup=1';
     }
 
     // Replace just the two .btn anchors in the desktop nav-cta. Keep
