@@ -94,7 +94,7 @@ p  { margin: 0; text-wrap: pretty; }
 /* Tighter mobile gutters & spacing */
 @media (max-width: 540px) {
   :root { --gutter: 18px; }
-  .canary-block, .black-block, .compare, .calc, .download, .feat {
+  .canary-block, .black-block, .compare, .feat {
     padding: var(--s5) !important;
     border-radius: var(--r-lg);
   }
@@ -335,7 +335,6 @@ p  { margin: 0; text-wrap: pretty; }
 .feat .tag, .post .meta .tag,
 .apply, .apply *,
 form.contact-form, form.contact-form *,
-.app-btn, .app-btn *,
 .btn--canary, .btn--canary *,
 .pill:not(.pill--ghost), .pill:not(.pill--ghost) *,
 .kicker, .kicker *,
@@ -353,7 +352,7 @@ form.contact-form, form.contact-form *,
 .canary-block, .final-cta, .card--canary,
 .hero-cta--driver, .marquee, .apply,
 .driver-step .n, .perk .icon, .why-card .icon,
-form.contact-form, .app-btn,
+form.contact-form,
 [style*="background: var(--canary)"], [style*="background:var(--canary)"],
 [style*="background: #FFEF00"], [style*="background:#FFEF00"] {
   --ink-2: rgba(0,0,0,0.75);
@@ -418,7 +417,7 @@ form.contact-form .btn--ghost:hover, form.contact-form .btn--ghost:hover * {
 }
 
 /* Light-grey body text on dark surfaces → white */
-.feat p, .compare p, .download p, .calc-input label, .calc-row .label,
+.feat p, .compare p,
 [style*="color: #c8c8c0"], [style*="color:#c8c8c0"],
 .compare-table tr td:first-child, .compare-table th {
   color: #FFFFFF !important;
@@ -499,7 +498,7 @@ form.contact-form .btn--ghost:hover, form.contact-form .btn--ghost:hover * {
 }
 .hero h1 em, .page-hero h1 em { color: var(--canary); }
 .step .n { color: var(--canary); }
-.compare, .calc, .download, .feat {
+.compare, .feat {
   background: var(--surface-2);
   border: 1px solid var(--border);
 }
