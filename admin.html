@@ -443,6 +443,9 @@
         <div class="nav-item" data-view="rate-sampler">
           <span>🚖</span> Rate Sampler
         </div>
+        <div class="nav-item" data-view="markets">
+          <span>📍</span> Markets
+        </div>
         <div class="nav-item" data-view="settings">
           <span>⚙️</span> Settings
         </div>
@@ -606,6 +609,45 @@
             </tfoot>
           </table>
           <div class="empty" id="taxEmpty" style="display:none">
+            <h3>No markets configured</h3>
+            <p>Add one above to get started.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKETS VIEW -->
+      <div id="marketsView" style="display:none">
+        <div class="topbar">
+          <div>
+            <h1>Markets</h1>
+            <div class="sub">MSA-defined launch markets. Drivers pick one on signup and in edit-profile; the apps read the active list live, so adding a market here needs no app release.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="color:var(--muted);font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer">
+              <input type="checkbox" id="marketShowArchived" /> Show archived
+            </label>
+          </div>
+        </div>
+        <div class="table-wrap" style="overflow-x:auto">
+          <table class="compact-grid">
+            <thead>
+              <tr>
+                <th>Market (MSA)</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="marketTableBody"></tbody>
+            <tfoot>
+              <tr id="marketAddRow">
+                <td><input id="marketNewName" class="fancy-input" maxlength="120" placeholder="Raleigh-Durham-Cary MSA" style="width:260px" /></td>
+                <td colspan="2" style="color:var(--muted);font-size:12px">New markets are added as “manual”.</td>
+                <td><button class="btn btn-primary" id="marketAddBtn">Add market</button></td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="empty" id="marketEmpty" style="display:none">
             <h3>No markets configured</h3>
             <p>Add one above to get started.</p>
           </div>
@@ -1095,11 +1137,13 @@
       document.getElementById('inquiriesView').style.display = view === 'inquiries' ? 'block' : 'none';
       document.getElementById('taxesView').style.display = view === 'taxes' ? 'block' : 'none';
       document.getElementById('rateSamplerView').style.display = view === 'rate-sampler' ? 'block' : 'none';
+      document.getElementById('marketsView').style.display = view === 'markets' ? 'block' : 'none';
       document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
       if (view === 'applications') loadApplications();
       if (view === 'inquiries') loadInquiries();
       if (view === 'taxes') loadTaxSettings();
       if (view === 'rate-sampler') loadRateSampler();
+      if (view === 'markets') loadMarkets();
       if (view === 'settings') { loadSystemSettings(); loadSubscriptionPlans(); }
       // Close the mobile drawer after picking a tool.
       document.body.classList.remove('nav-open');
@@ -1187,6 +1231,7 @@
     document.getElementById('inquiriesView').style.display = view === 'inquiries' ? 'block' : 'none';
     document.getElementById('taxesView').style.display = view === 'taxes' ? 'block' : 'none';
     document.getElementById('rateSamplerView').style.display = view === 'rate-sampler' ? 'block' : 'none';
+    document.getElementById('marketsView').style.display = view === 'markets' ? 'block' : 'none';
     document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
   }
   function showUserDetail() {
@@ -1195,6 +1240,7 @@
     document.getElementById('inquiriesView').style.display = 'none';
     document.getElementById('taxesView').style.display = 'none';
     document.getElementById('rateSamplerView').style.display = 'none';
+    document.getElementById('marketsView').style.display = 'none';
     document.getElementById('settingsView').style.display = 'none';
     document.getElementById('userDetailView').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1829,6 +1875,66 @@
       toast('Market added', 'success'); await loadTaxSettings();
     } catch (err) { toast(err.message, 'error'); }
   });
+
+  // ─── Markets ───────────────────────────────────────────────────────────
+  async function loadMarkets() {
+    const includeArchived = document.getElementById('marketShowArchived').checked;
+    try {
+      const { markets } = await apiFetch('/api/markets' + (includeArchived ? '?includeArchived=true' : ''));
+      renderMarketRows(markets || []);
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  function renderMarketRows(rows) {
+    const tbody = document.getElementById('marketTableBody');
+    const empty = document.getElementById('marketEmpty');
+    if (!rows.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    tbody.innerHTML = rows.map((m) => {
+      const archived = !!m.archivedAt;
+      const statusBadge = archived
+        ? '<span style="color:var(--muted)">Archived</span>'
+        : '<span style="color:#22C55E">Active</span>';
+      const actionBtn = archived
+        ? '<button class="btn btn-ghost" data-act="unarchive">Restore</button>'
+        : '<button class="btn btn-ghost" data-act="archive">Archive</button>';
+      return '<tr data-id="' + m.id + '"' + (archived ? ' style="opacity:.6"' : '') + '>' +
+        '<td>' + escapeHtml(m.name) + '</td>' +
+        '<td style="color:var(--muted)">' + escapeHtml(m.source) + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td>' + actionBtn + '</td>' +
+      '</tr>';
+    }).join('');
+    tbody.querySelectorAll('tr').forEach((row) => {
+      const archiveBtn = row.querySelector('[data-act="archive"]');
+      const unarchiveBtn = row.querySelector('[data-act="unarchive"]');
+      if (archiveBtn) archiveBtn.addEventListener('click', () => archiveMarket(row.dataset.id));
+      if (unarchiveBtn) unarchiveBtn.addEventListener('click', () => unarchiveMarket(row.dataset.id));
+    });
+  }
+  async function archiveMarket(id) {
+    if (!confirm('Archive this market? Drivers will no longer see it, but drivers already assigned to it keep their value.')) return;
+    try {
+      await apiFetch('/api/markets/' + id + '/archive', { method: 'PATCH' });
+      toast('Market archived', 'success'); await loadMarkets();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  async function unarchiveMarket(id) {
+    try {
+      await apiFetch('/api/markets/' + id + '/unarchive', { method: 'PATCH' });
+      toast('Market restored', 'success'); await loadMarkets();
+    } catch (err) { toast(err.message, 'error'); }
+  }
+  document.getElementById('marketAddBtn').addEventListener('click', async () => {
+    const input = document.getElementById('marketNewName');
+    const name = (input.value || '').trim();
+    if (!name) { toast('Market name is required', 'error'); return; }
+    try {
+      await apiFetch('/api/markets', { method: 'POST', body: JSON.stringify({ name }) });
+      input.value = '';
+      toast('Market added', 'success'); await loadMarkets();
+    } catch (err) { toast(err.message, 'error'); }
+  });
+  document.getElementById('marketShowArchived').addEventListener('change', loadMarkets);
 
   // ─── System Settings ───────────────────────────────────────────────────
   async function loadSystemSettings() {
